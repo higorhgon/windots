@@ -52,6 +52,22 @@ function Get-LinkedParent($Path) {
     $null
 }
 
+# The only way windots removes something from ~ (keep it that way):
+#   - only a file, never a folder;
+#   - never through a folder link (that would remove the repo's own file);
+#   - a link is just removed (it holds no data); a real file goes to the Recycle Bin,
+#     so a mistake can always be undone.
+function Remove-Dotfile($Path) {
+    $i = Get-Item $Path -Force -ErrorAction SilentlyContinue
+    if (-not $i) { return }
+    if ($i.PSIsContainer) { throw "windots refuses to remove a folder: $Path" }
+    $linkedParent = Get-LinkedParent $Path
+    if ($linkedParent) { throw "windots refuses to remove ${Path}: $linkedParent is a link" }
+    if ($i.LinkType) { [IO.File]::Delete($Path); return }
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($Path, 'OnlyErrorDialogs', 'SendToRecycleBin')
+}
+
 # Tracked dotfiles missing from the repo (deleted through an old folder link) come back from
 # git. Changed ones are left alone: with links, a change in the repo is the person's own edit.
 function Restore-DeletedDotfiles($Repo) {

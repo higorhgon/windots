@@ -70,7 +70,7 @@ foreach ($f in $targets) {
             git --no-pager diff --no-index --ignore-cr-at-eol --stat $f.Source $target
         }
     }
-    Remove-Item $target -Force
+    Remove-Dotfile $target
     $removed++
 }
 Write-Host "  - $removed files removed"
@@ -81,7 +81,7 @@ foreach ($d in $dirs.Keys) {
     if (Get-LinkedParent (Join-Path $d 'x')) { continue }
     Get-ChildItem $d -Force -File -ErrorAction SilentlyContinue |
         Where-Object { (Get-RepoLinkTarget $_ $Repo) -and -not (Test-Path $_.FullName) } | ForEach-Object {
-            Remove-Item $_.FullName -Force
+            Remove-Dotfile $_.FullName
             Write-Host "  - $($_.FullName)"
             $orphans++
         }
