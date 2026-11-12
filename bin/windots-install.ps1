@@ -159,34 +159,38 @@ if (-not ($devMode -or $isAdmin)) {
     exit 1
 }
 
-Step 'Backing up existing files that will be replaced'
+. (Join-Path $PSScriptRoot 'lib\dotfiles.ps1')
 $configs = Join-Path $Repo 'Configs'
-$targets = @(Get-ChildItem $configs -Recurse -File -Force | ForEach-Object {
-    $group = $_.FullName.Substring($configs.Length + 1).Split('\')[0]
-    $rel = $_.FullName.Substring((Join-Path $configs $group).Length + 1)
-    Join-Path $HOME $rel
-})
-foreach ($target in $targets) {
-    $t = Get-Item $target -Force -ErrorAction SilentlyContinue
-    if ($t -and -not $t.LinkType) {
-        Copy-Item $target "$target.pre-windots" -Force
-        Write-Host "  - $target -> .pre-windots"
+$targets = @(Get-DotfileTargets $Repo)   # files git tracks, not what apps wrote into Configs
+
+Step 'Replacing folder links into the repo with real folders'
+Repair-FoldedLinks $Repo $targets
+Restore-DeletedDotfiles $Repo
+
+Step 'Backing up existing files that will be replaced'
+foreach ($t in $targets) {
+    $i = Get-Item $t.Target -Force -ErrorAction SilentlyContinue
+    if ($i -and -not $i.LinkType) {
+        Copy-Item $t.Target "$($t.Target).pre-windots" -Force
+        Write-Host "  - $($t.Target) -> .pre-windots"
     }
-    # tuckr doesn't create missing parent folders on Windows (fails with os error 3)
-    New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+    # Every folder must exist: tuckr fails on missing ones (os error 3) or links the whole
+    # folder into the repo, and then apps write their state into the repo.
+    New-Item -ItemType Directory -Force (Split-Path $t.Target) | Out-Null
 }
 
 Step 'Linking dotfiles with tuckr'
 $tuckr = (Get-Command tuckr, tuckr-x86_64-windows -ErrorAction SilentlyContinue | Select-Object -First 1).Source
 if (-not $tuckr) { throw 'tuckr not found on PATH (open a new terminal after installing it).' }
-$groups = (Get-ChildItem $configs -Directory).Name
+$groups = @($targets | ForEach-Object Group | Sort-Object -Unique)
 & $tuckr add @groups --force --assume-yes
 # tuckr status lists a group as symlinked even when some of its files failed: check each file.
-$notLinked = @($targets | Where-Object { -not (Get-Item $_ -Force -ErrorAction SilentlyContinue).LinkType })
+$notLinked = @($targets | Where-Object { -not (Get-Item $_.Target -Force -ErrorAction SilentlyContinue).LinkType })
 if ($notLinked) {
     Write-Warning "$($notLinked.Count) files were not linked:"
-    $notLinked | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
+    $notLinked | ForEach-Object { Write-Host "    $($_.Target)" -ForegroundColor Yellow }
 } else { Write-Host "  - all $($targets.Count) files linked" }
+
 $docs = [Environment]::GetFolderPath('MyDocuments')
 if ($docs -ne (Join-Path $HOME 'Documents')) {
     Write-Warning ("Documents is redirected to $docs (OneDrive?), so PowerShell won't read the linked " +

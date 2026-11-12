@@ -86,6 +86,15 @@ in the `windots` skill). A new script without them is missing from the help.
   Python) for lines with `\`.
 - Back up files the script rewrites (`<file>.bak.<unix time>`); be idempotent.
 
+**tuckr**
+- When a folder is missing in `~`, tuckr links the **whole folder** into the repo
+  ("folding"). Apps then write their state (sockets, caches, sessions) into
+  `Configs/`, and deleting `~\<folder>\<file>` deletes the repo's file. So
+  `bin\lib\dotfiles.ps1` treats only **git-tracked** files as dotfiles, creates
+  every folder before tuckr runs, and turns folder links back into real folders
+  (`Repair-FoldedLinks`). Never enumerate `Configs/` from the filesystem, and
+  never delete a path in `~` whose parent is a link (`Get-LinkedParent`).
+
 **whkd** (`Configs/komorebi/.config/whkdrc`)
 - `.shell pwsh`; the trailing `# ...` on a line is its description in the
   Alt+K menu (`windots-menu-keybindings`). Keep it, in Portuguese.
