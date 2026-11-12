@@ -12,7 +12,9 @@ $komorebic = Join-Path $env:ProgramFiles 'komorebi\bin\komorebic.exe'
 Add-Type -Namespace KFO -Name Win32 -MemberDefinition @'
 [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr hWnd);
+[DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr hWnd, int index);
 '@
+$WS_EX_TOPMOST = 0x8
 $TOPMOST = [IntPtr]-1; $NOTOPMOST = [IntPtr]-2
 $FLAGS = 0x0001 -bor 0x0002 -bor 0x0010   # SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
 
@@ -25,8 +27,14 @@ function Update-OnTop($state) {
             foreach ($f in $w.floating_windows.elements) { [void]$floating.Add([long]$f.hwnd) }
         }
     }
+    # Check every floating window on every event: komorebi or the app itself can drop
+    # always-on-top after we set it (seen with btop in Windows Terminal).
     foreach ($h in $floating) {
-        if ($onTop.Add($h)) { [void][KFO.Win32]::SetWindowPos([IntPtr]$h, $TOPMOST, 0, 0, 0, 0, $FLAGS) }
+        [void]$onTop.Add($h)
+        $exStyle = [KFO.Win32]::GetWindowLong([IntPtr]$h, -20)   # GWL_EXSTYLE
+        if (-not ($exStyle -band $WS_EX_TOPMOST)) {
+            [void][KFO.Win32]::SetWindowPos([IntPtr]$h, $TOPMOST, 0, 0, 0, 0, $FLAGS)
+        }
     }
     foreach ($h in @($onTop)) {
         if (-not $floating.Contains($h)) {
