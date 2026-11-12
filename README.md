@@ -1,6 +1,8 @@
 # windots
 
-Dotfiles do Windows, gerenciados com [tuckr](https://github.com/RaphGL/Tuckr).
+Dotfiles do Windows, gerenciados com [tuckr](https://github.com/RaphGL/Tuckr), imitando o [omarchy](https://github.com/basecamp/omarchy) (Super vira Alt).
+
+Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e armadilhas) e a skill `windots` (grupo `claude`), com o passo a passo das tarefas comuns.
 
 ## Grupos (`Configs/`)
 
@@ -9,6 +11,7 @@ Dotfiles do Windows, gerenciados com [tuckr](https://github.com/RaphGL/Tuckr).
 | `pwsh` | `Documents/PowerShell/Microsoft.PowerShell_profile.ps1`, `catppuccin-fzf-mocha.ps1` (cores do fzf) |
 | `atuin` | `.atuin/config.toml`, `.atuin/themes/catppuccin-mocha-blue.toml` |
 | `btop` | `btop.conf` e `themes/catppuccin_mocha.theme` na pasta do btop4win (`AppData/Local/Microsoft/WinGet/Packages/aristocratos.btop4win_…/btop4win/`) |
+| `claude` | skills do Claude Code em `.claude/skills/`: `windots` (mexer neste setup: atalhos, apps, grupos, comandos, temas) e `commit-message` (mensagens de commit semânticas) |
 | `windows-terminal` | fragment `AppData/Local/Microsoft/Windows Terminal/Fragments/windots/windots.json`: esquema Catppuccin Mocha e o perfil oculto `windots-tui` |
 | `mise` | `.config/mise/config.toml` (atuin, starship, fzf, neovim, lazygit, lazydocker, claude) |
 | `starship` | `.config/starship.toml` (config do omarchy) |
@@ -35,6 +38,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-toggle-fullscreen` | como o Super+F do omarchy (aqui Alt+F): a janela em foco ocupa o monitor inteiro, cobrindo a barra do Windows; de novo, volta ao tamanho, posição e tile de antes |
 | `windots-toggle-dark-mode [light\|dark]` | alterna o Windows entre modo escuro e claro (ou define um); mexe direto no registro, então funciona com o Windows não ativado |
 | `windots-menu-keybindings [--list]` | como o Super+K do omarchy (aqui Alt+K): lista com busca de todos os atalhos (whkd + AutoHotkey) no fzf, num terminal flutuante; Enter executa o atalho escolhido |
+| `windots-center-switcher` | centraliza o komorebi-switcher na barra de tarefas de cada monitor desta máquina; o `komorebi-switcher.toml` guarda uma seção por monitor, então o mesmo arquivo serve para o PC e o notebook |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
 
 ## Instalação numa máquina nova
@@ -73,7 +77,7 @@ Tudo no **Windows PowerShell** que vem com o Windows (o PowerShell 7 é instalad
 
 5. **Ajustes depois do primeiro login:**
    - Se a instalação avisou *settings.json not found*, o Windows Terminal e/ou o Flow Launcher ainda não tinham sido abertos: abra cada um uma vez e rode `windots-install-windows-terminal` e `windots-install-flow-launcher`.
-   - O **komorebi-switcher** centraliza pelo identificador do monitor da máquina onde foi configurado; em outro monitor ele aparece no canto. Ajuste em clique direito → Settings, ou no `[monitors.<id>]` do `.config/komorebi-switcher.toml` (`komorebic monitor-information` mostra o id).
+   - **Centralize o komorebi-switcher** neste monitor: `windots-center-switcher`. Ele mede a barra de tarefas e o switcher (já considerando a escala da tela), grava a posição no `komorebi-switcher.toml` mantendo a seção de outras máquinas, e reinicia o switcher.
 
 Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o que faltou: `windots-install -SkipPackages` (sem downloads) ou `windots-install -SkipSystem` (sem UAC nem barra de tarefas).
 
