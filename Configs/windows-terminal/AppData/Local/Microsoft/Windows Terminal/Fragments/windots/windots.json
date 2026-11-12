@@ -8,7 +8,10 @@
       "colorScheme": "Catppuccin Mocha",
       "padding": "0",
       "scrollbarState": "hidden",
-      "hidden": true
+      "hidden": true,
+      "font": {
+        "face": "JetBrainsMonoNL Nerd Font"
+      }
     }
   ],
   "schemes": [

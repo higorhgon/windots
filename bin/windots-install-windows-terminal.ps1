@@ -5,13 +5,15 @@
 #     (Configs\windows-terminal, linked by tuckr; copied here if it isn't yet);
 #   - settings.json gets what fragments can't carry: the "Catppuccin Mocha" UI theme
 #     (tab row and window, default\windows-terminal) selected as "theme", and the
-#     scheme as the default for every profile. A backup is kept as settings.json.bak.<time>.
+#     scheme and the JetBrainsMonoNL Nerd Font as defaults for every profile.
+#     A backup is kept as settings.json.bak.<time>.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot
 $scheme = 'Catppuccin Mocha'
+$fontFace = 'JetBrainsMonoNL Nerd Font'
 
 # Fragment (scheme + windots-tui profile)
 $fragRel = 'AppData\Local\Microsoft\Windows Terminal\Fragments\windots\windots.json'
@@ -41,11 +43,14 @@ $themes = @($settings.themes | Where-Object { $_ -and $_.name -ne $uiTheme.name 
 $settings | Add-Member -NotePropertyName themes -NotePropertyValue $themes -Force
 $settings | Add-Member -NotePropertyName theme -NotePropertyValue $uiTheme.name -Force
 
-# Scheme for every profile.
+# Scheme and font for every profile (font from windots-install-font).
 if (-not $settings.profiles.defaults) { $settings.profiles | Add-Member -NotePropertyName defaults -NotePropertyValue ([pscustomobject]@{}) -Force }
 $settings.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $scheme -Force
+$font = if ($settings.profiles.defaults.font) { $settings.profiles.defaults.font } else { [pscustomobject]@{} }
+$font | Add-Member -NotePropertyName face -NotePropertyValue $fontFace -Force
+$settings.profiles.defaults | Add-Member -NotePropertyName font -NotePropertyValue $font -Force
 
 Copy-Item $settingsPath "$settingsPath.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())"
 $json = $settings | ConvertTo-Json -Depth 32
 [IO.File]::WriteAllText($settingsPath, $json, (New-Object Text.UTF8Encoding $false))
-Write-Host "  - Windows Terminal: theme '$($uiTheme.name)' and color scheme '$scheme' for all profiles"
+Write-Host "  - Windows Terminal: theme '$($uiTheme.name)', color scheme '$scheme' and font '$fontFace' for all profiles"
