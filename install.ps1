@@ -74,8 +74,10 @@ $Packages = @(
     'RaphGL.Tuckr'
     'LGUG2Z.komorebi'
     'LGUG2Z.whkd'
+    'LGUG2Z.masir'                  # focus follows mouse (started by komorebic --masir)
     'AutoHotkey.AutoHotkey'
     'Flow-Launcher.Flow-Launcher'
+    'aristocratos.btop4win'         # btop (alt+shift+t)
     'DEVCOM.JetBrainsMonoNerdFont'  # glyphs used by starship
 )
 
