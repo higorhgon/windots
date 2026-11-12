@@ -1,0 +1,7 @@
+[tools]
+atuin = "latest"
+claude = "latest"
+lazydocker = "latest"
+lazygit = "latest"
+neovim = "nightly"
+starship = "latest"
