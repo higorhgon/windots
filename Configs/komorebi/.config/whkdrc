@@ -1,14 +1,24 @@
 .shell pwsh
 
+# Keys follow omarchy, with Super mapped to Alt.
+
 # --- Apps ---
 alt + return         : start wt
 alt + shift + return : start msedge
+alt + shift + b      : start msedge
+alt + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"
 alt + shift + f      : start explorer
 alt + shift + n      : start wt nvim
-alt + shift + s      : start ms-screenclip:
+alt + shift + t      : & "$env:USERPROFILE\.config\komorebi-float.ps1" wt -w new --title btop btop
+alt + shift + oem_2  : start "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # "/" on US / US-Intl
+alt + shift + 0xc1   : start "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # "/" on ABNT2
+
+# --- Captura (Print abre o recorte nativo do Windows) ---
+alt + ctrl + shift + c : start ms-screenclip:
 
 # --- Janelas ---
 alt + w              : komorebic close
+alt + q              : komorebic close
 alt + f              : komorebic toggle-monocle
 alt + t              : komorebic toggle-float
 alt + j              : komorebic flip-layout horizontal
@@ -28,11 +38,11 @@ alt + shift + right  : komorebic move right
 alt + shift + up     : komorebic move up
 alt + shift + down   : komorebic move down
 
-# --- Redimensionar (Alt+Ctrl+setas) ---
-alt + ctrl + left    : komorebic resize-axis horizontal decrease
-alt + ctrl + right   : komorebic resize-axis horizontal increase
-alt + ctrl + up      : komorebic resize-axis vertical decrease
-alt + ctrl + down    : komorebic resize-axis vertical increase
+# --- Redimensionar (Alt+-/= na largura, Alt+Shift+-/= na altura) ---
+alt + oem_minus         : komorebic resize-axis horizontal decrease
+alt + oem_plus          : komorebic resize-axis horizontal increase
+alt + shift + oem_minus : komorebic resize-axis vertical decrease
+alt + shift + oem_plus  : komorebic resize-axis vertical increase
 
 # --- Workspaces ---
 alt + tab            : komorebic cycle-workspace next
@@ -67,6 +77,11 @@ alt + ctrl + shift + 2 : komorebic send-to-workspace 1
 alt + ctrl + shift + 3 : komorebic send-to-workspace 2
 alt + ctrl + shift + 4 : komorebic send-to-workspace 3
 alt + ctrl + shift + 5 : komorebic send-to-workspace 4
+alt + ctrl + shift + 6 : komorebic send-to-workspace 5
+alt + ctrl + shift + 7 : komorebic send-to-workspace 6
+alt + ctrl + shift + 8 : komorebic send-to-workspace 7
+alt + ctrl + shift + 9 : komorebic send-to-workspace 8
+alt + ctrl + shift + 0 : komorebic send-to-workspace 9
 
 # --- komorebi / whkd ---
 alt + shift + r      : komorebic reload-configuration
