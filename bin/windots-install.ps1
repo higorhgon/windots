@@ -78,7 +78,6 @@ $Packages = @(
     'AutoHotkey.AutoHotkey'
     'Flow-Launcher.Flow-Launcher'
     'aristocratos.btop4win'         # btop (alt+shift+t)
-    'DEVCOM.JetBrainsMonoNerdFont'  # glyphs used by starship
 )
 
 if (-not $SkipPackages) {
@@ -165,6 +164,10 @@ $groups = (Get-ChildItem $configs -Directory).Name
 # ---------------------------------------------------------------- backgrounds
 Step 'Listing backgrounds in Settings > Personalization'
 & (Join-Path $PSScriptRoot 'windots-install-backgrounds.ps1')
+
+# ---------------------------------------------------------------- font
+Step 'Installing JetBrainsMono Nerd Font (Windows Terminal and herdr-app use the NL variant)'
+& (Join-Path $PSScriptRoot 'windots-install-font.ps1') JetBrainsMono
 
 # ---------------------------------------------------------------- windows terminal
 Step 'Applying Catppuccin Mocha to Windows Terminal'
