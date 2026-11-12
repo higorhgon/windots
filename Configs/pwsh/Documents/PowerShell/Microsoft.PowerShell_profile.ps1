@@ -8,6 +8,9 @@ Invoke-Expression (&starship init powershell)
 Import-Module Catppuccin
 $Flavor = $Catppuccin['Mocha']
 
+# fzf colors (https://github.com/catppuccin/fzf), also used by windots-menu-keybindings
+. (Join-Path $PSScriptRoot 'catppuccin-fzf-mocha.ps1')
+
 Set-PSReadLineOption -Colors @{
     ContinuationPrompt     = $Flavor.Teal.Foreground()
     Emphasis               = $Flavor.Red.Foreground()
