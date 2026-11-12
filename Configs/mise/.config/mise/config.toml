@@ -1,6 +1,7 @@
 [tools]
 atuin = "latest"
 claude = "latest"
+fd = "latest"
 fzf = "latest"
 go = "latest"
 lazydocker = "latest"
@@ -11,3 +12,4 @@ npm = "latest"
 ripgrep = "latest"
 rust = "latest"
 starship = "latest"
+zoxide = "latest"
