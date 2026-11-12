@@ -191,10 +191,19 @@ if ($notLinked) {
     $notLinked | ForEach-Object { Write-Host "    $($_.Target)" -ForegroundColor Yellow }
 } else { Write-Host "  - all $($targets.Count) files linked" }
 
+# Documents redirected (OneDrive): PowerShell reads $PROFILE from there, not from the linked
+# ~\Documents\PowerShell, so the profile there just loads the linked one.
 $docs = [Environment]::GetFolderPath('MyDocuments')
 if ($docs -ne (Join-Path $HOME 'Documents')) {
-    Write-Warning ("Documents is redirected to $docs (OneDrive?), so PowerShell won't read the linked " +
-        "profile in $HOME\Documents\PowerShell. Turn off OneDrive folder backup for Documents.")
+    $linked = Join-Path $HOME 'Documents\PowerShell\Microsoft.PowerShell_profile.ps1'
+    $real = Join-Path $docs 'PowerShell\Microsoft.PowerShell_profile.ps1'
+    $line = ". `"$linked`"   # windots: Documents is redirected, load the linked profile"
+    if (-not ((Test-Path $real) -and (Get-Content $real -Raw) -match [regex]::Escape($linked))) {
+        New-Item -ItemType Directory -Force (Split-Path $real) | Out-Null
+        if (Test-Path $real) { Copy-Item $real "$real.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())" }
+        [IO.File]::WriteAllText($real, "$line`r`n", (New-Object Text.UTF8Encoding $false))
+    }
+    Write-Host "  - Documents is redirected to ${docs}: its PowerShell profile loads the linked one"
 }
 
 # ---------------------------------------------------------------- backgrounds
