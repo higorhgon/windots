@@ -10,7 +10,7 @@ Dotfiles do Windows, gerenciados com [tuckr](https://github.com/RaphGL/Tuckr).
 | `mise` | `.config/mise/config.toml` (atuin, starship, neovim, lazygit, lazydocker, claude) |
 | `starship` | `.config/starship.toml` (config do omarchy) |
 | `komorebi` | `komorebi.json`, `applications.json`, `.config/whkdrc`, `.config/komorebi-switcher.toml` |
-| `herdr-app` | `.config/herdr-app/keys.json` (omarchy), `settings.json`, `themes/` (catppuccin) |
+| `herdr-app` | `.config/herdr-app/keys.json` (omarchy + retropet), `settings.json`, `themes/` (catppuccin, retropet), layout `retropet` (`layouts/`, `mods/retropet-*`) |
 
 ## Comandos (`bin/`)
 
@@ -21,8 +21,8 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-launch-or-focus [--float] <regex> [comando]` | como o `focus = "^(app)$"` do omarchy: foca a janela cujo exe ou título casa com a regex, indo até o workspace dela; se não estiver aberta, abre (`--float`: flutuante) |
 | `windots-launch-float <comando>` | abre o comando flutuante, centralizado, sempre em 875×600 (o tamanho do omarchy) |
 | `windots-float-ontop` | roda em segundo plano: janelas flutuantes ficam sempre acima das em tile |
-| `windots-block-start-menu.ahk` | impede a tecla Win de abrir o menu Iniciar (AutoHotkey v2) |
-| `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, block-start-menu) |
+| `windots-hotkeys.ahk` | atalhos que o whkd não faz (AutoHotkey v2): Win não abre o Iniciar, Alt+arrastar move/redimensiona janelas, Alt+Shift+/ no teclado ABNT2 |
+| `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
 
 ## Instalação
 
