@@ -1,4 +1,5 @@
 # windots-center-switcher
+# windots:summary=Center komorebi-switcher in the taskbar of every monitor
 #
 # Centers komorebi-switcher in the taskbar of every monitor of this machine.
 # komorebi-switcher keys its position by monitor id ([monitors."<id>"] in
@@ -7,6 +8,8 @@
 # Sections for monitors of other machines are kept, so one file serves all of them.
 # komorebi-switcher must be running (it is started at login).
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $tomlPath = Join-Path $HOME '.config\komorebi-switcher.toml'

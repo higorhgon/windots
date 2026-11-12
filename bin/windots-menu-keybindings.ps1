@@ -1,9 +1,14 @@
 # windots-menu-keybindings [--pick | --list]
+# windots:summary=Searchable list of every hotkey (Alt+K)
+# windots:args=[--pick | --list]
+# windots:examples=windots menu keybindings | windots menu keybindings --list
 #
 # Like omarchy's Super+K: a searchable list of every hotkey (whkd + windots-hotkeys.ahk).
 # Opens a floating terminal with fzf; Enter runs the selected whkd binding, Esc closes.
 #   --pick  run the list in the current terminal (what the floating window runs)
 #   --list  just print it
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $whkdrc = Join-Path $HOME '.config\whkdrc'

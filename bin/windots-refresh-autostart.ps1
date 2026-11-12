@@ -1,7 +1,10 @@
 # windots-refresh-autostart
+# windots:summary=Recreate the Startup-folder shortcuts
 #
 # Recreates the Startup-folder shortcuts (shell:startup).
 # Shortcuts hold absolute paths, so they are generated instead of versioned.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $startup = [Environment]::GetFolderPath('Startup')
 $shell = New-Object -ComObject WScript.Shell

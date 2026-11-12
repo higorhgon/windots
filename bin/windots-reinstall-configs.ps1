@@ -1,4 +1,7 @@
 # windots-reinstall-configs [-y]
+# windots:summary=Reset every windots dotfile to the repo version and link it again
+# windots:args=[-y]
+# windots:examples=windots reinstall configs | windots reinstall configs -y
 #
 # Like omarchy-reinstall-configs: resets every windots dotfile in ~ to the repo
 # version and links it again, so nothing left over can conflict (destructive).
@@ -15,6 +18,8 @@
 #   windots-reinstall-configs -y    no questions
 #
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot

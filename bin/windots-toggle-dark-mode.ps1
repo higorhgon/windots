@@ -1,9 +1,14 @@
 # windots-toggle-dark-mode [light|dark]
+# windots:summary=Switch Windows between dark and light mode
+# windots:args=[light | dark]
+# windots:examples=windots toggle dark mode | windots toggle dark mode light
 #
 # Switch Windows between dark and light mode (apps + taskbar/Start), or set one.
 # Writes the registry directly, so it also works when Windows isn't activated
 # (Settings > Personalization is locked then), and tells running apps to repaint.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
 if (-not (Test-Path $key)) { New-Item -Path $key -Force | Out-Null }

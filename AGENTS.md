@@ -55,6 +55,13 @@ Naming follows omarchy: `windots-install-*` (install/apply, idempotent),
 `windots-refresh-*`, `windots-update-*` (steps of `windots-update`, like
 `omarchy-update`: git pull, winget, re-apply via `windots-install`, mise). Every script starts with a usage comment block.
 
+`windots` is the command center, like `omarchy`: `windots update -y` runs
+`windots-update -y` (longest file-name match on the words), `windots <group>`
+lists a group, `windots commands` lists everything. Both read the
+`# windots:summary=` / `args=` / `examples=` lines at the top of each script,
+and every script answers `--help` / `-h` through `windots.ps1 --help-for` (recipe
+in the `windots` skill). A new script without them is missing from the help.
+
 - `windots-launch-or-focus [--float] <regex> [cmd]`: focus by anchored regex on
   exe or title (like omarchy's `focus = "^(app)$"`), else launch.
 - `windots-launch-tui` / `windots-launch-or-focus-tui [--float] [--title=t] cmd`:

@@ -68,6 +68,21 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 ### Add a `windots-*` command
 - `bin\windots-<verb>-<thing>.ps1`, usage comment block on top, plain `$args`
   when flags pass through, PS 5.1-compatible if `windots-install` calls it.
+- Right after the name line, the metadata `windots` and `windots commands` read
+  (like omarchy's `# omarchy:` lines); the route comes from the file name:
+  ```powershell
+  # windots-toggle-thing [on|off]
+  # windots:summary=One line, what it does
+  # windots:args=[on | off]
+  # windots:examples=windots toggle thing | windots toggle thing on
+  ```
+- First statement after the comment block, so `--help`/`-h` work:
+  ```powershell
+  if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
+  ```
+  (with a `param()` block, see `windots-install`: `[Alias('h')][switch]$Help`
+  plus a `ValueFromRemainingArguments` parameter to catch `--help`).
+- Check it shows up: `windots commands`, `windots <group> --help`.
 - Syntax-check in both shells; run it for real; document it in the README.
 
 ### Packages

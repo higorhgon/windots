@@ -1,4 +1,5 @@
 # windots-install-flow-launcher
+# windots:summary=Apply the windots hotkeys and keywords to Flow Launcher
 #
 # Applies windots' Flow Launcher settings (default\flow-launcher\settings.json):
 #   - main hotkey and the custom query hotkeys, like omarchy's menus:
@@ -11,6 +12,8 @@
 # A backup is kept as Settings.json.bak.<time>.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot

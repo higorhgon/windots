@@ -21,10 +21,12 @@ Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e arm
 
 ## Comandos (`bin/`)
 
-Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os scripts viram comandos.
+Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os scripts viram comandos. Como no `omarchy`, há um comando central: `windots update -y` é o mesmo que `windots-update -y`, `windots` sozinho mostra a ajuda, `windots <grupo>` lista os comandos do grupo (ex.: `windots install`) e todo comando aceita `--help` / `-h`.
 
 | Comando | O que faz |
 |---|---|
+| `windots [comando] [args]` | como o `omarchy`: chama o `windots-*` pelas palavras (`windots install font` → `windots-install-font`); sem argumentos, mostra a ajuda com os grupos |
+| `windots-commands [--json]` | como o `omarchy commands`: lista todos os comandos com uso e descrição, lidos das linhas `# windots:` no topo de cada script |
 | `windots-launch-or-focus [--float] <regex> [comando]` | como o `focus = "^(app)$"` do omarchy: foca a janela cujo exe ou título casa com a regex, indo até o workspace dela; se não estiver aberta, abre (`--float`: flutuante) |
 | `windots-launch-tui [--float] [--title=<t>] <comando>` | como o `omarchy-launch-tui`: abre um TUI numa janela de terminal própria (perfil `windots-tui`, Catppuccin Mocha sem margem), sem barra de título nem abas, com título fixo (padrão: o nome do comando) |
 | `windots-launch-or-focus-tui [--float] [--title=<t>] <comando>` | como o `omarchy-launch-or-focus-tui`: foca a janela do TUI pelo título; se não estiver aberta, chama o `windots-launch-tui` |
@@ -97,7 +99,8 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 ## Uso diário
 
 ```powershell
-windots-update            # atualiza tudo (windots, winget, mise); --prune libera espaço
+windots                   # ajuda: grupos e comandos
+windots update            # atualiza tudo (windots, winget, mise); --prune libera espaço
 tuckr status              # o que está linkado
 tuckr add <grupo>         # linka um grupo
 tuckr rm <grupo>          # remove os links de um grupo

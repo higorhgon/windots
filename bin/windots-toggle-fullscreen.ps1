@@ -1,4 +1,5 @@
 # windots-toggle-fullscreen
+# windots:summary=Make the focused window fill the monitor, or restore it
 #
 # Like omarchy's Super+F: the focused window fills the whole monitor, over the taskbar.
 # komorebi has no real fullscreen (monocle and maximize keep the taskbar), so:
@@ -8,6 +9,8 @@
 #     window that covers the whole monitor.
 # Run again on that window to restore its style, size, position and tiling.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $komorebic = 'komorebic'
 $stateFile = Join-Path ([IO.Path]::GetTempPath()) 'windots-fullscreen.json'

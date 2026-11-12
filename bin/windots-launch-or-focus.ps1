@@ -1,4 +1,7 @@
 # windots-launch-or-focus [--float] <focus> [command] [args...]
+# windots:summary=Focus a window by exe or title regex, or launch it
+# windots:args=[--float] <regex> [command] [args...]
+# windots:examples=windots launch or focus '^(notepad)$'
 #
 # Like omarchy's { launch = ..., float = ..., focus = "^(app)$" }:
 # focus the first window whose exe (without .exe) or title matches the regex
@@ -9,6 +12,8 @@
 #
 #   windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"
 #   windots-launch-or-focus-tui --float btop   (TUIs: see windots-launch-or-focus-tui)
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 # Plain $args (no param block): flags like -w must reach the command, not this script.
 $rest = [Collections.Generic.List[object]]@($args)

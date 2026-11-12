@@ -1,4 +1,5 @@
 # windots-install-windows-terminal
+# windots:summary=Apply Catppuccin Mocha and the windots font to Windows Terminal
 #
 # Applies Catppuccin Mocha (catppuccin/windows-terminal) to Windows Terminal:
 #   - the color scheme and the windots-tui profile come from the windots fragment
@@ -9,6 +10,8 @@
 #     A backup is kept as settings.json.bak.<time>.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot

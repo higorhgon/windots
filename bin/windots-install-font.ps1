@@ -1,4 +1,7 @@
 # windots-install-font [--pick | name]
+# windots:summary=Install a Nerd Font for the current user
+# windots:args=[--pick | <name>]
+# windots:examples=windots install font | windots install font JetBrainsMono
 #
 # Like omarchy-install-font: install a Nerd Font for the current user (no admin),
 # from the latest ryanoasis/nerd-fonts release.
@@ -8,6 +11,8 @@
 # Installs the regular family (not the Mono / Propo variants); already installed
 # files are skipped. windots-install calls it with JetBrainsMono.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 

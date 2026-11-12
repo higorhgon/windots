@@ -1,9 +1,14 @@
 # windots-launch-float <command> [args...]
+# windots:summary=Launch a command floating and centered (875x600)
+# windots:args=<command> [args...]
+# windots:examples=windots launch float notepad
 #
 # Launch a command whose new window opens floating, centered, at the shared
 # floating size (875x600, omarchy's floating-window size, scaled by DPI).
 # Only this launch floats: komorebi's float override is switched on just long
 # enough for komorebi to pick up the new window.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $Width = 875
 $Height = 600

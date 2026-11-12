@@ -1,4 +1,8 @@
 # windots-install
+# windots:summary=Install windots on this machine: packages, links and settings
+# windots:args=[-SkipPackages] [-SkipSystem]
+# windots:examples=windots install | windots install -SkipPackages
+#
 # Works on Windows PowerShell 5.1 (fresh machine) and PowerShell 7.
 #
 #   .\bin\windots-install.ps1                 # everything (first run, from the repo root)
@@ -10,8 +14,14 @@
 [CmdletBinding()]
 param(
     [switch]$SkipPackages,
-    [switch]$SkipSystem
+    [switch]$SkipSystem,
+    [Alias('h')][switch]$Help,
+    [Parameter(ValueFromRemainingArguments)]$Rest   # catches --help (a param block can't name it)
 )
+
+if ($Help -or $Rest -contains '--help') {
+    & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return
+}
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot   # this script lives in <repo>\bin

@@ -1,4 +1,7 @@
 # windots-launch-tui [--float] [--title=<title>] <command> [args...]
+# windots:summary=Run a TUI in its own borderless terminal window
+# windots:args=[--float] [--title=<title>] <command> [args...]
+# windots:examples=windots launch tui nvim | windots launch tui --float btop
 #
 # Like omarchy-launch-tui: run a TUI in its own terminal window, with no title or
 # tab bar (Windows Terminal focus mode), using the windots-tui profile (Catppuccin
@@ -8,6 +11,8 @@
 #
 #   windots-launch-tui nvim
 #   windots-launch-tui --float btop
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $rest = [Collections.Generic.List[object]]@($args)
 $float = $false; $title = $null

@@ -1,4 +1,7 @@
 # windots-update [-y] [--prune]
+# windots:summary=Update windots, winget packages and mise tools
+# windots:args=[-y] [--prune]
+# windots:examples=windots update | windots update -y --prune
 #
 # Like omarchy-update: updates windots and everything it installed, in this order:
 #   1. the windots repo (git pull --ff-only)                like omarchy-update-dev
@@ -15,6 +18,8 @@
 #
 # The output is logged to %TEMP%\windots-update.log.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot

@@ -1,9 +1,12 @@
 # windots-update-winget
+# windots:summary=Upgrade every winget package with no questions (one UAC)
 #
 # Upgrades every winget package with no questions, like pacman -Syu --noconfirm.
 # Machine-wide packages (Program Files) need admin, so it re-runs itself through
 # sudo: one UAC prompt instead of one per package. Called by windots-update.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
     ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)

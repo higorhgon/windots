@@ -1,9 +1,14 @@
 # windots-launch-or-focus-tui [--float] [--title=<title>] <command> [args...]
+# windots:summary=Focus a TUI's window, or launch it
+# windots:args=[--float] [--title=<title>] <command> [args...]
+# windots:examples=windots launch or focus tui --float btop
 #
 # Like omarchy-launch-or-focus-tui: focus the TUI's window if it's open (found by
 # its fixed title, default: the command's name), otherwise windots-launch-tui it.
 #
 #   windots-launch-or-focus-tui --float btop
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $rest = [Collections.Generic.List[object]]@($args)
 $float = @(); $title = $null

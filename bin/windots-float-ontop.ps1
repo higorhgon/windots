@@ -1,9 +1,12 @@
 # Keep komorebi's floating windows above tiled ones.
+# windots:summary=Keep floating windows above tiled ones (runs in the background)
 #
 # Subscribes to komorebi events through a named pipe; every event carries the full
 # state, so on each one: floating windows become always-on-top (HWND_TOPMOST) and
 # windows that went back to tiling lose it. Reconnects when komorebi restarts.
 # Started hidden at login (shortcut made by windots-refresh-autostart).
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $pipeName = 'komorebi-float-ontop'

@@ -1,4 +1,5 @@
 # windots-install-backgrounds
+# windots:summary=List the windots backgrounds in Settings > Personalization
 #
 # Lists the windots backgrounds in Settings > Personalization:
 #   - Themes: one "windots <name>" theme per folder in Configs\backgrounds\Pictures\Wallpapers,
@@ -7,6 +8,8 @@
 # Images missing from ~\Pictures\Wallpapers (tuckr not linked yet) are copied there.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
+
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot
