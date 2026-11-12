@@ -18,6 +18,11 @@ $want = Get-Content -Raw (Join-Path $Repo 'default\flow-launcher\settings.json')
 $settingsPath = Join-Path $env:APPDATA 'FlowLauncher\Settings\Settings.json'
 $exe = Join-Path $env:LOCALAPPDATA 'FlowLauncher\Flow.Launcher.exe'
 
+if (-not (Test-Path $settingsPath) -and (Test-Path $exe) -and -not (Get-Process Flow.Launcher -ErrorAction SilentlyContinue)) {
+    # Fresh install: Flow writes its default Settings.json on first start.
+    Start-Process $exe
+    for ($i = 0; $i -lt 30 -and -not (Test-Path $settingsPath); $i++) { Start-Sleep -Seconds 1 }
+}
 if (-not (Test-Path $settingsPath)) {
     Write-Warning 'Flow Launcher Settings.json not found: start Flow Launcher once and run windots-install-flow-launcher again.'
     return
