@@ -1,6 +1,7 @@
 [tools]
 atuin = "latest"
 claude = "latest"
+fzf = "latest"
 lazydocker = "latest"
 lazygit = "latest"
 neovim = "nightly"
