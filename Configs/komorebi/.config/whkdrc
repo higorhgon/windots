@@ -1,0 +1,74 @@
+.shell pwsh
+
+# --- Apps ---
+alt + return         : start wt
+alt + shift + return : start msedge
+alt + shift + f      : start explorer
+alt + shift + n      : start wt nvim
+alt + shift + s      : start ms-screenclip:
+
+# --- Janelas ---
+alt + w              : komorebic close
+alt + f              : komorebic toggle-monocle
+alt + t              : komorebic toggle-float
+alt + j              : komorebic flip-layout horizontal
+alt + shift + j      : komorebic flip-layout vertical
+alt + m              : komorebic minimize
+alt + e              : komorebic retile
+
+# --- Foco (Alt+setas) ---
+alt + left           : komorebic focus left
+alt + right          : komorebic focus right
+alt + up             : komorebic focus up
+alt + down           : komorebic focus down
+
+# --- Trocar janelas de lugar (Alt+Shift+setas) ---
+alt + shift + left   : komorebic move left
+alt + shift + right  : komorebic move right
+alt + shift + up     : komorebic move up
+alt + shift + down   : komorebic move down
+
+# --- Redimensionar (Alt+Ctrl+setas) ---
+alt + ctrl + left    : komorebic resize-axis horizontal decrease
+alt + ctrl + right   : komorebic resize-axis horizontal increase
+alt + ctrl + up      : komorebic resize-axis vertical decrease
+alt + ctrl + down    : komorebic resize-axis vertical increase
+
+# --- Workspaces ---
+alt + tab            : komorebic cycle-workspace next
+alt + shift + tab    : komorebic cycle-workspace previous
+
+alt + 1              : komorebic focus-workspace 0
+alt + 2              : komorebic focus-workspace 1
+alt + 3              : komorebic focus-workspace 2
+alt + 4              : komorebic focus-workspace 3
+alt + 5              : komorebic focus-workspace 4
+alt + 6              : komorebic focus-workspace 5
+alt + 7              : komorebic focus-workspace 6
+alt + 8              : komorebic focus-workspace 7
+alt + 9              : komorebic focus-workspace 8
+alt + 0              : komorebic focus-workspace 9
+
+# Mover a janela e ir junto (Alt+Shift+número)
+alt + shift + 1      : komorebic move-to-workspace 0
+alt + shift + 2      : komorebic move-to-workspace 1
+alt + shift + 3      : komorebic move-to-workspace 2
+alt + shift + 4      : komorebic move-to-workspace 3
+alt + shift + 5      : komorebic move-to-workspace 4
+alt + shift + 6      : komorebic move-to-workspace 5
+alt + shift + 7      : komorebic move-to-workspace 6
+alt + shift + 8      : komorebic move-to-workspace 7
+alt + shift + 9      : komorebic move-to-workspace 8
+alt + shift + 0      : komorebic move-to-workspace 9
+
+# Mover a janela sem ir junto (Alt+Ctrl+Shift+número)
+alt + ctrl + shift + 1 : komorebic send-to-workspace 0
+alt + ctrl + shift + 2 : komorebic send-to-workspace 1
+alt + ctrl + shift + 3 : komorebic send-to-workspace 2
+alt + ctrl + shift + 4 : komorebic send-to-workspace 3
+alt + ctrl + shift + 5 : komorebic send-to-workspace 4
+
+# --- komorebi / whkd ---
+alt + shift + r      : komorebic reload-configuration
+alt + shift + p      : komorebic toggle-pause
+alt + o              : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden
