@@ -35,15 +35,19 @@ function Format-Command([string]$cmd) {
 
 $rows = New-Object System.Collections.Generic.List[object]
 
-# whkd: "# --- Section ---" headers, "keys : command  # note" bindings
+# whkd: "# --- Section ---" headers, "keys : command  # description" bindings
+# (the trailing comment, when there is one, is shown instead of the command)
 $section = ''
 foreach ($line in Get-Content $whkdrc) {
     # section names drop their "(...)" hints: "Foco (Alt+setas)" -> "Foco"
     if ($line -match '^#\s*---\s*(.+?)\s*---') { $section = $Matches[1] -replace '\s*\(.*\)$', ''; continue }
     if ($line -match '^#\s*(.+)$') { if ($section) { $section = $Matches[1] -replace '\s*\(.*\)$', '' }; continue }
     if ($line -match '^([^:#.][^:]*?)\s+:\s+(.+)$') {
-        $cmd = ($Matches[2] -replace '\s+#.*$', '').Trim()
-        $rows.Add([pscustomobject]@{ Keys = Format-Keys $Matches[1]; Section = $section; Desc = Format-Command $cmd; Run = $cmd })
+        $keys = $Matches[1]; $body = $Matches[2]
+        $cmd = ($body -replace '\s+#.*$', '').Trim()
+        $note = if ($body -match '\s+#\s*(.+)$') { $Matches[1].Trim() } else { $null }
+        $desc = if ($note) { $note } else { Format-Command $cmd }
+        $rows.Add([pscustomobject]@{ Keys = Format-Keys $keys; Section = $section; Desc = $desc; Run = $cmd })
     }
 }
 
@@ -77,7 +81,7 @@ if (-not $fzf) { Write-Host 'fzf not found (mise use -g fzf)'; Read-Host 'Enter 
 $fzfTheme = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\catppuccin-fzf-mocha.ps1'
 if (Test-Path $fzfTheme) { . $fzfTheme }
 $pick = $lines | & $fzf --delimiter "`t" --with-nth 1 --layout reverse --border rounded --border-label ' Keybindings ' `
-    --prompt '  ' --header 'Enter runs it   Esc closes'
+    --prompt '  ' --header 'Enter runs it   Esc closes' --no-hscroll
 if ($LASTEXITCODE -ne 0 -or -not $pick) { exit 0 }
 
 $run = ($pick -split "`t", 2)[1]
