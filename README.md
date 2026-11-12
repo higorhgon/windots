@@ -37,37 +37,55 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-menu-keybindings [--list]` | como o Super+K do omarchy (aqui Alt+K): lista com busca de todos os atalhos (whkd + AutoHotkey) no fzf, num terminal flutuante; Enter executa o atalho escolhido |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
 
-## Instalação
+## Instalação numa máquina nova
 
-1. Ative o **Modo de Desenvolvedor** (Configurações → Sistema → Avançado), necessário para symlinks.
-2. Libere a execução de scripts para o seu usuário (o Windows vem bloqueando por padrão):
+Tudo no **Windows PowerShell** que vem com o Windows (o PowerShell 7 é instalado pelo script).
+
+1. **Libere a execução de scripts** para o seu usuário (o Windows vem bloqueando por padrão):
 
    ```powershell
    Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
    ```
 
    Confira com `Get-ExecutionPolicy -List` (a linha `CurrentUser` deve mostrar `RemoteSigned`).
-   Se o repositório foi baixado como `.zip` em vez de clonado, desbloqueie os arquivos antes:
+
+2. **Instale o git e clone** o repositório em `~\windots`:
 
    ```powershell
-   Get-ChildItem ~\windots -Recurse | Unblock-File
+   winget install --id Git.Git -e
+   # feche e abra o PowerShell para o git entrar no PATH
+   git clone https://github.com/higorhgon/windots.git $HOME\windots
    ```
 
-3. Clone em `~\windots` e rode:
+   Se baixar como `.zip` em vez de clonar, desbloqueie os arquivos antes: `Get-ChildItem ~\windots -Recurse | Unblock-File`.
+
+3. **Rode o instalador:**
 
    ```powershell
    cd ~\windots
    .\bin\windots-install.ps1
    ```
 
-   Depois da primeira vez, o `bin` já está no PATH: basta `windots-install` (ex.: `windots-install -SkipPackages`).
+   - Aparece **um aviso do UAC**: aceite (Modo de Desenvolvedor e sudo).
+   - A barra de tarefas pisca: o Explorer reinicia para ela ir para o topo, pequena.
 
-O script:
-- ativa o Modo de Desenvolvedor e o sudo no modo embutido (pede UAC uma vez) e deixa a barra de tarefas no topo, pequena, alinhada à esquerda e sem Visão de Tarefas/Widgets/Copilot (`-SkipSystem` pula essa parte);
-- instala os pacotes do winget, o komorebi-switcher (release do GitHub) e o herdr-app (instalador oficial, que também instala o herdr-core);
-- cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura);
-- faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add`;
-- lista os backgrounds em Personalização (`windots-install-backgrounds`), aplica o Catppuccin no Windows Terminal (`windots-install-windows-terminal`), roda `mise install` e recria os atalhos de inicialização (`windots-refresh-autostart`).
+4. **Reinicie** (ou saia e entre de novo). Sobem sozinhos: komorebi + whkd + masir, komorebi-switcher, Flow Launcher, AutoHotkey (`windots-hotkeys`) e `windots-float-ontop`.
+
+5. **Ajustes depois do primeiro login:**
+   - Se a instalação avisou *settings.json not found*, o Windows Terminal e/ou o Flow Launcher ainda não tinham sido abertos: abra cada um uma vez e rode `windots-install-windows-terminal` e `windots-install-flow-launcher`.
+   - O **komorebi-switcher** centraliza pelo identificador do monitor da máquina onde foi configurado; em outro monitor ele aparece no canto. Ajuste em clique direito → Settings, ou no `[monitors.<id>]` do `.config/komorebi-switcher.toml` (`komorebic monitor-information` mostra o id).
+
+Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o que faltou: `windots-install -SkipPackages` (sem downloads) ou `windots-install -SkipSystem` (sem UAC nem barra de tarefas).
+
+### O que o `windots-install` faz, em ordem
+
+1. Ativa o Modo de Desenvolvedor e o sudo embutido (um UAC) e deixa a barra de tarefas no topo, pequena, alinhada à esquerda e sem Visão de Tarefas/Widgets/Copilot (`-SkipSystem` pula).
+2. Instala os pacotes do winget, o komorebi-switcher (release do GitHub) e o herdr-app (instalador oficial, que também instala o herdr-core) (`-SkipPackages` pula).
+3. Põe `~\windots\bin` no PATH.
+4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
+5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos.
+6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono`, `windots-install-windows-terminal` e `windots-install-flow-launcher`.
+7. `mise install` e `windots-refresh-autostart`.
 
 ## Uso diário
 
