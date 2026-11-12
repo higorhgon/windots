@@ -12,6 +12,9 @@ alt + shift + n      : start wt nvim
 alt + shift + t      : windots-launch-or-focus --float '^(btop)$' wt -w new --title btop --suppressApplicationTitle btop
 alt + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # "/" on US / US-Intl (ABNT2: windots-hotkeys.ahk)
 
+# --- Tema (omarchy: Super+Ctrl+T) ---
+alt + ctrl + t       : windots-toggle-dark-mode
+
 # --- Captura (Print abre o recorte nativo do Windows) ---
 alt + ctrl + shift + c : start ms-screenclip:
 
