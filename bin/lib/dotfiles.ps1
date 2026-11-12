@@ -41,6 +41,12 @@ function Get-RepoLinkTarget($Item, $Repo) {
     $null
 }
 
+# A link into the repo whose repo file is gone (Test-Path on the link itself says True in pwsh 7).
+function Test-StaleRepoLink($Item, $Repo) {
+    $repoPath = Get-RepoLinkTarget $Item $Repo
+    [bool]$repoPath -and -not (Test-Path -LiteralPath $repoPath)
+}
+
 # A folder between ~ and the file that is itself a link (anything below it lives elsewhere).
 function Get-LinkedParent($Path) {
     $dir = Split-Path $Path
@@ -68,6 +74,25 @@ function Remove-Dotfile($Path) {
     [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($Path, 'OnlyErrorDialogs', 'SendToRecycleBin')
 }
 
+# Folders windots used before and no longer does (OneDrive backs them up, which conflicts
+# with links): their links into the repo point at nothing now.
+$WindotsOldPlaces = @(
+    (Join-Path $HOME 'Documents\PowerShell'),           # profile, now ~\.config\powershell
+    (Join-Path $HOME 'Pictures\Wallpapers\catppuccin')  # backgrounds, now ~\.config\windots\backgrounds
+)
+
+# File links into the repo, in those folders, whose repo file is gone. Folders are left alone.
+function Remove-StaleLinks($Repo, $Dirs) {
+    foreach ($d in $Dirs) {
+        if (Get-LinkedParent (Join-Path $d 'x')) { continue }
+        Get-ChildItem $d -Force -File -ErrorAction SilentlyContinue |
+            Where-Object { Test-StaleRepoLink $_ $Repo } | ForEach-Object {
+                Remove-Dotfile $_.FullName
+                Write-Host "  - removed old link $($_.FullName)"
+            }
+    }
+}
+
 # Tracked dotfiles missing from the repo (deleted through an old folder link) come back from
 # git. Changed ones are left alone: with links, a change in the repo is the person's own edit.
 function Restore-DeletedDotfiles($Repo) {
@@ -80,10 +105,11 @@ function Restore-DeletedDotfiles($Repo) {
 
 # Replace folder links into the repo with real folders; files the apps wrote into the repo
 # through them (untracked) are moved back to the real folder.
-function Repair-FoldedLinks($Repo, $Targets) {
+function Repair-FoldedLinks($Repo, $Targets, $AlsoCheck = @()) {
     $folded = @{}
-    foreach ($t in $Targets) {
-        $dir = Split-Path $t.Target
+    $paths = @($Targets | ForEach-Object Target) + @($AlsoCheck | ForEach-Object { Join-Path $_ 'x' })
+    foreach ($p in $paths) {
+        $dir = Split-Path $p
         while ($dir.Length -gt $HOME.Length) {
             $i = Get-Item $dir -Force -ErrorAction SilentlyContinue
             $repoDir = Get-RepoLinkTarget $i $Repo

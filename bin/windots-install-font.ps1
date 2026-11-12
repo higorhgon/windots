@@ -34,7 +34,7 @@ if ($picked) {
     $fonts = $release.assets | Where-Object { $_.name -like '*.zip' -and $_.name -ne 'FontPatcher.zip' } |
         Sort-Object name | ForEach-Object { '{0,-28}{1,6} MB' -f $_.name.Replace('.zip', ''), [math]::Round($_.size / 1MB) }
 
-    $fzfTheme = Join-Path $HOME 'Documents\PowerShell\catppuccin-fzf-mocha.ps1'   # the linked copy, even with OneDrive
+    $fzfTheme = Join-Path $HOME '.config\powershell\catppuccin-fzf-mocha.ps1'
     if (Test-Path $fzfTheme) { . $fzfTheme }
     $pick = $fonts | & $fzf --layout reverse --border rounded --border-label " Nerd Fonts $($release.tag_name) " `
         --prompt '  ' --header 'Enter installs it   Esc cancels'

@@ -2,10 +2,12 @@
 # windots:summary=List the windots backgrounds in Settings > Personalization
 #
 # Lists the windots backgrounds in Settings > Personalization:
-#   - Themes: one "windots <name>" theme per folder in Configs\backgrounds\Pictures\Wallpapers,
-#     a slideshow of every image in it (keeps the current dark/light mode and accent color);
+#   - Themes: one "windots <name>" theme per folder in ~\.config\windots\backgrounds
+#     (like omarchy's ~/.config/omarchy/backgrounds), a slideshow of every image in it
+#     (keeps the current dark/light mode and accent color);
 #   - Background: up to 5 still images in "Recent images" (the most Windows shows).
-# Images missing from ~\Pictures\Wallpapers (tuckr not linked yet) are copied there.
+# Not in Pictures: OneDrive backs it up (and may redirect it), which conflicts with links.
+# Images missing from ~\.config\windots\backgrounds (tuckr not linked yet) are copied there.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
@@ -13,8 +15,8 @@ if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot
-$source = Join-Path $Repo 'Configs\backgrounds\Pictures\Wallpapers'
-$target = Join-Path ([Environment]::GetFolderPath('MyPictures')) 'Wallpapers'
+$source = Join-Path $Repo 'Configs\backgrounds\.config\windots\backgrounds'
+$target = Join-Path $HOME '.config\windots\backgrounds'
 $themesDir = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Themes'
 $images = '.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp'
 

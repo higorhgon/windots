@@ -80,7 +80,7 @@ $orphans = 0
 foreach ($d in $dirs.Keys) {
     if (Get-LinkedParent (Join-Path $d 'x')) { continue }
     Get-ChildItem $d -Force -File -ErrorAction SilentlyContinue |
-        Where-Object { (Get-RepoLinkTarget $_ $Repo) -and -not (Test-Path $_.FullName) } | ForEach-Object {
+        Where-Object { Test-StaleRepoLink $_ $Repo } | ForEach-Object {
             Remove-Dotfile $_.FullName
             Write-Host "  - $($_.FullName)"
             $orphans++

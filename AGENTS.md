@@ -93,6 +93,12 @@ in the `windots` skill). A new script without them is missing from the help.
   `bin\lib\dotfiles.ps1` treats only **git-tracked** files as dotfiles, creates
   every folder before tuckr runs, and turns folder links back into real folders
   (`Repair-FoldedLinks`). Never enumerate `Configs/` from the filesystem.
+- **No dotfiles in OneDrive folders** (Documents, Pictures, Desktop): OneDrive
+  backs them up or redirects them, which breaks links. Put files under
+  `~\.config` (omarchy style). PowerShell's `$PROFILE` must stay in Documents, so
+  `windots-install` writes a one-line loader there (a plain file) for
+  `~\.config\powershell\profile.ps1`. Places windots used to link are listed in
+  `$WindotsOldPlaces` (`bin\lib\dotfiles.ps1`) so their stale links get removed.
 - Anything a script removes from `~` goes through `Remove-Dotfile`: files only,
   never folders, never through a link, real files to the Recycle Bin. A bad run
   once deleted the person's `~\Pictures` (folded into the repo); never again.

@@ -164,8 +164,9 @@ $configs = Join-Path $Repo 'Configs'
 $targets = @(Get-DotfileTargets $Repo)   # files git tracks, not what apps wrote into Configs
 
 Step 'Replacing folder links into the repo with real folders'
-Repair-FoldedLinks $Repo $targets
+Repair-FoldedLinks $Repo $targets $WindotsOldPlaces
 Restore-DeletedDotfiles $Repo
+Remove-StaleLinks $Repo $WindotsOldPlaces
 
 Step 'Backing up existing files that will be replaced'
 foreach ($t in $targets) {
@@ -191,19 +192,24 @@ if ($notLinked) {
     $notLinked | ForEach-Object { Write-Host "    $($_.Target)" -ForegroundColor Yellow }
 } else { Write-Host "  - all $($targets.Count) files linked" }
 
-# Documents redirected (OneDrive): PowerShell reads $PROFILE from there, not from the linked
-# ~\Documents\PowerShell, so the profile there just loads the linked one.
-$docs = [Environment]::GetFolderPath('MyDocuments')
-if ($docs -ne (Join-Path $HOME 'Documents')) {
-    $linked = Join-Path $HOME 'Documents\PowerShell\Microsoft.PowerShell_profile.ps1'
-    $real = Join-Path $docs 'PowerShell\Microsoft.PowerShell_profile.ps1'
-    $line = ". `"$linked`"   # windots: Documents is redirected, load the linked profile"
-    if (-not ((Test-Path $real) -and (Get-Content $real -Raw) -match [regex]::Escape($linked))) {
-        New-Item -ItemType Directory -Force (Split-Path $real) | Out-Null
-        if (Test-Path $real) { Copy-Item $real "$real.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())" }
-        [IO.File]::WriteAllText($real, "$line`r`n", (New-Object Text.UTF8Encoding $false))
+Step 'Pointing the PowerShell profile at ~\.config\powershell'
+# PowerShell only reads $PROFILE from Documents, which OneDrive backs up (and may redirect).
+# windots keeps nothing there but this one-line loader: a plain file, not a link.
+$profilePath = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Microsoft.PowerShell_profile.ps1'
+$loader = ". (Join-Path `$HOME '.config\powershell\profile.ps1')   # windots: the profile lives in ~\.config\powershell"
+$current = Get-Item $profilePath -Force -ErrorAction SilentlyContinue
+if ($current -and $current.LinkType) { Remove-Dotfile $profilePath; $current = $null }   # an old windots link
+if ($current -and (Get-Content $profilePath -Raw).Trim() -eq $loader) {
+    Write-Host '  - already there'
+} else {
+    New-Item -ItemType Directory -Force (Split-Path $profilePath) | Out-Null
+    if ($current) {
+        $bak = "$profilePath.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())"
+        Copy-Item $profilePath $bak
+        Write-Host "  - kept the previous profile as $bak"
     }
-    Write-Host "  - Documents is redirected to ${docs}: its PowerShell profile loads the linked one"
+    [IO.File]::WriteAllText($profilePath, "$loader`r`n", (New-Object Text.UTF8Encoding $false))
+    Write-Host "  - $profilePath loads ~\.config\powershell\profile.ps1"
 }
 
 # ---------------------------------------------------------------- backgrounds
