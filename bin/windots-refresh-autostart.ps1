@@ -10,8 +10,11 @@ $entries = @(
     @{ Name = 'komorebi';          Target = "$env:ProgramFiles\komorebi\bin\komorebic-no-console.exe"; Args = 'start --whkd --masir' }  # masir: focus follows mouse
     @{ Name = 'komorebi-switcher'; Target = "$env:LOCALAPPDATA\Programs\komorebi-switcher\komorebi-switcher.exe" }
     @{ Name = 'Flow Launcher';     Target = "$env:LOCALAPPDATA\FlowLauncher\Flow.Launcher.exe" }
-    @{ Name = 'windots-float-ontop'; Target = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-       Args = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-float-ontop.ps1`"" }
+    # conhost --headless: with Windows Terminal as the default terminal, -WindowStyle Hidden
+    # can't hide the console and a tab stays open.
+    @{ Name = 'windots-float-ontop'; Target = "$env:SystemRoot\System32\conhost.exe"
+       Requires = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+       Args = "--headless `"$env:ProgramFiles\PowerShell\7\pwsh.exe`" -NoProfile -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-float-ontop.ps1`"" }
     @{ Name = 'windots-hotkeys'; Target = "$PSScriptRoot\windots-hotkeys.ahk" }  # opened by AutoHotkey v2
 )
 
@@ -23,8 +26,9 @@ foreach ($name in $retired) {
 }
 
 foreach ($e in $entries) {
-    if (-not (Test-Path $e.Target)) {
-        Write-Warning "skipping $($e.Name): $($e.Target) not found"
+    $missing = @($e.Target, $e.Requires | Where-Object { $_ -and -not (Test-Path $_) })
+    if ($missing) {
+        Write-Warning "skipping $($e.Name): $($missing -join ', ') not found"
         continue
     }
     $lnk = $shell.CreateShortcut((Join-Path $startup "$($e.Name).lnk"))
