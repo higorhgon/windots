@@ -40,6 +40,8 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-menu-keybindings [--list]` | como o Super+K do omarchy (aqui Alt+K): lista com busca de todos os atalhos (whkd + AutoHotkey) no fzf, num terminal flutuante; Enter executa o atalho escolhido |
 | `windots-center-switcher` | centraliza o komorebi-switcher na barra de tarefas de cada monitor desta máquina; o `komorebi-switcher.toml` guarda uma seção por monitor, então o mesmo arquivo serve para o PC e o notebook |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
+| `windots-update [-y]` | como o `omarchy-update`: atualiza o repositório (`git pull`), os pacotes do winget, reaplica o windots (`windots-install -SkipPackages -SkipSystem`), atualiza as ferramentas do mise e oferece reiniciar se o Windows pedir; `-y` não pergunta nada; log em `%TEMP%\windots-update.log` |
+| `windots-update-winget` | `winget upgrade --all` sem nenhuma pergunta (como `pacman -Syu --noconfirm`), com um único UAC via sudo |
 
 ## Instalação numa máquina nova
 
@@ -88,12 +90,13 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 3. Põe `~\windots\bin` no PATH.
 4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
 5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos.
-6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono`, `windots-install-windows-terminal` e `windots-install-flow-launcher`.
+6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal` e `windots-install-flow-launcher`.
 7. `mise install` e `windots-refresh-autostart`.
 
 ## Uso diário
 
 ```powershell
+windots-update            # atualiza tudo (windots, winget, mise)
 tuckr status              # o que está linkado
 tuckr add <grupo>         # linka um grupo
 tuckr rm <grupo>          # remove os links de um grupo

@@ -52,7 +52,8 @@ instead; edit the `default/` data and the script, then run it:
 
 Naming follows omarchy: `windots-install-*` (install/apply, idempotent),
 `windots-launch-*`, `windots-menu-*` (fzf menus), `windots-toggle-*`,
-`windots-refresh-*`. Every script starts with a usage comment block.
+`windots-refresh-*`, `windots-update-*` (steps of `windots-update`, like
+`omarchy-update`: git pull, winget, re-apply via `windots-install`, mise). Every script starts with a usage comment block.
 
 - `windots-launch-or-focus [--float] <regex> [cmd]`: focus by anchored regex on
   exe or title (like omarchy's `focus = "^(app)$"`), else launch.
