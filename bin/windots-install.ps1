@@ -173,6 +173,10 @@ Step 'Installing JetBrainsMono Nerd Font (Windows Terminal and herdr-app use the
 Step 'Applying Catppuccin Mocha to Windows Terminal'
 & (Join-Path $PSScriptRoot 'windots-install-windows-terminal.ps1')
 
+# ---------------------------------------------------------------- flow launcher
+Step 'Applying Flow Launcher hotkeys (system menu, apps, plugins)'
+& (Join-Path $PSScriptRoot 'windots-install-flow-launcher.ps1')
+
 # ---------------------------------------------------------------- mise tools
 Step 'Installing mise tools (atuin, starship, neovim, ...)'
 if (Get-Command mise -ErrorAction SilentlyContinue) { mise install --yes }

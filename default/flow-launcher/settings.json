@@ -1,0 +1,13 @@
+{
+  "$help": "windots: the parts of Flow Launcher's Settings.json applied by windots-install-flow-launcher (merged, the rest is left as is).",
+  "Hotkey": "Alt + Space",
+  "CustomPluginHotkeys": [
+    { "Hotkey": "Alt + Escape", "ActionKeyword": "sys " },
+    { "Hotkey": "Alt + Win + Space", "ActionKeyword": "app " },
+    { "Hotkey": "Ctrl + Alt + Space", "ActionKeyword": "? " }
+  ],
+  "PluginActionKeywords": {
+    "791FC278BA414111B8D1886DFE447410": { "name": "Program", "keywords": ["*", "app"] },
+    "CEA08895D2544B019B2E9C5009600DF4": { "name": "System Commands", "keywords": ["*", "sys"] }
+  }
+}
