@@ -10,6 +10,7 @@ Dotfiles do Windows, gerenciados com [tuckr](https://github.com/RaphGL/Tuckr).
 | `mise` | `.config/mise/config.toml` (atuin, starship, neovim, lazygit, lazydocker, claude) |
 | `starship` | `.config/starship.toml` (config do omarchy) |
 | `komorebi` | `komorebi.json`, `applications.json`, `.config/whkdrc`, `.config/komorebi-switcher.toml` |
+| `backgrounds` | `Pictures/Wallpapers/catppuccin/` (12 imagens do dot-omarchy) |
 | `herdr-app` | `.config/herdr-app/keys.json` (omarchy + retropet), `settings.json`, `themes/` (catppuccin, retropet), layout `retropet` (`layouts/`, `mods/retropet-*`) |
 
 ## Comandos (`bin/`)
@@ -22,6 +23,8 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-launch-float <comando>` | abre o comando flutuante, centralizado, sempre em 875×600 (o tamanho do omarchy) |
 | `windots-float-ontop` | roda em segundo plano: janelas flutuantes ficam sempre acima das em tile |
 | `windots-hotkeys.ahk` | atalhos que o whkd não faz (AutoHotkey v2): Win não abre o Iniciar, Alt+arrastar move/redimensiona janelas, Alt+Shift+/ no teclado ABNT2 |
+| `windots-install-backgrounds` | lista os backgrounds em Configurações → Personalização: um tema `windots <pasta>` (slideshow com todas as imagens, mantendo modo escuro e cor de destaque) e 5 imagens em "Imagens recentes" |
+| `windots-toggle-dark-mode [light\|dark]` | alterna o Windows entre modo escuro e claro (ou define um); mexe direto no registro, então funciona com o Windows não ativado |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
 
 ## Instalação
@@ -54,7 +57,7 @@ O script:
 - instala os pacotes do winget, o komorebi-switcher (release do GitHub) e o herdr-app (instalador oficial, que também instala o herdr-core);
 - cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura);
 - faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add`;
-- roda `mise install` e recria os atalhos de inicialização (`windots-refresh-autostart`).
+- lista os backgrounds em Personalização (`windots-install-backgrounds`), roda `mise install` e recria os atalhos de inicialização (`windots-refresh-autostart`).
 
 ## Uso diário
 
