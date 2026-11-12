@@ -8,12 +8,12 @@ Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e arm
 
 | Grupo | Arquivos (relativos a `~`) |
 |---|---|
-| `pwsh` | `Documents/PowerShell/Microsoft.PowerShell_profile.ps1`, `catppuccin-fzf-mocha.ps1` (cores do fzf) |
+| `pwsh` | `Documents/PowerShell/Microsoft.PowerShell_profile.ps1` (mise, starship, atuin e zoxide no `cd`), `catppuccin-fzf-mocha.ps1` (cores do fzf) |
 | `atuin` | `.atuin/config.toml`, `.atuin/themes/catppuccin-mocha-blue.toml` |
 | `btop` | `btop.conf` e `themes/catppuccin_mocha.theme` na pasta do btop4win (`AppData/Local/Microsoft/WinGet/Packages/aristocratos.btop4win_…/btop4win/`) |
 | `claude` | skills do Claude Code em `.claude/skills/`: `windots` (mexer neste setup: atalhos, apps, grupos, comandos, temas) e `commit-message` (mensagens de commit semânticas) |
 | `windows-terminal` | fragment `AppData/Local/Microsoft/Windows Terminal/Fragments/windots/windots.json`: esquema Catppuccin Mocha e o perfil oculto `windots-tui` |
-| `mise` | `.config/mise/config.toml` (atuin, starship, fzf, neovim, lazygit, lazydocker, claude) |
+| `mise` | `.config/mise/config.toml` (atuin, starship, fzf, fd, ripgrep, zoxide, neovim, lazygit, lazydocker, claude, go, node, npm, rust) |
 | `starship` | `.config/starship.toml` (config do omarchy) |
 | `komorebi` | `komorebi.json`, `applications.json`, `.config/whkdrc`, `.config/komorebi-switcher.toml` |
 | `backgrounds` | `Pictures/Wallpapers/catppuccin/` (12 imagens do dot-omarchy) |

@@ -56,3 +56,7 @@ Set-PSReadLineKeyHandler -Chord 'Escape,b' -Function BackwardWord
 Set-PSReadLineKeyHandler -Chord 'Escape,f' -Function ForwardWord
 Set-PSReadLineKeyHandler -Key Alt+b -Function BackwardWord
 Set-PSReadLineKeyHandler -Key Alt+f -Function ForwardWord
+
+# zoxide: cd learns the folders you use (cd foo jumps to the best match; cdi picks in fzf)
+# Last, as zoxide asks: it wraps cd after everything else is set up.
+Invoke-Expression (& { (zoxide init --cmd cd powershell | Out-String) })
