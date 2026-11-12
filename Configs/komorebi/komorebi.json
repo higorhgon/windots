@@ -13,7 +13,7 @@
   "border_colours": {
     "single": "#7aa2f7",
     "stack": "#7aa2f7",
-    "monocle": "#7aa2f7",
+    "monocle": "#fab387",
     "floating": "#7aa2f7",
     "unfocused": "#595959"
   },
