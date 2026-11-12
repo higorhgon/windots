@@ -1,9 +1,9 @@
-# windots installer
+# windots-install
 # Works on Windows PowerShell 5.1 (fresh machine) and PowerShell 7.
 #
-#   .\install.ps1                 # everything
-#   .\install.ps1 -SkipPackages   # skip winget/herdr/komorebi-switcher installs
-#   .\install.ps1 -SkipSystem     # skip Windows settings (sudo, Developer Mode, taskbar)
+#   .\bin\windots-install.ps1                 # everything (first run, from the repo root)
+#   windots-install -SkipPackages             # skip winget/herdr/komorebi-switcher installs
+#   windots-install -SkipSystem               # skip Windows settings (sudo, Developer Mode, taskbar)
 #
 # Developer Mode and sudo are machine-wide: the script asks for elevation (UAC) once.
 
@@ -14,7 +14,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Repo = $PSScriptRoot
+$Repo = Split-Path $PSScriptRoot   # this script lives in <repo>\bin
 
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Refresh-Path {
@@ -106,6 +106,17 @@ if (-not $SkipPackages) {
 
 Refresh-Path
 
+# ---------------------------------------------------------------- windots bin
+# Like omarchy's bin: the repo's scripts are commands on PATH (windots-*), no links needed.
+Step 'Adding windots\bin to the user PATH'
+$bin = Join-Path $Repo 'bin'
+$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (($userPath -split ';') -notcontains $bin) {
+    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ";$bin"), 'User')
+    Write-Host "  - added $bin"
+} else { Write-Host '  - already there' }
+Refresh-Path
+
 # ---------------------------------------------------------------- tuckr dir
 # tuckr looks for %APPDATA%\dotfiles; point it at this repo with a junction (no admin needed).
 Step 'Pointing %APPDATA%\dotfiles at this repo'
@@ -127,7 +138,7 @@ $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
     ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not ($devMode -or $isAdmin)) {
     Write-Warning ('Developer Mode is off, so symlinks cannot be created. Enable it in ' +
-        'Settings > System > Advanced > Developer Mode and run: .\install.ps1 -SkipPackages')
+        'Settings > System > Advanced > Developer Mode and run: windots-install -SkipPackages')
     exit 1
 }
 
@@ -158,6 +169,6 @@ else { Write-Warning 'mise not found on PATH; open a new terminal and run: mise 
 
 # ---------------------------------------------------------------- autostart
 Step 'Creating autostart shortcuts'
-& (Join-Path $Repo 'autostart.ps1')
+& (Join-Path $Repo 'bin\windots-refresh-autostart.ps1')
 
 Write-Host "`nDone. Open a new PowerShell 7 terminal to load the profile." -ForegroundColor Green
