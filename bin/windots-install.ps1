@@ -166,6 +166,10 @@ $groups = (Get-ChildItem $configs -Directory).Name
 Step 'Listing backgrounds in Settings > Personalization'
 & (Join-Path $PSScriptRoot 'windots-install-backgrounds.ps1')
 
+# ---------------------------------------------------------------- windows terminal
+Step 'Applying Catppuccin Mocha to Windows Terminal'
+& (Join-Path $PSScriptRoot 'windots-install-windows-terminal.ps1')
+
 # ---------------------------------------------------------------- mise tools
 Step 'Installing mise tools (atuin, starship, neovim, ...)'
 if (Get-Command mise -ErrorAction SilentlyContinue) { mise install --yes }

@@ -1,0 +1,39 @@
+{
+  "$help": "Windows Terminal fragment from windots: Catppuccin Mocha scheme (catppuccin/windows-terminal) and the windots-tui profile.",
+  "profiles": [
+    {
+      "guid": "{6f3a1c2e-8b4d-4e7a-9c15-2d0b7e5a4f31}",
+      "name": "windots-tui",
+      "commandline": "pwsh.exe -NoProfile",
+      "colorScheme": "Catppuccin Mocha",
+      "padding": "0",
+      "scrollbarState": "hidden",
+      "hidden": true
+    }
+  ],
+  "schemes": [
+    {
+      "name": "Catppuccin Mocha",
+      "cursorColor": "#F5E0DC",
+      "selectionBackground": "#585B70",
+      "background": "#1E1E2E",
+      "foreground": "#CDD6F4",
+      "black": "#45475A",
+      "red": "#F38BA8",
+      "green": "#A6E3A1",
+      "yellow": "#F9E2AF",
+      "blue": "#89B4FA",
+      "purple": "#F5C2E7",
+      "cyan": "#94E2D5",
+      "white": "#BAC2DE",
+      "brightBlack": "#585B70",
+      "brightRed": "#F38BA8",
+      "brightGreen": "#A6E3A1",
+      "brightYellow": "#F9E2AF",
+      "brightBlue": "#89B4FA",
+      "brightPurple": "#F5C2E7",
+      "brightCyan": "#94E2D5",
+      "brightWhite": "#A6ADC8"
+    }
+  ]
+}
