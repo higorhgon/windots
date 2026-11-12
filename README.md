@@ -8,7 +8,7 @@ Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e arm
 
 | Grupo | Arquivos (relativos a `~`) |
 |---|---|
-| `pwsh` | `.config/powershell/profile.ps1` (mise, starship, atuin e zoxide no `cd`), `catppuccin-fzf-mocha.ps1` (cores do fzf); o `windots-install` põe no `$PROFILE` (em Documentos) só uma linha que carrega esse arquivo |
+| `pwsh` | `.config/powershell/profile.ps1` (mise, starship, atuin e zoxide no `cd`), `catppuccin-fzf-mocha.ps1` (cores do fzf); o `windots-install` põe no `$PROFILE` (em Documentos) só uma linha que carrega esse arquivo; o módulo [Catppuccin](https://github.com/catppuccin/powershell) é clonado pelo `windots-reinstall-pkgs` em `~\.local\share\powershell\Modules` |
 | `atuin` | `.atuin/config.toml`, `.atuin/themes/catppuccin-mocha-blue.toml` |
 | `btop` | `btop.conf` e `themes/catppuccin_mocha.theme` na pasta do btop4win (`AppData/Local/Microsoft/WinGet/Packages/aristocratos.btop4win_…/btop4win/`) |
 | `claude` | skills do Claude Code em `.claude/skills/`: `windots` (mexer neste setup: atalhos, apps, grupos, comandos, temas) e `commit-message` (mensagens de commit semânticas) |
@@ -45,7 +45,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-center-switcher` | centraliza o komorebi-switcher na barra de tarefas de cada monitor desta máquina; o `komorebi-switcher.toml` guarda uma seção por monitor, então o mesmo arquivo serve para o PC e o notebook |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
 | `windots-update [-y] [--prune]` | como o `omarchy-update`: atualiza o repositório (`git pull`), os pacotes do winget, reaplica o windots (`windots-install -SkipPackages -SkipSystem`), atualiza as ferramentas do mise (com `--prune`, também apaga as versões antigas delas com `mise prune`, liberando espaço) e oferece reiniciar se o Windows pedir; `-y` não pergunta nada; log em `%TEMP%\windots-update.log` |
-| `windots-reinstall-pkgs` | como o `omarchy-reinstall-pkgs`: instala o que faltar dos apps padrão (winget de `default/packages.txt` com um único UAC, komorebi-switcher, herdr-app, ferramentas do mise) sem mexer em configurações; o que já está instalado fica como está |
+| `windots-reinstall-pkgs` | como o `omarchy-reinstall-pkgs`: instala o que faltar dos apps padrão (winget de `default/packages.txt` com um único UAC, komorebi-switcher, herdr-app, módulo Catppuccin do PowerShell, ferramentas do mise) sem mexer em configurações; o que já está instalado fica como está |
 | `windots-reinstall-configs [-y]` | como o `omarchy-reinstall-configs`: apaga o que estiver em `~` no lugar de cada dotfile (cópias, links antigos, links para arquivos que saíram do repositório), guarda backup (`.bak.<tempo>`) do que for diferente do repositório e linka tudo de novo com o `windots-install -SkipPackages -SkipSystem`; use quando algo ficou em conflito |
 | `windots-update-winget` | `winget upgrade --all` sem nenhuma pergunta (como `pacman -Syu --noconfirm`), com um único UAC via sudo |
 

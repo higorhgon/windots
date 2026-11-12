@@ -4,44 +4,50 @@ Set-Alias tuckr tuckr-x86_64-windows   # winget installs it under this name
 
 Invoke-Expression (&starship init powershell)
 
-# Catppuccin (https://github.com/catppuccin/powershell)
-Import-Module Catppuccin
-$Flavor = $Catppuccin['Mocha']
-
 # fzf colors (https://github.com/catppuccin/fzf), also used by windots-menu-keybindings
 . (Join-Path $PSScriptRoot 'catppuccin-fzf-mocha.ps1')
 
-Set-PSReadLineOption -Colors @{
-    ContinuationPrompt     = $Flavor.Teal.Foreground()
-    Emphasis               = $Flavor.Red.Foreground()
-    Selection              = $Flavor.Surface0.Background()
-    InlinePrediction       = $Flavor.Overlay0.Foreground()
-    ListPrediction         = $Flavor.Mauve.Foreground()
-    ListPredictionSelected = $Flavor.Surface0.Background()
-    Command                = $Flavor.Blue.Foreground()
-    Comment                = $Flavor.Overlay0.Foreground()
-    Default                = $Flavor.Text.Foreground()
-    Error                  = $Flavor.Red.Foreground()
-    Keyword                = $Flavor.Mauve.Foreground()
-    Member                 = $Flavor.Rosewater.Foreground()
-    Number                 = $Flavor.Peach.Foreground()
-    Operator               = $Flavor.Sky.Foreground()
-    Parameter              = $Flavor.Pink.Foreground()
-    String                 = $Flavor.Green.Foreground()
-    Type                   = $Flavor.Yellow.Foreground()
-    Variable               = $Flavor.Lavender.Foreground()
+# Catppuccin (https://github.com/catppuccin/powershell), cloned by windots-reinstall-pkgs into
+# ~\.local\share\powershell\Modules (not Documents\PowerShell\Modules: OneDrive backs it up).
+$env:PSModulePath = (Join-Path $HOME '.local\share\powershell\Modules') + ';' + $env:PSModulePath
+if (Get-Module -ListAvailable Catppuccin) {
+    Import-Module Catppuccin
+    $Flavor = $Catppuccin['Mocha']
+
+    Set-PSReadLineOption -Colors @{
+        ContinuationPrompt     = $Flavor.Teal.Foreground()
+        Emphasis               = $Flavor.Red.Foreground()
+        Selection              = $Flavor.Surface0.Background()
+        InlinePrediction       = $Flavor.Overlay0.Foreground()
+        ListPrediction         = $Flavor.Mauve.Foreground()
+        ListPredictionSelected = $Flavor.Surface0.Background()
+        Command                = $Flavor.Blue.Foreground()
+        Comment                = $Flavor.Overlay0.Foreground()
+        Default                = $Flavor.Text.Foreground()
+        Error                  = $Flavor.Red.Foreground()
+        Keyword                = $Flavor.Mauve.Foreground()
+        Member                 = $Flavor.Rosewater.Foreground()
+        Number                 = $Flavor.Peach.Foreground()
+        Operator               = $Flavor.Sky.Foreground()
+        Parameter              = $Flavor.Pink.Foreground()
+        String                 = $Flavor.Green.Foreground()
+        Type                   = $Flavor.Yellow.Foreground()
+        Variable               = $Flavor.Lavender.Foreground()
+    }
+
+    $PSStyle.Formatting.Debug        = $Flavor.Sky.Foreground()
+    $PSStyle.Formatting.Error        = $Flavor.Red.Foreground()
+    $PSStyle.Formatting.ErrorAccent  = $Flavor.Blue.Foreground()
+    $PSStyle.Formatting.FormatAccent = $Flavor.Teal.Foreground()
+    $PSStyle.Formatting.TableHeader  = $Flavor.Rosewater.Foreground()
+    $PSStyle.Formatting.Verbose      = $Flavor.Yellow.Foreground()
+    $PSStyle.Formatting.Warning      = $Flavor.Peach.Foreground()
+
+    # ls: the module doesn't cover $PSStyle.FileInfo; the default blue-background folders are unreadable
+    $PSStyle.FileInfo.Directory = "$($PSStyle.Bold)$($Flavor.Blue.Foreground())"
+} else {
+    Write-Host 'Catppuccin module missing (colors off): run windots reinstall pkgs' -ForegroundColor Yellow
 }
-
-$PSStyle.Formatting.Debug        = $Flavor.Sky.Foreground()
-$PSStyle.Formatting.Error        = $Flavor.Red.Foreground()
-$PSStyle.Formatting.ErrorAccent  = $Flavor.Blue.Foreground()
-$PSStyle.Formatting.FormatAccent = $Flavor.Teal.Foreground()
-$PSStyle.Formatting.TableHeader  = $Flavor.Rosewater.Foreground()
-$PSStyle.Formatting.Verbose      = $Flavor.Yellow.Foreground()
-$PSStyle.Formatting.Warning      = $Flavor.Peach.Foreground()
-
-# ls: the module doesn't cover $PSStyle.FileInfo; the default blue-background folders are unreadable
-$PSStyle.FileInfo.Directory = "$($PSStyle.Bold)$($Flavor.Blue.Foreground())"
 
 atuin init powershell --disable-up-arrow | Out-String | Invoke-Expression
 

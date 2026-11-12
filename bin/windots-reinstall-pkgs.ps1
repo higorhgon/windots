@@ -7,6 +7,7 @@
 #   - the winget packages in default\packages.txt (one UAC prompt, through sudo);
 #   - komorebi-switcher (GitHub release), when missing;
 #   - herdr-app (official installer, which also installs herdr-core), when missing;
+#   - the Catppuccin PowerShell module (git clone into ~\.local\share\powershell\Modules);
 #   - the mise tools in ~\.config\mise\config.toml (mise install).
 # Apps already installed are left as they are (windots-update upgrades them).
 # Called by windots-install; safe to run again on its own.
@@ -74,6 +75,20 @@ if (Get-Command herdr-app -ErrorAction SilentlyContinue) {
 } else {
     powershell -NoProfile -ExecutionPolicy Bypass -c "irm https://releases.herdr.dev/app/install.ps1 | iex"
     Refresh-Path
+}
+
+Step 'Installing the Catppuccin PowerShell module (catppuccin/powershell)'
+# Not in Documents\PowerShell\Modules (OneDrive backs it up): the profile adds this folder
+# to PSModulePath. Not on the PowerShell Gallery; its README says to clone it.
+$moduleDir = Join-Path $HOME '.local\share\powershell\Modules\Catppuccin'
+if (Get-Item (Join-Path $moduleDir 'Catppuccin.psd1') -ErrorAction SilentlyContinue) {
+    Write-Host '  - already installed'
+} elseif (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Warning 'git not found on PATH; open a new terminal and run: windots reinstall pkgs'
+} else {
+    New-Item -ItemType Directory -Force (Split-Path $moduleDir) | Out-Null
+    git clone --quiet --depth 1 https://github.com/catppuccin/powershell.git $moduleDir
+    Write-Host "  - $moduleDir"
 }
 
 Step 'Installing mise tools'
