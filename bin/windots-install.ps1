@@ -189,7 +189,9 @@ Step 'Listing backgrounds in Settings > Personalization'
 
 # ---------------------------------------------------------------- font
 Step 'Installing JetBrainsMono Nerd Font (Windows Terminal and herdr-app use the NL variant)'
-& (Join-Path $PSScriptRoot 'windots-install-font.ps1') JetBrainsMono
+if (Test-Path (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts\JetBrainsMonoNLNerdFont-Regular.ttf')) {
+    Write-Host '  - already installed'   # skips the download when run again (windots-update)
+} else { & (Join-Path $PSScriptRoot 'windots-install-font.ps1') JetBrainsMono }
 
 # ---------------------------------------------------------------- windows terminal
 Step 'Applying Catppuccin Mocha to Windows Terminal'
