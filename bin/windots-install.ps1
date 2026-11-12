@@ -39,6 +39,10 @@ Set-ItemProperty -Path $k -Name AllowDevelopmentWithoutDevLicense -Value 1 -Type
 # sudo for Windows, inline mode (same as Settings > System > Advanced > Enable sudo > Inline)
 if (Get-Command sudo.exe -ErrorAction SilentlyContinue) { sudo.exe config --enable normal }
 else { Write-Warning 'sudo.exe not found (needs Windows 11 24H2 or newer)' }
+# Widgets off by policy: HKCU TaskbarDa is protected on recent Windows 11 and can't be set
+$k = 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh'
+if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null }
+Set-ItemProperty -Path $k -Name AllowNewsAndInterests -Value 0 -Type DWord
 '@
     $isAdminNow = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
         ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -58,7 +62,7 @@ else { Write-Warning 'sudo.exe not found (needs Windows 11 24H2 or newer)' }
     Set-Reg $adv 'TaskbarSize'        1   # 1 = small
     Set-Reg $adv 'TaskbarAl'          0   # 0 = left aligned
     Set-Reg $adv 'ShowTaskViewButton' 0
-    Set-Reg $adv 'TaskbarDa'          0   # Widgets
+    # Widgets: turned off by policy in the elevated block (HKCU TaskbarDa is write-protected)
     Set-Reg $adv 'TaskbarMn'          0   # Chat
     Set-Reg $adv 'ShowCopilotButton'  0
     Set-Reg 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' 'SearchboxTaskbarMode' 2
@@ -86,7 +90,11 @@ if (-not $SkipPackages) {
         Write-Host "  - $id"
         winget install --id $id --exact --source winget --silent `
             --accept-package-agreements --accept-source-agreements | Out-Null
-        # winget returns non-zero when the package is already installed; that's fine.
+        # Already installed / no newer version are non-zero too; anything else is a real failure.
+        $alreadyThere = -1978335189, -1978335135   # 0x8A15002B, 0x8A150061
+        if ($LASTEXITCODE -ne 0 -and $alreadyThere -notcontains $LASTEXITCODE) {
+            Write-Warning ("winget could not install $id (exit 0x{0:X8}); run: winget install --id $id" -f $LASTEXITCODE)
+        }
     }
 
     Step 'Installing komorebi-switcher (GitHub release)'
@@ -143,15 +151,19 @@ if (-not ($devMode -or $isAdmin)) {
 
 Step 'Backing up existing files that will be replaced'
 $configs = Join-Path $Repo 'Configs'
-Get-ChildItem $configs -Recurse -File -Force | ForEach-Object {
+$targets = @(Get-ChildItem $configs -Recurse -File -Force | ForEach-Object {
     $group = $_.FullName.Substring($configs.Length + 1).Split('\')[0]
     $rel = $_.FullName.Substring((Join-Path $configs $group).Length + 1)
-    $target = Join-Path $HOME $rel
+    Join-Path $HOME $rel
+})
+foreach ($target in $targets) {
     $t = Get-Item $target -Force -ErrorAction SilentlyContinue
     if ($t -and -not $t.LinkType) {
         Copy-Item $target "$target.pre-windots" -Force
         Write-Host "  - $target -> .pre-windots"
     }
+    # tuckr doesn't create missing parent folders on Windows (fails with os error 3)
+    New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
 }
 
 Step 'Linking dotfiles with tuckr'
@@ -159,7 +171,17 @@ $tuckr = (Get-Command tuckr, tuckr-x86_64-windows -ErrorAction SilentlyContinue 
 if (-not $tuckr) { throw 'tuckr not found on PATH (open a new terminal after installing it).' }
 $groups = (Get-ChildItem $configs -Directory).Name
 & $tuckr add @groups --force --assume-yes
-& $tuckr status
+# tuckr status lists a group as symlinked even when some of its files failed: check each file.
+$notLinked = @($targets | Where-Object { -not (Get-Item $_ -Force -ErrorAction SilentlyContinue).LinkType })
+if ($notLinked) {
+    Write-Warning "$($notLinked.Count) files were not linked:"
+    $notLinked | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
+} else { Write-Host "  - all $($targets.Count) files linked" }
+$docs = [Environment]::GetFolderPath('MyDocuments')
+if ($docs -ne (Join-Path $HOME 'Documents')) {
+    Write-Warning ("Documents is redirected to $docs (OneDrive?), so PowerShell won't read the linked " +
+        "profile in $HOME\Documents\PowerShell. Turn off OneDrive folder backup for Documents.")
+}
 
 # ---------------------------------------------------------------- backgrounds
 Step 'Listing backgrounds in Settings > Personalization'
