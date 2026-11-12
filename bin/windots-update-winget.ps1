@@ -10,7 +10,8 @@ if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1
 
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
     ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin -and (Get-Command sudo.exe -ErrorAction SilentlyContinue)) {
+$sudoOn = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo' -ErrorAction SilentlyContinue).Enabled -ge 1
+if (-not $isAdmin -and $sudoOn -and (Get-Command sudo.exe -ErrorAction SilentlyContinue)) {
     $shell = (Get-Process -Id $PID).Path
     sudo.exe $shell -NoProfile -ExecutionPolicy Bypass -File $MyInvocation.MyCommand.Path
     exit $LASTEXITCODE
