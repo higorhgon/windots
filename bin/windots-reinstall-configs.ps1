@@ -45,6 +45,9 @@ if ($args -notcontains '-y') {
     if ((Read-Host 'Are you sure? [y/N]') -notmatch '^(y|yes|s|sim)$') { Write-Host 'Cancelled'; exit 1 }
 }
 
+# Before removing anything: make sure everything can be linked again.
+$null = Assert-CanLink
+
 # Only the files git tracks: apps may have written their own files into Configs.
 $targets = @(Get-DotfileTargets $Repo)
 

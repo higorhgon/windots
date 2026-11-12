@@ -7,6 +7,24 @@
 #   - dotfiles are the files git tracks under Configs, never whatever sits in those folders;
 #   - folder links into the repo are replaced by real folders before anything is linked or removed.
 
+# What linking needs, checked before anything in ~ is touched (a run that removed the old
+# links and then found no tuckr once left a machine with no dotfiles). Returns tuckr's path.
+function Assert-CanLink {
+    $devMode = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' `
+        -ErrorAction SilentlyContinue).AllowDevelopmentWithoutDevLicense -eq 1
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if (-not ($devMode -or $isAdmin)) {
+        throw ('Developer Mode is off, so symlinks cannot be created. Enable it in Settings > ' +
+            'System > Advanced > Developer Mode and run: windots install -SkipPackages')
+    }
+    # -CommandType Application: the profile's `tuckr` alias has no path (.Source is empty).
+    $tuckr = (Get-Command tuckr-x86_64-windows, tuckr -CommandType Application -ErrorAction SilentlyContinue |
+        Select-Object -First 1).Source
+    if (-not $tuckr) { throw 'tuckr not found on PATH: run windots reinstall pkgs, open a new terminal and try again.' }
+    $tuckr
+}
+
 # Every tracked file under Configs\<group>\ with its place in ~.
 function Get-DotfileTargets($Repo) {
     $rel = @()

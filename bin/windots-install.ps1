@@ -112,17 +112,8 @@ if (-not $item) {
 }
 
 # ---------------------------------------------------------------- symlinks
-$devMode = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' `
-    -ErrorAction SilentlyContinue).AllowDevelopmentWithoutDevLicense -eq 1
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
-    ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not ($devMode -or $isAdmin)) {
-    Write-Warning ('Developer Mode is off, so symlinks cannot be created. Enable it in ' +
-        'Settings > System > Advanced > Developer Mode and run: windots-install -SkipPackages')
-    exit 1
-}
-
 . (Join-Path $PSScriptRoot 'lib\dotfiles.ps1')
+$tuckr = Assert-CanLink   # Developer Mode and tuckr, before anything in ~ changes
 $configs = Join-Path $Repo 'Configs'
 $targets = @(Get-DotfileTargets $Repo)   # files git tracks, not what apps wrote into Configs
 
@@ -144,8 +135,6 @@ foreach ($t in $targets) {
 }
 
 Step 'Linking dotfiles with tuckr'
-$tuckr = (Get-Command tuckr, tuckr-x86_64-windows -ErrorAction SilentlyContinue | Select-Object -First 1).Source
-if (-not $tuckr) { throw 'tuckr not found on PATH (open a new terminal after installing it).' }
 $groups = @($targets | ForEach-Object Group | Sort-Object -Unique)
 & $tuckr add @groups --force --assume-yes
 # tuckr status lists a group as symlinked even when some of its files failed: check each file.
