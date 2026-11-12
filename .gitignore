@@ -1,3 +1,7 @@
 *.pre-windots
 *.bak
 *.bak.*
+
+# written by herdr-app into every mod on each start
+gpui-kit.d.ts
+jsconfig.json
