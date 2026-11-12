@@ -1,0 +1,15 @@
+# Default windots apps, installed with winget by windots-reinstall-pkgs (like omarchy's
+# base packages). One winget id per line; # starts a comment.
+# Apps outside winget (komorebi-switcher, herdr-app) and the mise tools
+# (~\.config\mise\config.toml) are handled by windots-reinstall-pkgs itself.
+
+Microsoft.PowerShell          # PowerShell 7
+Git.Git
+jdx.mise
+RaphGL.Tuckr
+LGUG2Z.komorebi
+LGUG2Z.whkd
+LGUG2Z.masir                  # focus follows mouse (started by komorebic --masir)
+AutoHotkey.AutoHotkey
+Flow-Launcher.Flow-Launcher
+aristocratos.btop4win         # btop (alt+shift+t)

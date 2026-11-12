@@ -86,7 +86,8 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 - Syntax-check in both shells; run it for real; document it in the README.
 
 ### Packages
-- winget: add the id to `$Packages` in `bin\windots-install.ps1`.
+- winget: add the id to `default\packages.txt` (installed by `windots reinstall pkgs`,
+  which `windots-install` calls).
 - CLI tools: prefer mise (`mise use -g <tool>`, then copy
   `~\.config\mise\config.toml` to `Configs\mise\...`).
 

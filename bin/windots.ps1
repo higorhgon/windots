@@ -22,7 +22,7 @@ $groupInfo = [ordered]@{
     launch    = 'Open apps and TUIs: floating, or focus them if open'
     menu      = 'fzf menus'
     refresh   = 'Regenerate generated files'
-    reinstall = 'Reset windots dotfiles'
+    reinstall = 'Reinstall default apps and reset dotfiles'
     toggle    = 'Toggle window and system states'
     update    = 'Update windots, winget packages and mise tools'
 }

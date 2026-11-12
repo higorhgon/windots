@@ -21,6 +21,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `Configs/<group>/` | dotfiles linked by [tuckr](https://github.com/RaphGL/Tuckr); each group mirrors `~` (`Configs/starship/.config/starship.toml` -> `~\.config\starship.toml`) |
 | `bin/windots-*` | commands, like omarchy's `bin`; `~\windots\bin` is on the user PATH |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
+| `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
 
 tuckr looks for `%APPDATA%\dotfiles`; `windots-install` makes it a junction to this

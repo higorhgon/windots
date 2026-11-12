@@ -81,45 +81,8 @@ Set-ItemProperty -Path $k -Name AllowNewsAndInterests -Value 0 -Type DWord
 }
 
 # ---------------------------------------------------------------- packages
-$Packages = @(
-    'Microsoft.PowerShell'          # PowerShell 7
-    'Git.Git'
-    'jdx.mise'
-    'RaphGL.Tuckr'
-    'LGUG2Z.komorebi'
-    'LGUG2Z.whkd'
-    'LGUG2Z.masir'                  # focus follows mouse (started by komorebic --masir)
-    'AutoHotkey.AutoHotkey'
-    'Flow-Launcher.Flow-Launcher'
-    'aristocratos.btop4win'         # btop (alt+shift+t)
-)
-
-if (-not $SkipPackages) {
-    Step 'Installing winget packages'
-    foreach ($id in $Packages) {
-        Write-Host "  - $id"
-        winget install --id $id --exact --source winget --silent `
-            --accept-package-agreements --accept-source-agreements | Out-Null
-        # Already installed / no newer version are non-zero too; anything else is a real failure.
-        $alreadyThere = -1978335189, -1978335135   # 0x8A15002B, 0x8A150061
-        if ($LASTEXITCODE -ne 0 -and $alreadyThere -notcontains $LASTEXITCODE) {
-            Write-Warning ("winget could not install $id (exit 0x{0:X8}); run: winget install --id $id" -f $LASTEXITCODE)
-        }
-    }
-
-    Step 'Installing komorebi-switcher (GitHub release)'
-    $dir = Join-Path $env:LOCALAPPDATA 'Programs\komorebi-switcher'
-    $exe = Join-Path $dir 'komorebi-switcher.exe'
-    $release = Invoke-RestMethod 'https://api.github.com/repos/amrbashir/komorebi-switcher/releases/latest'
-    $asset = $release.assets | Where-Object name -eq 'komorebi-switcher.exe'
-    New-Item -ItemType Directory -Force $dir | Out-Null
-    Get-Process komorebi-switcher -ErrorAction SilentlyContinue | Stop-Process -Force
-    Invoke-WebRequest $asset.browser_download_url -OutFile $exe
-    Write-Host "  - $($release.tag_name) -> $exe"
-
-    Step 'Installing herdr-app (official installer; also installs herdr-core if missing)'
-    powershell -NoProfile -ExecutionPolicy Bypass -c "irm https://releases.herdr.dev/app/install.ps1 | iex"
-}
+# The default apps (default\packages.txt, komorebi-switcher, herdr-app): windots-reinstall-pkgs.
+if (-not $SkipPackages) { & (Join-Path $PSScriptRoot 'windots-reinstall-pkgs.ps1') }
 
 Refresh-Path
 
