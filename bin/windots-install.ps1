@@ -162,6 +162,10 @@ $groups = (Get-ChildItem $configs -Directory).Name
 & $tuckr add @groups --force --assume-yes
 & $tuckr status
 
+# ---------------------------------------------------------------- backgrounds
+Step 'Listing backgrounds in Settings > Personalization'
+& (Join-Path $PSScriptRoot 'windots-install-backgrounds.ps1')
+
 # ---------------------------------------------------------------- mise tools
 Step 'Installing mise tools (atuin, starship, neovim, ...)'
 if (Get-Command mise -ErrorAction SilentlyContinue) { mise install --yes }
