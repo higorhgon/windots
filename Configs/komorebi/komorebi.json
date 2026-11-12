@@ -3,6 +3,14 @@
   "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
   "toggle_float_placement": "Center",
   "float_override_placement": "Center",
+  "animation": {
+    "enabled": true,
+    "duration": 300,
+    "style": "EaseOutQuint",
+    "fps": 60
+  },
+  "transparency": true,
+  "transparency_alpha": 245,
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
   "default_workspace_padding": 2,
