@@ -1,14 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/master/schema.asc.json",
-  "omapass": {
-    "ignore": [
-      {
-        "kind": "Exe",
-        "id": "omapass.exe",
-        "matching_strategy": "Equals"
-      }
-    ]
-  },
   "Ableton Live": {
     "ignore": [
       {
