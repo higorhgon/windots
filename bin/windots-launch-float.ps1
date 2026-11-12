@@ -29,9 +29,16 @@ function Get-FloatingWindows {
     [pscustomobject]@{ Override = [bool]$state.float_override; Hwnds = @($hwnds) }
 }
 
+# komorebi only has a *toggle* for float override, so two launches at once could flip
+# it twice and leave it on (every new window floating). One floating launch at a time,
+# and every flip is checked against the current state.
+$mutex = New-Object Threading.Mutex($false, 'Local\windots-launch-float')
+try { [void]$mutex.WaitOne(15000) } catch [Threading.AbandonedMutexException] { }
+
 $before = Get-FloatingWindows
 $new = $null
-if (-not $before.Override) { komorebic toggle-float-override }
+$weTurnedItOn = $false
+if (-not $before.Override) { komorebic toggle-float-override; $weTurnedItOn = $true }
 try {
     # A windots script (e.g. windots-launch-tui) runs in-process; anything else is started.
     $cmd = Get-Command $exe -ErrorAction SilentlyContinue
@@ -43,7 +50,9 @@ try {
         $new = (Get-FloatingWindows).Hwnds | Where-Object { $_ -notin $before.Hwnds } | Select-Object -First 1
     }
 } finally {
-    if (-not $before.Override) { komorebic toggle-float-override }
+    # Only turn it off if we turned it on and it is still on.
+    if ($weTurnedItOn -and (Get-FloatingWindows).Override) { komorebic toggle-float-override }
+    $mutex.ReleaseMutex(); $mutex.Dispose()
 }
 if (-not $new) { return }
 
