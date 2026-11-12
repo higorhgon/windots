@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/master/schema.asc.json",
-  "1Password": {
+  "omapass": {
     "ignore": [
       {
         "kind": "Exe",
-        "id": "1Password.exe",
+        "id": "omapass.exe",
         "matching_strategy": "Equals"
       }
     ]
