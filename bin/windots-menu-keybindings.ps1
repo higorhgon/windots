@@ -51,6 +51,23 @@ foreach ($line in Get-Content $whkdrc) {
     }
 }
 
+# Flow Launcher: its main hotkey and the custom query hotkeys (shown, not run)
+$flowSettings = Join-Path $env:APPDATA 'FlowLauncher\Settings\Settings.json'
+if (Test-Path $flowSettings) {
+    $flow = Get-Content -Raw $flowSettings | ConvertFrom-Json
+    $flowDesc = @{
+        'sys' = 'Menu do sistema (desligar, reiniciar, bloquear...)'; 'app' = 'Aplicativos'
+        '?' = 'Menu de plugins do Flow'; 's som' = 'Configurações de som'; 's bluetooth' = 'Configurações de bluetooth'
+        's rede' = 'Configurações de rede'; 's energia' = 'Configurações de energia'
+    }
+    if ($flow.Hotkey) { $rows.Add([pscustomobject]@{ Keys = $flow.Hotkey; Section = 'Flow Launcher'; Desc = 'Buscar apps, arquivos e contas'; Run = '' }) }
+    foreach ($h in $flow.CustomPluginHotkeys) {
+        $q = ([string]$h.ActionKeyword).Trim()
+        $desc = if ($flowDesc.ContainsKey($q)) { $flowDesc[$q] } else { "Flow: $q" }
+        $rows.Add([pscustomobject]@{ Keys = $h.Hotkey; Section = 'Flow Launcher'; Desc = $desc; Run = '' })
+    }
+}
+
 # AutoHotkey: "; --- Section ---" headers, "mods+key::" hotkeys (shown, not run)
 $ahkMods = @{ '!' = 'Alt'; '+' = 'Shift'; '^' = 'Ctrl'; '#' = 'Win' }
 $ahkKeys = @{ 'LButton' = 'Left drag'; 'RButton' = 'Right drag'; 'LWin' = 'Win'; 'RWin' = 'Win'; 'vkC1' = '/ (ABNT2)' }
