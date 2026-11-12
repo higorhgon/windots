@@ -8,7 +8,7 @@
 #   --float  launch through windots-launch-float (floating, centered, shared size).
 #
 #   windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"
-#   windots-launch-or-focus --float '^(btop)$' wt -w new --title btop --suppressApplicationTitle btop
+#   windots-launch-or-focus-tui --float btop   (TUIs: see windots-launch-or-focus-tui)
 
 # Plain $args (no param block): flags like -w must reach the command, not this script.
 $rest = [Collections.Generic.List[object]]@($args)
@@ -63,6 +63,8 @@ if ($proc) { Set-Foreground $proc.MainWindowHandle; return }
 
 # 3. Not running: launch it.
 $exe, $cmdArgs = $command
+$cmd = Get-Command $exe -ErrorAction SilentlyContinue
 if ($float) { & (Join-Path $PSScriptRoot 'windots-launch-float.ps1') @command }
+elseif ($cmd.CommandType -eq 'ExternalScript') { & $cmd.Source @cmdArgs }   # e.g. windots-launch-tui
 elseif ($cmdArgs) { Start-Process -FilePath $exe -ArgumentList $cmdArgs }
 else { Start-Process -FilePath $exe }

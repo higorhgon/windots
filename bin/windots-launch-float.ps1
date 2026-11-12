@@ -33,7 +33,10 @@ $before = Get-FloatingWindows
 $new = $null
 if (-not $before.Override) { komorebic toggle-float-override }
 try {
-    if ($rest) { Start-Process -FilePath $exe -ArgumentList $rest } else { Start-Process -FilePath $exe }
+    # A windots script (e.g. windots-launch-tui) runs in-process; anything else is started.
+    $cmd = Get-Command $exe -ErrorAction SilentlyContinue
+    if ($cmd.CommandType -eq 'ExternalScript') { & $cmd.Source @rest }
+    elseif ($rest) { Start-Process -FilePath $exe -ArgumentList $rest } else { Start-Process -FilePath $exe }
     $deadline = (Get-Date).AddSeconds(5)
     while (-not $new -and (Get-Date) -lt $deadline) {
         Start-Sleep -Milliseconds 100
