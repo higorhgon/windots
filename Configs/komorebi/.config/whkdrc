@@ -10,12 +10,20 @@ alt + shift + b      : start msedge  # Navegador
 alt + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
 alt + shift + f      : start explorer  # Gerenciador de arquivos
 alt + shift + n      : start wt nvim  # Editor (nvim)
+alt + ctrl + q       : start calc  # Calculadora
 alt + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
 alt + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk
 
 # --- Tema, fontes e menus (omarchy: Super+Ctrl+T, Super+Ctrl+W, Super+K) ---
 alt + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
 alt + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
+alt + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
+
+# --- Configurações (omarchy: Super+Ctrl+A/B/N/P) ---
+alt + ctrl + a       : start ms-settings:sound  # Configurações de som
+alt + ctrl + b       : start ms-settings:bluetooth  # Configurações de bluetooth
+alt + ctrl + n       : start ms-settings:network  # Configurações de rede
+alt + ctrl + p       : start ms-settings:powersleep  # Configurações de energia
 alt + ctrl + shift + f : windots-install-font  # Instalar fonte (Nerd Fonts)
 alt + k              : windots-menu-keybindings  # Atalhos de teclado (este menu)
 
