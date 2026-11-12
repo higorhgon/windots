@@ -12,11 +12,11 @@ $entries = @(
     @{ Name = 'Flow Launcher';     Target = "$env:LOCALAPPDATA\FlowLauncher\Flow.Launcher.exe" }
     @{ Name = 'windots-float-ontop'; Target = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
        Args = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-float-ontop.ps1`"" }
-    @{ Name = 'windots-block-start-menu'; Target = "$PSScriptRoot\windots-block-start-menu.ahk" }  # opened by AutoHotkey v2
+    @{ Name = 'windots-hotkeys'; Target = "$PSScriptRoot\windots-hotkeys.ahk" }  # opened by AutoHotkey v2
 )
 
 # Shortcuts from older windots versions.
-$retired = 'sem-menu-iniciar.ahk', 'komorebi-float-ontop', 'workspaces'
+$retired = 'sem-menu-iniciar.ahk', 'komorebi-float-ontop', 'workspaces', 'windots-block-start-menu'
 foreach ($name in $retired) {
     $old = Join-Path $startup "$name.lnk"
     if (Test-Path $old) { Remove-Item $old; Write-Host "  - removed $name" }
