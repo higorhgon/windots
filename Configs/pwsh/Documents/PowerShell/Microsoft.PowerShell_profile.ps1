@@ -47,6 +47,9 @@ atuin init powershell --disable-up-arrow | Out-String | Invoke-Expression
 
 Set-PSReadlineKeyHandler -Key ctrl+d -Function DeleteCharOrExit
 
+# Tab like bash: completes the common part, a second Tab lists every option
+Set-PSReadLineKeyHandler -Key Tab -Function Complete
+
 Set-PSReadLineKeyHandler -Key Ctrl+c -Function CancelLine
 Set-PSReadLineKeyHandler -Key Ctrl+LeftArrow -Function BackwardWord
 Set-PSReadLineKeyHandler -Key Ctrl+RightArrow -Function ForwardWord
