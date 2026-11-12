@@ -1,4 +1,4 @@
-# windots-update [-y]
+# windots-update [-y] [--prune]
 #
 # Like omarchy-update: updates windots and everything it installed, in this order:
 #   1. the windots repo (git pull --ff-only)                like omarchy-update-dev
@@ -6,11 +6,12 @@
 #   3. re-applies windots (windots-install -SkipPackages -SkipSystem):
 #      links new dotfiles, merges Windows Terminal / Flow settings, autostart
 #                                                           like omarchy-migrate
-#   4. mise tools (mise up)                                 like omarchy-update-mise
+#   4. mise tools (mise up; with --prune also mise prune)   like omarchy-update-mise
 #   5. offers a reboot when Windows needs one               like omarchy-update-restart
 #
 #   windots-update       asks before starting and before rebooting
 #   windots-update -y    no questions (the UAC prompt for winget still shows)
+#   --prune              also remove mise tool versions no config uses (mise prune), freeing disk
 #
 # The output is logged to %TEMP%\windots-update.log.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
@@ -18,6 +19,7 @@
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot
 $yes = $args -contains '-y'
+$prune = $args -contains '--prune'
 
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Green }
 function Confirm-Yes($question) {
@@ -51,6 +53,10 @@ try {
         $env:MISE_MINIMUM_RELEASE_AGE = '0'
         mise up
         $miseOk = $LASTEXITCODE -eq 0
+        if ($prune) {
+            Step 'Remove unused mise versions'
+            mise prune --yes
+        }
     } else { Write-Warning 'mise not found on PATH'; $miseOk = $false }
 } catch {
     Write-Host "`nSomething went wrong during the update: $($_.Exception.Message)" -ForegroundColor Red
