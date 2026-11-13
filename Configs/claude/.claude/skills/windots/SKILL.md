@@ -80,8 +80,9 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
   ```powershell
   if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
   ```
-  (with a `param()` block, see `windots-install`: `[Alias('h')][switch]$Help`
-  plus a `ValueFromRemainingArguments` parameter to catch `--help`).
+- Flags are Linux style, read from `$args` (no `param()` block): `--skip-packages`,
+  `--prune`, short `-y` / `-h`; never PowerShell's `-SkipPackages`. Reject unknown
+  flags when a typo would do something big (see `windots-install`).
 - Check it shows up: `windots commands`, `windots <group> --help`.
 - Syntax-check in both shells; run it for real; document it in the README.
 

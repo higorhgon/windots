@@ -16,7 +16,7 @@ function Assert-CanLink {
         ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not ($devMode -or $isAdmin)) {
         throw ('Developer Mode is off, so symlinks cannot be created. Enable it in Settings > ' +
-            'System > Advanced > Developer Mode and run: windots install -SkipPackages')
+            'System > Advanced > Developer Mode and run: windots install --skip-packages')
     }
     # -CommandType Application: the profile's `tuckr` alias has no path (.Source is empty).
     $tuckr = (Get-Command tuckr-x86_64-windows, tuckr -CommandType Application -ErrorAction SilentlyContinue |

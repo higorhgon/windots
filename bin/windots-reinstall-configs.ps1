@@ -14,7 +14,7 @@
 #      omarchy-refresh-config) and its diff is shown;
 #   2. links in those folders that point into the repo at files that no longer
 #      exist (renamed or removed from Configs) are removed;
-#   3. windots-install -SkipPackages -SkipSystem links everything again and
+#   3. windots-install --skip-packages --skip-system links everything again and
 #      re-applies the merged settings (Windows Terminal, Flow Launcher, autostart).
 #
 #   windots-reinstall-configs       asks before starting
@@ -91,4 +91,4 @@ foreach ($d in $dirs.Keys) {
 }
 if (-not $orphans) { Write-Host '  - none' }
 
-& (Join-Path $PSScriptRoot 'windots-install.ps1') -SkipPackages -SkipSystem
+& (Join-Path $PSScriptRoot 'windots-install.ps1') --skip-packages --skip-system

@@ -7,7 +7,7 @@
 #   1. the windots repo (git pull --ff-only)                like omarchy-update-dev
 #   2. winget packages (windots-update-winget, one UAC)     like omarchy-update-system-pkgs
 #   3. herdr-app (windots-update-herdr-app --app; retropet only moves with --retropet)
-#   4. re-applies windots (windots-install -SkipPackages -SkipSystem):
+#   4. re-applies windots (windots-install --skip-packages --skip-system):
 #      links new dotfiles, merges Windows Terminal / Flow settings, autostart
 #                                                           like omarchy-migrate
 #   5. mise tools (mise up; with --prune also mise prune)   like omarchy-update-mise
@@ -55,7 +55,7 @@ try {
     catch { Write-Warning "herdr-app was not updated: $($_.Exception.Message)" }
 
     Step 'Re-apply windots'
-    & (Join-Path $PSScriptRoot 'windots-install.ps1') -SkipPackages -SkipSystem
+    & (Join-Path $PSScriptRoot 'windots-install.ps1') --skip-packages --skip-system
 
     Step 'Update mise tools'
     if (Get-Command mise -ErrorAction SilentlyContinue) {

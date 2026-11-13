@@ -84,6 +84,8 @@ in the `windots` skill). A new script without them is missing from the help.
   `[System.Management.Automation.Language.Parser]::ParseFile(...)` in `pwsh` and `powershell.exe`.
 - Scripts that pass flags through to another program (`wt -w new ...`) use plain
   `$args`, **no `param()` block**: with one, PowerShell binds `-w` as `-WarningAction`.
+- Flags are Linux style (`--skip-packages`, `--prune`, short `-y` / `-h`), read from
+  `$args`; never PowerShell-style `-SkipPackages` switches.
 - Keep one-item results arrays: `$x = @(if (...) { ... })`, or `@x` splats the
   characters of a single string.
 - Never name a helper `Where` (alias of `Where-Object`).

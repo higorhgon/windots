@@ -1,28 +1,30 @@
 # windots-install
 # windots:summary=Install windots on this machine: packages, links and settings
-# windots:args=[-SkipPackages] [-SkipSystem]
-# windots:examples=windots install | windots install -SkipPackages
+# windots:args=[--skip-packages] [--skip-system]
+# windots:examples=windots install | windots install --skip-packages
 #
 # Works on Windows PowerShell 5.1 (fresh machine) and PowerShell 7.
 #
 #   .\bin\windots-install.ps1                 # everything (first run, from the repo root)
-#   windots-install -SkipPackages             # skip winget/herdr/komorebi-switcher installs
-#   windots-install -SkipSystem               # skip Windows settings (sudo, Developer Mode, taskbar)
+#   windots-install --skip-packages           # skip winget/herdr/komorebi-switcher installs
+#   windots-install --skip-system             # skip Windows settings (sudo, Developer Mode, taskbar)
 #
 # Developer Mode and sudo are machine-wide: each asks for elevation (a UAC prompt) when it has
 # something to change; sudo is windots-setup-security-sudo.
+# Flags are Linux style (--skip-packages), read from $args: no param() block.
 
-[CmdletBinding()]
-param(
-    [switch]$SkipPackages,
-    [switch]$SkipSystem,
-    [Alias('h')][switch]$Help,
-    [Parameter(ValueFromRemainingArguments)]$Rest   # catches --help (a param block can't name it)
-)
+if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 
-if ($Help -or $Rest -contains '--help') {
-    & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return
+# -SkipPackages / -SkipSystem: the old names, still sent by a windots-update that ran
+# git pull before this change (it calls the new windots-install). Not documented.
+$known = '--skip-packages', '--skip-system', '-SkipPackages', '-SkipSystem'
+$unknown = @($args | Where-Object { $known -notcontains $_ })
+if ($unknown) {   # a typo must not turn into a full install
+    Write-Host "windots-install: unknown option $($unknown -join ' ') (see: windots install --help)" -ForegroundColor Red
+    exit 1
 }
+$SkipPackages = ($args -contains '--skip-packages') -or ($args -contains '-SkipPackages')
+$SkipSystem = ($args -contains '--skip-system') -or ($args -contains '-SkipSystem')
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot   # this script lives in <repo>\bin
