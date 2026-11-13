@@ -8,3 +8,11 @@ x           = 792
 y           = -6
 width       = 335
 height      = 44
+
+[monitors."0"]
+auto_width  = true
+auto_height = false
+x           = 516
+y           = -6
+width       = 335
+height      = 44

@@ -22,6 +22,10 @@ $entries = @(
     @{ Name = 'windots-float-ontop'; Target = "$env:SystemRoot\System32\conhost.exe"
        Requires = $pwsh
        Args = "--headless `"$pwsh`" -NoProfile -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-float-ontop.ps1`"" }
+    # Measures this machine's taskbar and centers the switcher (a no-op once it is right), so a
+    # new machine or monitor is fixed at the first login. Windows PowerShell: always present.
+    @{ Name = 'windots-center-switcher'; Target = "$env:SystemRoot\System32\conhost.exe"
+       Args = "--headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-center-switcher.ps1`" --wait" }
     @{ Name = 'windots-hotkeys'; Target = "$PSScriptRoot\windots-hotkeys.ahk" }  # opened by AutoHotkey v2
 )
 

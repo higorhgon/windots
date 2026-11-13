@@ -43,7 +43,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-toggle-dark-mode [light\|dark]` | alterna o Windows entre modo escuro e claro (ou define um); mexe direto no registro, então funciona com o Windows não ativado |
 | `windots-menu-keybindings [--list]` | como o Super+K do omarchy (aqui Alt+K): lista com busca de todos os atalhos (whkd + AutoHotkey) no fzf, num terminal flutuante; Enter executa o atalho escolhido |
 | `windots-center-switcher` | centraliza o komorebi-switcher na barra de tarefas de cada monitor desta máquina; o `komorebi-switcher.toml` guarda uma seção por monitor, então o mesmo arquivo serve para o PC e o notebook |
-| `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, hotkeys) |
+| `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, center-switcher, hotkeys) |
 | `windots-update [-y] [--prune]` | como o `omarchy-update`: atualiza o repositório (`git pull`), os pacotes do winget, reaplica o windots (`windots-install -SkipPackages -SkipSystem`), atualiza as ferramentas do mise (com `--prune`, também apaga as versões antigas delas com `mise prune`, liberando espaço) e oferece reiniciar se o Windows pedir; `-y` não pergunta nada; log em `%TEMP%\windots-update.log` |
 | `windots-reinstall-pkgs` | como o `omarchy-reinstall-pkgs`: instala o que faltar dos apps padrão (winget de `default/packages.txt` com um único UAC, komorebi-switcher, herdr-app, módulo Catppuccin do PowerShell, ferramentas do mise) sem mexer em configurações; o que já está instalado fica como está |
 | `windots-reinstall-configs [-y]` | como o `omarchy-reinstall-configs`: apaga o que estiver em `~` no lugar de cada dotfile (cópias, links antigos, links para arquivos que saíram do repositório), guarda backup (`.bak.<tempo>`) do que for diferente do repositório e linka tudo de novo com o `windots-install -SkipPackages -SkipSystem`; use quando algo ficou em conflito |
@@ -85,7 +85,7 @@ Tudo no **Windows PowerShell** que vem com o Windows (o PowerShell 7 é instalad
 
 5. **Ajustes depois do primeiro login:**
    - Se a instalação avisou *settings.json not found*, o Windows Terminal e/ou o Flow Launcher ainda não tinham sido abertos: abra cada um uma vez e rode `windots-install-windows-terminal` e `windots-install-flow-launcher`.
-   - **Centralize o komorebi-switcher** neste monitor: `windots-center-switcher`. Ele mede a barra de tarefas e o switcher (já considerando a escala da tela), grava a posição no `komorebi-switcher.toml` mantendo a seção de outras máquinas, e reinicia o switcher.
+   - **Centralize o komorebi-switcher** neste monitor: `windots-center-switcher`. Ele mede a barra de tarefas e o switcher (já considerando a escala da tela), grava a posição no `komorebi-switcher.toml` mantendo a seção de outras máquinas, e reinicia o switcher. Isso já acontece sozinho: o `windots-install` roda o script e um atalho de inicialização (`windots-center-switcher --wait`) roda no login, esperando o komorebi subir; numa máquina nova o switcher fica centralizado após a primeira reinicialização, e depois nada muda (sem reiniciar o switcher à toa).
 
 Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o que faltou: `windots-install -SkipPackages` (sem downloads) ou `windots-install -SkipSystem` (sem UAC nem barra de tarefas).
 

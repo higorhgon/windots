@@ -191,4 +191,10 @@ else { Write-Warning 'mise not found on PATH; open a new terminal and run: mise 
 Step 'Creating autostart shortcuts'
 & (Join-Path $Repo 'bin\windots-refresh-autostart.ps1')
 
+# Only works when komorebi and the switcher are already running (a re-run); on a new machine
+# the login shortcut above does it after the first restart.
+Step 'Centering komorebi-switcher on this machine''s monitors'
+try { & (Join-Path $Repo 'bin\windots-center-switcher.ps1') 3>$null }
+catch { Write-Host "  - skipped ($($_.Exception.Message)); it runs at login" }
+
 Write-Host "`nDone. Open a new PowerShell 7 terminal to load the profile." -ForegroundColor Green
