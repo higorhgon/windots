@@ -9,16 +9,17 @@
 #   3. herdr-app (windots-update-herdr-app --app; retropet only moves with --retropet)
 #   4. re-applies windots (windots-install --skip-packages --skip-system):
 #      links new dotfiles, merges Windows Terminal / Flow settings, autostart
-#   5. mise tools (mise up; with --prune also mise prune)   like omarchy-update-mise
-#   6. offers a reboot when Windows needs one               like omarchy-update-restart
+#   5. migrations this machine has not run yet (windots-migrate)   like omarchy-migrate
+#   6. mise tools (mise up; with --prune also mise prune)   like omarchy-update-mise
+#   7. offers a reboot when Windows needs one               like omarchy-update-restart
 #
 #   windots-update       asks before starting and before rebooting
 #   windots-update -y    no questions (the UAC prompt for winget still shows)
 #   --prune              also remove mise tool versions no config uses (mise prune), freeing disk
 #   --skip-winget        skip step 2: no winget upgrade (the slow one, with the UAC prompt)
 #   --skip-herdr-app     skip step 3: no herdr-app update
-#   --skip-mise          skip step 5: no mise up (and no --prune)
-#   --skip-packages      all three at once: update only windots itself (steps 1, 4 and 6). Same
+#   --skip-mise          skip step 6: no mise up (and no --prune)
+#   --skip-packages      all three at once: update only windots itself (steps 1, 4, 5 and 7). Same
 #                        meaning as in windots-install: "packages" is every app and tool windots
 #                        installs, mise tools included.
 #
@@ -87,6 +88,10 @@ try {
 
     Step 'Re-apply windots'
     & (Join-Path $PSScriptRoot 'windots-install.ps1') --skip-packages --skip-system
+
+    Step 'Run migrations'
+    & (Join-Path $PSScriptRoot 'windots-migrate.ps1')
+    if ($LASTEXITCODE -ne 0) { throw 'a migration failed (above); fix it and run windots-update again.' }
 
     if ($skipMise) {
         Write-Host '  - mise tools skipped'
