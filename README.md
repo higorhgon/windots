@@ -99,7 +99,7 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 2. `windots-reinstall-pkgs`: instala os apps do winget listados em `default/packages.txt`, o komorebi-switcher (release do GitHub) e o herdr-app (instalador oficial, que também instala o herdr-core) (`-SkipPackages` pula).
 3. Põe `~\windots\bin` no PATH.
 4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
-5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos.
+5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos. Depois aponta cada link direto para o arquivo do repo, sem passar pela junction: sessões SSH não atravessam links nem junctions criados por usuário comum (erro "untrusted mount point").
 6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal`, `windots-install-herdr-app` (keys/settings mesclados e retropet copiado) e `windots-install-flow-launcher`.
 7. `mise install` e `windots-refresh-autostart`.
 

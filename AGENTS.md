@@ -107,6 +107,14 @@ in the `windots` skill). A new script without them is missing from the help.
 - Anything a script removes from `~` goes through `Remove-Dotfile`: files only,
   never folders, never through a link, real files to the Recycle Bin. A bad run
   once deleted the person's `~\Pictures` (folded into the repo); never again.
+- ssh sessions run under sshd's RedirectionGuard: a process there cannot follow a link or
+  junction made by a normal user (error 448, "untrusted mount point"; Claude Code's own
+  shell is not affected, so test with a real ssh login). So `~` links point straight at the
+  repo files, not through the `%APPDATA%\dotfiles` junction (`Repoint-DotfileLinks`, run by
+  `windots-install`), and the PowerShell profile loader falls back to the repo path. Tools
+  installed through links (winget's `mise.exe`, mise's `latest` junctions) still fail there
+  unless `windots setup security ssh --allow-user-links` was run: a deliberate security
+  trade-off, never done by default (`--block-user-links` undoes it).
 
 **whkd** (`Configs/komorebi/.config/whkdrc`)
 - `.shell pwsh`; the trailing `# ...` on a line is its description in the

@@ -156,3 +156,25 @@ function Repair-FoldedLinks($Repo, $Targets, $AlsoCheck = @()) {
         if ($failed) { Write-Warning "$failed files are still in $repoDir (in use?); close the app and run again." }
     }
 }
+
+# tuckr links every file through %APPDATA%\dotfiles, a junction to the repo. A junction made by a
+# normal user is "untrusted" for some processes (an ssh session fails with "contains an untrusted
+# mount point"), so each link is pointed straight at the repo file instead. Returns how many.
+function Repoint-DotfileLinks($Repo, $Targets) {
+    $junction = Join-Path $env:APPDATA 'dotfiles'
+    $count = 0
+    foreach ($t in $Targets) {
+        $i = Get-Item -LiteralPath $t.Target -Force -ErrorAction SilentlyContinue
+        if (-not $i -or -not $i.LinkType) { continue }
+        $cur = @($i.Target)[0]
+        if (-not $cur -or -not $cur.StartsWith("$junction\", 'OrdinalIgnoreCase')) { continue }
+        Remove-Dotfile $t.Target   # a link: removed, never the repo file
+        cmd.exe /c mklink "`"$($t.Target)`"" "`"$($t.Source)`"" | Out-Null
+        if ($LASTEXITCODE -eq 0) { $count++ }
+        else {
+            cmd.exe /c mklink "`"$($t.Target)`"" "`"$cur`"" | Out-Null   # put the old link back
+            Write-Warning "could not relink $($t.Target)"
+        }
+    }
+    $count
+}

@@ -145,11 +145,15 @@ if ($notLinked) {
     $notLinked | ForEach-Object { Write-Host "    $($_.Target)" -ForegroundColor Yellow }
 } else { Write-Host "  - all $($targets.Count) files linked" }
 
+Step 'Pointing the links straight at the repo (no junction in the way)'
+$repointed = Repoint-DotfileLinks $Repo $targets
+Write-Host "  - $repointed links repointed"
+
 Step 'Pointing the PowerShell profile at ~\.config\powershell'
 # PowerShell only reads $PROFILE from Documents, which OneDrive backs up (and may redirect).
 # windots keeps nothing there but this one-line loader: a plain file, not a link.
 $profilePath = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Microsoft.PowerShell_profile.ps1'
-$loader = ". (Join-Path `$HOME '.config\powershell\profile.ps1')   # windots: the profile lives in ~\.config\powershell"
+$loader = "try { . (Join-Path `$HOME '.config\powershell\profile.ps1') } catch { . '$(Join-Path $Repo 'Configs\pwsh\.config\powershell\profile.ps1')' }   # windots: the profile lives in ~\.config\powershell"
 $current = Get-Item $profilePath -Force -ErrorAction SilentlyContinue
 if ($current -and $current.LinkType) { Remove-Dotfile $profilePath; $current = $null }   # an old windots link
 if ($current -and (Get-Content $profilePath -Raw).Trim() -eq $loader) {
