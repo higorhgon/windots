@@ -9,7 +9,8 @@
 #   windots-install -SkipPackages             # skip winget/herdr/komorebi-switcher installs
 #   windots-install -SkipSystem               # skip Windows settings (sudo, Developer Mode, taskbar)
 #
-# Developer Mode and sudo are machine-wide: the script asks for elevation (UAC) once.
+# Developer Mode and sudo are machine-wide: each asks for elevation (a UAC prompt) when it has
+# something to change; sudo is windots-setup-security-sudo.
 
 [CmdletBinding()]
 param(
@@ -39,16 +40,13 @@ function Set-Reg($path, $name, $value) {
 
 # ---------------------------------------------------------------- windows settings
 if (-not $SkipSystem) {
-    Step 'Enabling Developer Mode and sudo (inline mode) - needs admin'
+    Step 'Enabling Developer Mode and the Widgets policy - needs admin'
     $elevated = @'
 $ErrorActionPreference = 'Continue'
 # Developer Mode (lets tuckr create symlinks without admin)
 $k = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
 if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null }
 Set-ItemProperty -Path $k -Name AllowDevelopmentWithoutDevLicense -Value 1 -Type DWord
-# sudo for Windows, inline mode (same as Settings > System > Advanced > Enable sudo > Inline)
-if (Get-Command sudo.exe -ErrorAction SilentlyContinue) { sudo.exe config --enable normal }
-else { Write-Warning 'sudo.exe not found (needs Windows 11 24H2 or newer)' }
 # Widgets off by policy: HKCU TaskbarDa is protected on recent Windows 11 and can't be set
 $k = 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh'
 if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null }
@@ -63,8 +61,11 @@ Set-ItemProperty -Path $k -Name AllowNewsAndInterests -Value 0 -Type DWord
         try {
             Start-Process powershell.exe -Verb RunAs -Wait -WindowStyle Hidden `
                 -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', $encoded
-        } catch { Write-Warning 'Elevation was declined; Developer Mode and sudo were not changed.' }
+        } catch { Write-Warning 'Elevation was declined; Developer Mode was not changed.' }
     }
+
+    Step 'Turning on sudo (inline mode)'
+    & (Join-Path $PSScriptRoot 'windots-setup-security-sudo.ps1')
 
     Step 'Taskbar: top, small, icons left, no Task View / Widgets / Chat / Copilot / search'
     $adv = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'

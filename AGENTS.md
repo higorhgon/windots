@@ -54,7 +54,9 @@ instead; edit the `default/` data and the script, then run it:
 ## Commands (`bin/`)
 
 Naming follows omarchy: `windots-install-*` (install/apply, idempotent),
-`windots-launch-*`, `windots-menu-*` (fzf menus), `windots-toggle-*`,
+`windots-launch-*`, `windots-menu-*` (fzf menus), `windots-setup-*` (machine
+setup that needs admin: sudo, ssh; they re-run themselves through sudo, helpers in
+`bin/lib/elevation.ps1`), `windots-toggle-*`,
 `windots-refresh-*`, `windots-update-*` (steps of `windots-update`, like
 `omarchy-update`: git pull, winget, re-apply via `windots-install`, mise). Every script starts with a usage comment block.
 
