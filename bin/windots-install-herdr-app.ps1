@@ -35,7 +35,8 @@ function Merge-Json($base, $over) {
     foreach ($p in $over.PSObject.Properties) {
         $cur = $base.PSObject.Properties[$p.Name]
         if ($cur -and $cur.Value -is [pscustomobject] -and $p.Value -is [pscustomobject]) { Merge-Json $cur.Value $p.Value }
-        else { $base | Add-Member -NotePropertyName $p.Name -NotePropertyValue $p.Value -Force }
+        elseif ($cur) { $cur.Value = $p.Value }   # in place: Add-Member -Force would move it to the end and change the file for nothing
+        else { $base | Add-Member -NotePropertyName $p.Name -NotePropertyValue $p.Value }
     }
 }
 # Writes $obj to $path when it differs from what is there (the old file is kept as .bak.<time>).
