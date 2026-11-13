@@ -18,7 +18,6 @@ if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1
 
 $ErrorActionPreference = 'Stop'
 $tomlPath = Join-Path $HOME '.config\komorebi-switcher.toml'
-$exe = Join-Path $env:LOCALAPPDATA 'Programs\komorebi-switcher\komorebi-switcher.exe'
 
 Add-Type -Namespace Windots -Name Switcher -MemberDefinition @'
 [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
@@ -108,7 +107,5 @@ $oldText = if (Test-Path $tomlPath) { [IO.File]::ReadAllText($tomlPath) -replace
 if ($oldText -eq $newText) { Write-Host '  already centered'; return }
 [IO.File]::WriteAllText($tomlPath, $newText, (New-Object Text.UTF8Encoding $false))
 
-if (Test-Path $exe) {
-    Get-Process komorebi-switcher -ErrorAction SilentlyContinue | Stop-Process -Force
-    Start-Process $exe
-}
+# It reads its toml only when it starts.
+& (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1')

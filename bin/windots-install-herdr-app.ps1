@@ -16,7 +16,7 @@
 # the copies are overwritten on the next run (a changed one is kept as <file>.bak.<time>).
 # Old links into windots (what this script and tuckr used to make) are replaced.
 #
-# herdr-app reads all of this at start: restart it to see the change.
+# herdr-app reads all of this at start: restart it to see the change (windots restart herdr app).
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
@@ -120,5 +120,5 @@ if ($haveRetropet) {
 }
 
 if (Get-Process herdr-app -ErrorAction SilentlyContinue) {
-    Write-Host '  - herdr-app is open: restart it to load the changes.' -ForegroundColor Yellow
+    Write-Host '  - herdr-app is open: restart it to load the changes: windots restart herdr app' -ForegroundColor Yellow
 }

@@ -58,7 +58,7 @@ if ($doApp) {
     $after = Get-AppVersion
     if ($before -eq $after) { Write-Host "  - already up to date ($after)" } else { Write-Host "  - $before -> $after" }
     if (Get-Process herdr-app -ErrorAction SilentlyContinue) {
-        Write-Host '  - herdr-app is open: it keeps the old version until you restart it.' -ForegroundColor Yellow
+        Write-Host '  - herdr-app is open: it keeps the old version until you restart it: windots restart herdr app' -ForegroundColor Yellow
     }
 }
 
