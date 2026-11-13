@@ -58,6 +58,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-setup-git [--name=<nome>] [--email=<email>] [--force]` | pergunta o nome e o e-mail que o git põe nos commits (como o instalador antigo do omarchy) e grava em `user.name` e `user.email`; se os dois já estão configurados, só avisa e para. `--name` e `--email` dão os valores sem perguntar; `--force` pergunta de novo (Enter mantém o atual) |
 | `windots-migrate [--pending \| --mark-all]` | como o `omarchy-migrate`: roda as migrations da pasta `migrations/` que esta máquina ainda não rodou, em ordem, uma vez cada (`migrations/<unix time>.ps1`, marcador em `~\.local\state\windots\migrations\`). Uma que falha para tudo e roda de novo na próxima vez, então elas devem poder ser repetidas. `--pending` lista as pendentes (sai com 1 se não há); `--mark-all` marca todas como feitas sem rodar (máquina recém-instalada). O `windots-update` roda depois de reaplicar |
 | `windots-dev-add-migration [--no-edit]` | como o `omarchy-dev-add-migration`: cria `migrations/<unix time>.ps1` a partir de um modelo e abre no `$env:EDITOR` (nvim, senão notepad) |
+| `windots-launch-workspaces [--config <arquivo>] [--dry-run] [--wait]` | abre os apps de `~\.config\windots\workspaces.json`, cada um no seu workspace do komorebi, com opções de abrir em silêncio, flutuante, com tamanho e posição (veja "Apps nos workspaces"). Um app já aberto é deixado em paz. `--dry-run` mostra o que faria; `--wait` espera o komorebi subir (o atalho de inicialização usa) |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, center-switcher, hotkeys) |
 | `windots-update [-y] [--prune] [--skip-packages] [--skip-winget] [--skip-herdr-app] [--skip-mise]` | como o `omarchy-update`: atualiza o repositório (`git pull`), os pacotes do winget, reaplica o windots (`windots-install --skip-packages --skip-system`), atualiza as ferramentas do mise (com `--prune`, também apaga as versões antigas delas com `mise prune`, liberando espaço) e oferece reiniciar se o Windows pedir; `-y` não pergunta nada; `--skip-winget`, `--skip-herdr-app` e `--skip-mise` pulam cada parte (o winget é o passo lento, com UAC; `--prune` não faz nada sem o mise); `--skip-packages` pula as três de uma vez e atualiza só o próprio windots (repositório e reaplicar dotfiles e configurações), com o mesmo sentido do `windots-install --skip-packages`; uma flag desconhecida para o comando em vez de virar um update completo; log em `%TEMP%\windots-update.log` |
 | `windots-reinstall-pkgs` | como o `omarchy-reinstall-pkgs`: instala o que faltar dos apps padrão (winget de `default/packages.txt` com um único UAC, komorebi-switcher, herdr-app, módulo Catppuccin do PowerShell, ferramentas do mise) sem mexer em configurações; o que já está instalado fica como está |
@@ -139,6 +140,46 @@ tuckr add <grupo>         # linka um grupo
 tuckr rm <grupo>          # remove os links de um grupo
 tuckr push <grupo> <arq>  # adiciona um arquivo novo a um grupo
 ```
+
+## Apps nos workspaces
+
+O komorebi decide em que workspace uma janela fica, mas não abre aplicativos. O `windots-launch-workspaces` abre os apps listados em `~\.config\windots\workspaces.json` (só nesta máquina e **fora do repositório**: os apps de uma máquina não devem abrir em outra; sem o arquivo, nada abre) e põe cada janela no seu workspace, como o `exec-once = [workspace 2 silent; float; size 900 600; move 100 100] app` do Hyprland. O repositório só traz um exemplo, em `default/komorebi/workspaces.example.json`. Para começar: `Copy-Item ~\windots\default\komorebi\workspaces.example.json ~\.config\windots\workspaces.json` e edite. O arquivo é uma lista direta, sem chave por fora:
+
+```json
+[
+  { "workspace": 1, "command": "wt", "match": { "exe": "WindowsTerminal.exe" } },
+  { "workspace": 2, "command": "msedge", "match": { "exe": "msedge.exe" } },
+  {
+    "workspace": 3,
+    "command": "%LOCALAPPDATA%\\Programs\\herdr-app\\herdr-app.exe",
+    "match": { "exe": "herdr-app.exe" },
+    "delay": 2
+  },
+  {
+    "workspace": 5,
+    "command": "notepad",
+    "match": { "exe": "Notepad.exe" },
+    "float": true,
+    "size": ["60%", "70%"],
+    "position": "center",
+    "silent": false
+  }
+]
+```
+
+| Campo | O que faz |
+|---|---|
+| `workspace` | 1 a 10, o número do Alt+número (obrigatório) |
+| `monitor` | 1 = o primeiro (padrão) |
+| `command`, `args` | o que abrir: um programa no PATH ou um caminho completo (`%VARIÁVEIS%` são expandidas), e uma lista de argumentos opcional |
+| `match` | como reconhecer a janela: `{"exe": "msedge.exe"}`, `{"class": "..."}` ou `{"title": "..."}` (texto exato, como o komorebi mostra em `komorebic state`) |
+| `silent` | `true` (padrão): o foco volta para onde estava; `false`: você vai para o workspace da janela nova |
+| `float` | `true`: a janela abre flutuando (só essa abertura flutua) |
+| `size`, `position` | só para flutuantes: `[largura, altura]` e `"center"` ou `[x, y]` a partir do canto da área de trabalho, em pixels (ajustados pela escala da tela) ou em porcentagem (`"60%"`). O tamanho e a posição são os da janela visível |
+| `delay`, `wait` | segundos de espera antes de abrir, e para a janela aparecer (padrão 15) |
+| `machines` | só nesses computadores (padrão: todos), por exemplo `["HIGOR-WIN"]` |
+
+Como funciona: o app abre, o komorebi pega a janela no workspace em que você está e ela é enviada ao workspace certo com `komorebic send-to-monitor-workspace` (por um instante ela pode aparecer onde você está). O script **não** registra regras de workspace no komorebi: uma regra ficaria valendo e moveria todas as janelas seguintes daquele app, e o komorebi não tem como remover uma regra só. Um app que já está aberto é deixado em paz, então rodar de novo (ou depois de reiniciar o komorebi) só abre o que falta; `windots restart komorebi` não reabre os apps. Só funciona com janelas que o komorebi gerencia: se ele ignora o app, o script avisa. `windots launch workspaces --dry-run` mostra o que faria, e o atalho de inicialização (criado pelo `windots-refresh-autostart`) roda o comando com `--wait`, esperando o komorebi subir.
 
 ## Temas
 

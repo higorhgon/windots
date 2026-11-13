@@ -1,0 +1,19 @@
+[
+  { "workspace": 1, "command": "wt", "match": { "exe": "WindowsTerminal.exe" } },
+  { "workspace": 2, "command": "msedge", "match": { "exe": "msedge.exe" } },
+  {
+    "workspace": 3,
+    "command": "%LOCALAPPDATA%\\Programs\\herdr-app\\herdr-app.exe",
+    "match": { "exe": "herdr-app.exe" },
+    "delay": 2
+  },
+  {
+    "workspace": 5,
+    "command": "notepad",
+    "match": { "exe": "Notepad.exe" },
+    "float": true,
+    "size": ["60%", "70%"],
+    "position": "center",
+    "silent": false
+  }
+]

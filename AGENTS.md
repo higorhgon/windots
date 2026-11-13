@@ -141,6 +141,14 @@ in the `windots` skill). A new script without them is missing from the help.
   makes every new window float (`komorebic state` -> `layer`).
 - `windots-float-ontop` keeps floating windows above tiled ones (named pipe
   subscription); monocle has its own border colour.
+- `windots-launch-workspaces` opens the apps in `~\.config\windots\workspaces.json` (per machine and never
+  versioned: the apps of one machine must not open on another; `default/komorebi/` has an example) and sends each window to its workspace with `komorebic
+  send-to-monitor-workspace` (it moves the *focused* window, so the new one is focused and
+  checked first). It registers no komorebi workspace rule on purpose: `komorebic state` doesn't
+  show rules and `clear-workspace-rules` wipes a workspace's rules, the person's too. After
+  `toggle-float-override` it waits until the state says it is on (komorebi reads the toggle
+  late; an app that opens fast beats it). Test it with a throwaway `--config` and an app komorebi
+  manages (Notepad): it moves focus and opens windows, so close what you open.
 - `windots restart komorebi` manages every window again (tiles redone, floating overrides
   and workspace layers lost) and restarts what subscribes to it (komorebi-switcher,
   `windots-float-ontop`): don't run it on the person's desktop just to test.
