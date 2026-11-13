@@ -19,7 +19,6 @@ Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e arm
 | `backgrounds` | `.config/windots/backgrounds/catppuccin/` (12 imagens do dot-omarchy), como o `~/.config/omarchy/backgrounds` |
 
 Nada fica em Documentos, Imagens ou Área de Trabalho: o OneDrive faz backup (e às vezes redireciona) essas pastas, o que dá conflito com links. Tudo vai em `~\.config`, como no omarchy.
-| `herdr-app` | `.config/herdr-app/keys.json` (omarchy + retropet), `settings.json`, `themes/` (catppuccin, retropet), layout `retropet` (`layouts/`, `mods/retropet-*`) |
 
 ## Comandos (`bin/`)
 
@@ -38,6 +37,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-install-backgrounds` | lista os backgrounds em Configurações → Personalização: um tema `windots <pasta>` (slideshow com todas as imagens, mantendo modo escuro e cor de destaque) e 5 imagens em "Imagens recentes" |
 | `windots-install-font [--pick | nome]` | como o `omarchy-install-font`: sem nome, abre a lista de fontes no fzf como TUI flutuante (Alt+Ctrl+Shift+F); instala uma Nerd Font do release mais recente do [nerd-fonts](https://github.com/ryanoasis/nerd-fonts) só para o usuário, sem admin (padrão: JetBrainsMono; o Windows Terminal e o herdr-app usam a variação `JetBrainsMonoNL Nerd Font`) |
 | `windots-install-flow-launcher` | aplica no `Settings.json` do Flow Launcher os atalhos de `default/flow-launcher` (Alt+Esc menu do sistema, Win+Alt+Space apps, Ctrl+Alt+Space plugins) e as palavras-chave `sys`/`app`, com backup; não é link do tuckr porque o Flow substitui o arquivo ao salvar |
+| `windots-install-herdr-app` | o herdr-app regrava `keys.json` e `settings.json` enquanto roda, então eles não são links: o script mescla `default/herdr-app` (binds do omarchy, fonte) com os binds do retropet e grava os dois (com backup). O [retropet](https://github.com/higorhgon/retropet) é o submódulo `default/retropet`: layout, mods e tema são linkados arquivo por arquivo em `~\.config\herdr-app`, sem mexer nos mods e temas que o próprio herdr-app instala. Reinicie o herdr-app para carregar |
 | `windots-install-windows-terminal` | aplica o Catppuccin Mocha no Windows Terminal: o tema da interface (`default/windows-terminal`) e o esquema de cores em todos os perfis, editando o `settings.json` (com backup) no que um fragment não alcança |
 | `windots-toggle-fullscreen` | como o Super+F do omarchy (aqui Alt+F): a janela em foco ocupa o monitor inteiro, cobrindo a barra do Windows; de novo, volta ao tamanho, posição e tile de antes |
 | `windots-toggle-dark-mode [light\|dark]` | alterna o Windows entre modo escuro e claro (ou define um); mexe direto no registro, então funciona com o Windows não ativado |
@@ -47,6 +47,7 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-update [-y] [--prune]` | como o `omarchy-update`: atualiza o repositório (`git pull`), os pacotes do winget, reaplica o windots (`windots-install -SkipPackages -SkipSystem`), atualiza as ferramentas do mise (com `--prune`, também apaga as versões antigas delas com `mise prune`, liberando espaço) e oferece reiniciar se o Windows pedir; `-y` não pergunta nada; log em `%TEMP%\windots-update.log` |
 | `windots-reinstall-pkgs` | como o `omarchy-reinstall-pkgs`: instala o que faltar dos apps padrão (winget de `default/packages.txt` com um único UAC, komorebi-switcher, herdr-app, módulo Catppuccin do PowerShell, ferramentas do mise) sem mexer em configurações; o que já está instalado fica como está |
 | `windots-reinstall-configs [-y]` | como o `omarchy-reinstall-configs`: apaga o que estiver em `~` no lugar de cada dotfile (cópias, links antigos, links para arquivos que saíram do repositório), guarda backup (`.bak.<tempo>`) do que for diferente do repositório e linka tudo de novo com o `windots-install -SkipPackages -SkipSystem`; use quando algo ficou em conflito |
+| `windots-update-herdr-app [--app] [--retropet]` | `--app` (padrão) atualiza o herdr-app com o instalador oficial (pula se ele estiver aberto); `--retropet` leva o submódulo `default/retropet` ao último commit do GitHub e linka de novo, mostrando o comando para registrar o novo commit no windots (nunca commita sozinho). O `windots-update` roda a parte `--app` |
 | `windots-update-winget` | `winget upgrade --all` sem nenhuma pergunta (como `pacman -Syu --noconfirm`), com um único UAC via sudo |
 
 ## Instalação numa máquina nova
@@ -66,7 +67,7 @@ Tudo no **Windows PowerShell** que vem com o Windows (o PowerShell 7 é instalad
    ```powershell
    winget install --id Git.Git -e
    # feche e abra o PowerShell para o git entrar no PATH
-   git clone https://github.com/higorhgon/windots.git $HOME\windots
+   git clone --recurse-submodules https://github.com/higorhgon/windots.git $HOME\windots
    ```
 
    Se baixar como `.zip` em vez de clonar, desbloqueie os arquivos antes: `Get-ChildItem ~\windots -Recurse | Unblock-File`.
@@ -96,7 +97,7 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 3. Põe `~\windots\bin` no PATH.
 4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
 5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos.
-6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal` e `windots-install-flow-launcher`.
+6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal`, `windots-install-herdr-app` (keys/settings mesclados e retropet linkado) e `windots-install-flow-launcher`.
 7. `mise install` e `windots-refresh-autostart`.
 
 ## Uso diário

@@ -178,6 +178,10 @@ if (Test-Path (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts\JetBrainsMon
 Step 'Applying Catppuccin Mocha to Windows Terminal'
 & (Join-Path $PSScriptRoot 'windots-install-windows-terminal.ps1')
 
+# ---------------------------------------------------------------- herdr-app
+Step 'Applying herdr-app keys and settings, linking the retropet layout'
+& (Join-Path $PSScriptRoot 'windots-install-herdr-app.ps1')
+
 # ---------------------------------------------------------------- flow launcher
 Step 'Applying Flow Launcher hotkeys (system menu, apps, plugins)'
 & (Join-Path $PSScriptRoot 'windots-install-flow-launcher.ps1')

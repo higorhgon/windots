@@ -1,0 +1,3 @@
+[submodule "default/retropet"]
+	path = default/retropet
+	url = https://github.com/higorhgon/retropet

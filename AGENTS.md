@@ -21,12 +21,13 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `Configs/<group>/` | dotfiles linked by [tuckr](https://github.com/RaphGL/Tuckr); each group mirrors `~` (`Configs/starship/.config/starship.toml` -> `~\.config\starship.toml`) |
 | `bin/windots-*` | commands, like omarchy's `bin`; `~\windots\bin` is on the user PATH |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
+| `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` links its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
 
 tuckr looks for `%APPDATA%\dotfiles`; `windots-install` makes it a junction to this
 repo. Groups: `pwsh`, `mise`, `starship`, `komorebi` (komorebi, whkd,
-komorebi-switcher), `backgrounds`, `herdr-app`, `atuin`, `btop`,
+komorebi-switcher), `backgrounds`, `atuin`, `btop`,
 `windows-terminal`, `claude`.
 
 ## Live files vs repo copies (check before editing)
@@ -47,6 +48,7 @@ instead; edit the `default/` data and the script, then run it:
 |---|---|---|
 | Windows Terminal `settings.json` | `windots-install-windows-terminal` | `default/windows-terminal/` + the fragment in `Configs/windows-terminal` |
 | Flow Launcher `Settings.json` | `windots-install-flow-launcher` | `default/flow-launcher/settings.json` |
+| herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
 
 ## Commands (`bin/`)
@@ -114,7 +116,7 @@ in the `windots` skill). A new script without them is missing from the help.
 - After editing: restart whkd **with a refreshed PATH** (or `windots-*` commands
   aren't found), then verify that `Alt+number` still switches workspaces. The
   first key right after a restart is sometimes dropped: retry before concluding.
-- Check conflicts with herdr-app (`Configs/herdr-app/.config/herdr-app/keys.json`)
+- Check conflicts with herdr-app (`default/herdr-app/keys.json`, `default/retropet/keys.json`)
   and Flow Launcher hotkeys. Alt+number belongs to komorebi workspaces.
 
 **komorebi**

@@ -58,10 +58,7 @@
     "ctrl-alt-left": "pane.go:left",
     "ctrl-alt-down": "pane.go:down",
     "ctrl-alt-up": "pane.go:up",
-    "ctrl-alt-right": "pane.go:right",
-    "ctrl-b": "mod.open:retropet-prefix",
-    "ctrl-space": "mod.open:retropet-prefix",
-    "ctrl-shift-d": "mod.open:retropet-digimon"
+    "ctrl-alt-right": "pane.go:right"
   },
   "terminal": {
     "ctrl-backspace": "send:\u0017",
@@ -73,9 +70,5 @@
     "ctrl-v": "terminal.paste_image",
     "ctrl-insert": "terminal.copy",
     "shift-insert": "terminal.paste"
-  },
-  "mod:retropet-prefix": {
-    "ctrl-b": "retropet-prefix.send:ctrl+b",
-    "ctrl-space": "retropet-prefix.send:ctrl+space"
   }
 }
