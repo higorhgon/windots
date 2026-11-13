@@ -57,7 +57,8 @@ Naming follows omarchy: `windots-install-*` (install/apply, idempotent),
 `windots-launch-*`, `windots-menu-*` (fzf menus), `windots-setup-*` (machine
 setup that needs admin: sudo, ssh; they re-run themselves through sudo, helpers in
 `bin/lib/elevation.ps1`), `windots-toggle-*`,
-`windots-refresh-*`, `windots-update-*` (steps of `windots-update`, like
+`windots-refresh-*`, `windots-restart-*` (like omarchy's `omarchy-restart-*`: an app
+reloads its config only when it starts), `windots-update-*` (steps of `windots-update`, like
 `omarchy-update`: git pull, winget, re-apply via `windots-install`, mise). Every script starts with a usage comment block.
 
 `windots` is the command center, like `omarchy`: `windots update -y` runs
@@ -125,8 +126,8 @@ in the `windots` skill). A new script without them is missing from the help.
   running but ignores *every* hotkey. Keys whkd can't name go to
   `bin/windots-hotkeys.ahk` (AutoHotkey v2), e.g. the ABNT2 `/` (`vkC1`).
 - US/US-Intl `/` is `oem_2`; `-` / `=` are `oem_minus` / `oem_plus`.
-- After editing: restart whkd **with a refreshed PATH** (or `windots-*` commands
-  aren't found), then verify that `Alt+number` still switches workspaces. The
+- After editing: `windots restart whkd` (it refreshes the PATH first, or `windots-*`
+  commands aren't found), then verify that `Alt+number` still switches workspaces. The
   first key right after a restart is sometimes dropped: retry before concluding.
 - Check conflicts with herdr-app (`default/herdr-app/keys.json`, `default/retropet/keys.json`)
   and Flow Launcher hotkeys. Alt+number belongs to komorebi workspaces.
@@ -138,6 +139,9 @@ in the `windots` skill). A new script without them is missing from the help.
   makes every new window float (`komorebic state` -> `layer`).
 - `windots-float-ontop` keeps floating windows above tiled ones (named pipe
   subscription); monocle has its own border colour.
+- `windots restart komorebi` manages every window again (tiles redone, floating overrides
+  and workspace layers lost) and restarts what subscribes to it (komorebi-switcher,
+  `windots-float-ontop`): don't run it on the person's desktop just to test.
 
 **Startup items** are only created by `windots-refresh-autostart`. Agents are
 often not allowed to create them: change the script, then ask the person to run

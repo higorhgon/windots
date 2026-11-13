@@ -31,11 +31,9 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
      every hotkey. Unnamed keys (e.g. ABNT2 `/` = `vkC1`) go in
      `bin\windots-hotkeys.ahk`.
 3. Copy to `Configs\komorebi\.config\whkdrc` if it isn't linked.
-4. Restart whkd with a fresh PATH:
-   ```powershell
-   $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
-   Stop-Process -Name whkd -Force; Start-Process whkd -WindowStyle Hidden
-   ```
+4. Restart whkd: `windots restart whkd` (it refreshes the PATH, so the `windots-*` commands
+   its hotkeys run are found). Other apps have the same: `windots restart komorebi`, `masir`,
+   `komorebi switcher`, `flow launcher`, `float ontop`, `hotkeys`, `herdr app`.
 5. Test the new key and `Alt+1`/`Alt+2` (workspaces) by simulating them; retry
    once if the very first press after the restart is lost.
 
