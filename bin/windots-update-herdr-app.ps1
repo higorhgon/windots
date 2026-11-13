@@ -6,7 +6,7 @@
 #   --app        update herdr-app with the official installer (herdr-core updates itself); works
 #                with herdr-app open, which keeps the old version until it restarts
 #   --retropet   move the retropet submodule (default\retropet) to the latest commit of
-#                github.com/higorhgon/retropet and link its files again
+#                github.com/higorhgon/retropet and copy its files again
 #   no flag      the same as --app (this is the step windots-update runs)
 #
 # After --retropet the repo points at a new retropet commit: windots-update-herdr-app shows
@@ -79,7 +79,7 @@ if ($doRetropet) {
         Write-Host "  - $old -> $new"
         git -C $retropet --no-pager log --oneline "$old..$new"
     }
-    Step 'Linking the retropet files again'
+    Step 'Copying the retropet files again'
     & (Join-Path $PSScriptRoot 'windots-install-herdr-app.ps1')
     if ($old -ne $new) {
         Write-Host "`nThe repo now points at retropet $new. Record it with:" -ForegroundColor Yellow

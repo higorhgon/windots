@@ -21,7 +21,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `Configs/<group>/` | dotfiles linked by [tuckr](https://github.com/RaphGL/Tuckr); each group mirrors `~` (`Configs/starship/.config/starship.toml` -> `~\.config\starship.toml`) |
 | `bin/windots-*` | commands, like omarchy's `bin`; `~\windots\bin` is on the user PATH |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
-| `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` links its files into `~\.config\herdr-app` |
+| `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
 

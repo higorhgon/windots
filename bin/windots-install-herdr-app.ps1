@@ -1,5 +1,5 @@
 # windots-install-herdr-app
-# windots:summary=Apply the herdr-app keys and settings and link the retropet layout
+# windots:summary=Apply the herdr-app keys and settings and copy the retropet layout
 #
 # herdr-app rewrites keys.json and settings.json while it runs, so they are merged, not
 # linked (the same reason as Windows Terminal and Flow Launcher):
@@ -9,9 +9,12 @@
 # A backup is kept as <file>.bak.<time> when something changes.
 #
 # retropet (github.com/higorhgon/retropet) is the git submodule default\retropet. Its layout,
-# mods and theme are linked file by file into ~\.config\herdr-app, so nothing else herdr-app
-# installs there (its own mods and themes) is touched. Links into windots that point at
-# files that no longer exist are removed.
+# mods and theme are COPIED file by file into ~\.config\herdr-app (as herdr-app's own docs say:
+# it refuses a mod whose files resolve outside its folder, which a link into the submodule
+# does), so nothing else herdr-app installs there (its own mods and themes) is touched.
+# Edit retropet in default\retropet (commit and push there), not in ~\.config\herdr-app:
+# the copies are overwritten on the next run (a changed one is kept as <file>.bak.<time>).
+# Old links into windots (what this script and tuckr used to make) are replaced.
 #
 # herdr-app reads all of this at start: restart it to see the change.
 # Called by windots-install; safe to run again on its own.
@@ -92,27 +95,25 @@ if ($haveRetropet) {
         $d = Join-Path $retropet $sub
         if (Test-Path $d) { Get-ChildItem $d -Recurse -Force -File | Where-Object { $skip -notcontains $_.Name } }
     })
-    $linked = 0; $failed = 0
+    $same = 0; $copied = 0
     foreach ($f in $files) {
         $rel = $f.FullName.Substring($retropet.Length + 1)
         $target = Join-Path $home_ $rel
         $t = Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+        if ($t -and $t.LinkType) {
+            Remove-Dotfile $target   # an old link into windots: copy over a link would write through it
+            $t = $null
+        }
         if ($t) {
-            if ($t.LinkType -and (@($t.Target) -contains $f.FullName)) { $linked++; continue }
-            if (-not $t.LinkType -and (Get-FileHash $target).Hash -ne (Get-FileHash $f.FullName).Hash) {
-                Copy-Item -LiteralPath $target "$target.bak.$stamp"
-                Write-Host "  - changed: $target -> .bak.$stamp" -ForegroundColor Yellow
-            }
-            Remove-Dotfile $target
+            if ((Get-FileHash $target).Hash -eq (Get-FileHash $f.FullName).Hash) { $same++; continue }
+            Copy-Item -LiteralPath $target "$target.bak.$stamp"
+            Write-Host "  - changed: $target -> .bak.$stamp" -ForegroundColor Yellow
         }
         New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
-        # mklink, not New-Item: Windows PowerShell 5.1 can't create symlinks without admin even
-        # in Developer Mode; mklink can.
-        cmd.exe /c mklink "`"$target`"" "`"$($f.FullName)`"" | Out-Null
-        if ($LASTEXITCODE -eq 0) { $linked++ } else { $failed++; Write-Warning "could not link $target" }
+        Copy-Item -LiteralPath $f.FullName $target -Force
+        $copied++
     }
-    Write-Host "  - retropet: $linked of $($files.Count) files linked into $home_"
-    if ($failed) { Write-Warning 'Links need Developer Mode: Settings > System > Advanced > Developer Mode, then run windots install herdr app.' }
+    Write-Host "  - retropet: $copied copied, $same already up to date, in $home_"
 }
 
 if (Get-Process herdr-app -ErrorAction SilentlyContinue) {
