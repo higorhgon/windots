@@ -20,6 +20,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 |---|---|
 | `Configs/<group>/` | dotfiles linked by [tuckr](https://github.com/RaphGL/Tuckr); each group mirrors `~` (`Configs/starship/.config/starship.toml` -> `~\.config\starship.toml`) |
 | `bin/windots-*` | commands, like omarchy's `bin`; `~\windots\bin` is on the user PATH |
+| `install.ps1` | the one-line installer (`irm .../install.ps1 \| iex`): Git, clone, git identity, `windots-install`. Self-contained for the Git step (the repo is not there yet); calls the repo's scripts with `-ExecutionPolicy Bypass` |
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
@@ -56,7 +57,7 @@ instead; edit the `default/` data and the script, then run it:
 
 Naming follows omarchy: `windots-install-*` (install/apply, idempotent),
 `windots-launch-*`, `windots-menu-*` (fzf menus), `windots-setup-*` (machine
-setup that needs admin: sudo, ssh; they re-run themselves through sudo, helpers in
+setup: git, and sudo/ssh, which need admin and re-run themselves through sudo, helpers in
 `bin/lib/elevation.ps1`), `windots-migrate` / `windots-dev-*` (migrations), `windots-toggle-*`,
 `windots-refresh-*`, `windots-restart-*` (like omarchy's `omarchy-restart-*`: an app
 reloads its config only when it starts), `windots-update-*` (steps of `windots-update`, like

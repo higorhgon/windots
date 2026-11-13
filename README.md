@@ -54,6 +54,8 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-restart-flow-launcher` | fecha e abre de novo o Flow Launcher (ele só lê as configurações ao iniciar), por exemplo depois do `windots-install-flow-launcher` |
 | `windots-restart-float-ontop` | reinicia o `windots-float-ontop` do jeito do atalho de inicialização (pwsh sem janela); ele escuta o komorebi por um pipe, então precisa reiniciar junto com ele |
 | `windots-restart-hotkeys` | reinicia o AutoHotkey v2 que roda o `windots-hotkeys.ahk`, para uma edição do script valer |
+| `windots-install-git` | instala o Git for Windows com o winget se ele faltar (o winget pede o UAC do instalador); não faz nada se já estiver instalado. O `install.ps1` faz o mesmo passo antes de poder clonar o repo |
+| `windots-setup-git [--name=<nome>] [--email=<email>] [--force]` | pergunta o nome e o e-mail que o git põe nos commits (como o instalador antigo do omarchy) e grava em `user.name` e `user.email`; se os dois já estão configurados, só avisa e para. `--name` e `--email` dão os valores sem perguntar; `--force` pergunta de novo (Enter mantém o atual) |
 | `windots-migrate [--pending \| --mark-all]` | como o `omarchy-migrate`: roda as migrations da pasta `migrations/` que esta máquina ainda não rodou, em ordem, uma vez cada (`migrations/<unix time>.ps1`, marcador em `~\.local\state\windots\migrations\`). Uma que falha para tudo e roda de novo na próxima vez, então elas devem poder ser repetidas. `--pending` lista as pendentes (sai com 1 se não há); `--mark-all` marca todas como feitas sem rodar (máquina recém-instalada). O `windots-update` roda depois de reaplicar |
 | `windots-dev-add-migration [--no-edit]` | como o `omarchy-dev-add-migration`: cria `migrations/<unix time>.ps1` a partir de um modelo e abre no `$env:EDITOR` (nvim, senão notepad) |
 | `windots-refresh-autostart` | recria os atalhos da pasta Inicializar (komorebi + masir, komorebi-switcher, Flow Launcher, float-ontop, center-switcher, hotkeys) |
@@ -66,6 +68,20 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 ## Instalação numa máquina nova
 
 Tudo no **Windows PowerShell** que vem com o Windows (o PowerShell 7 é instalado pelo script).
+
+### Em uma linha (sem git instalado)
+
+```powershell
+irm https://raw.githubusercontent.com/higorhgon/windots/main/install.ps1 | iex
+```
+
+Como o `curl -fsSL https://omarchy.org/install | bash` do omarchy: instala o git (winget, se faltar), clona o repositório com os submódulos em `~\windots`, pergunta o nome e o e-mail do git (pula se já estiverem configurados), roda o `windots-install` e marca as migrations como feitas (uma máquina nova já tem o que elas mudariam). Não precisa liberar a execução de scripts: o `iex` não passa pela política e os scripts do repo rodam com `-ExecutionPolicy Bypass`. Variáveis opcionais, definidas antes da linha (`$env:WINDOTS_PATH = 'C:\w'`):
+- `WINDOTS_PATH`: onde clonar (padrão `~\windots`; mantenha curto, porque alguns arquivos do repo têm caminhos longos e o Windows para em 260 caracteres);
+- `WINDOTS_REPO` e `WINDOTS_REF`: outro repositório (um fork) e a branch ou tag (padrão `main`);
+- `WINDOTS_GIT_NAME` e `WINDOTS_GIT_EMAIL`: o nome e o e-mail do git, para não perguntar;
+- `WINDOTS_NO_INSTALL=1`: para depois do git e do clone, sem rodar o `windots-install`.
+
+### Passo a passo (manual)
 
 1. **Libere a execução de scripts** para o seu usuário (o Windows vem bloqueando por padrão):
 
