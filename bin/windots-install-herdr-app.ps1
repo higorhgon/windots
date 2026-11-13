@@ -72,7 +72,9 @@ if ($haveRetropet -and (Test-Path (Join-Path $retropet 'keys.json'))) { Merge-Js
 Save-Json (Join-Path $home_ 'keys.json') $keys 'keys.json'
 
 $settingsPath = Join-Path $home_ 'settings.json'
-$settings = if (Test-Path $settingsPath) { Read-Json $settingsPath } else { [pscustomobject]@{} }
+# An old tuckr link whose repo file is gone reads as missing (Test-Path says True for it in pwsh 7).
+$settingsItem = Get-Item -LiteralPath $settingsPath -Force -ErrorAction SilentlyContinue
+$settings = if ($settingsItem -and -not (Test-StaleRepoLink $settingsItem $Repo)) { Read-Json $settingsPath } else { [pscustomobject]@{} }
 Merge-Json $settings (Read-Json (Join-Path $Repo 'default\herdr-app\settings.json'))
 Save-Json $settingsPath $settings 'settings.json'
 
