@@ -12,6 +12,115 @@
 # Developer Mode and sudo are machine-wide: each asks for elevation (a UAC prompt) when it has
 # something to change; sudo is windots-setup-security-sudo.
 # Flags are Linux style (--skip-packages), read from $args: no param() block.
+#
+# On a new machine, with no Git and no clone, this same file is the one-line installer:
+#
+#   irm https://raw.githubusercontent.com/higorhgon/windots/main/bin/windots-install.ps1 | iex
+#
+# Like omarchy's `curl -fsSL https://omarchy.org/install | bash`. Outside a clone (under iex, or the
+# file downloaded alone) it only bootstraps, in order:
+#   1. Git, when missing (winget; the Git installer asks for a UAC prompt)
+#   2. windots cloned with its submodules into ~\windots (updated instead when it is there)
+#   3. the name and email git puts on commits (windots-setup-git), asked unless git already has them
+#   4. its own copy from the clone runs: the install below, with the same flags
+#   5. the migrations marked as done, the first time only (a new machine already has what they change)
+# Then restart, or sign out and in, so the startup apps come up.
+# Settings, as environment variables set before the line above (under iex there are no flags):
+#   WINDOTS_PATH          where to clone (default ~\windots; keep it short: some files in the repo have
+#                         long paths and Windows stops at 260 characters)
+#   WINDOTS_REPO, WINDOTS_REF   another repository URL (a fork), a branch or tag (default main)
+#   WINDOTS_GIT_NAME, WINDOTS_GIT_EMAIL   the git name and email, so nothing is asked
+#   WINDOTS_INSTALL_ARGS  flags for the install, e.g. "--skip-packages"
+#   WINDOTS_NO_INSTALL    1 stops after step 3: only Git, the clone and the git setup
+
+# ---------------------------------------------------------------- outside a clone: bootstrap
+# Under `irm | iex` $PSScriptRoot is empty; a file downloaded alone has no Configs\ next to it.
+$bootArgs = @($args)
+$inRepo = [bool]$PSScriptRoot -and (Test-Path (Join-Path (Split-Path $PSScriptRoot) 'Configs'))
+if (-not $inRepo) {
+    # No exit and its own scope: under iex, exit would close the person's window and variables would leak.
+    & {
+        $ErrorActionPreference = 'Stop'
+        function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
+        # A new machine's Windows PowerShell does not run script files (execution policy): -ExecutionPolicy Bypass.
+        function Invoke-Windots($file, $fileArgs) {
+            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file @fileArgs
+            if ($LASTEXITCODE -ne 0) { throw "$(Split-Path $file -Leaf) failed (exit $LASTEXITCODE); see above." }
+        }
+        $repoUrl = if ($env:WINDOTS_REPO) { $env:WINDOTS_REPO } else { 'https://github.com/higorhgon/windots.git' }
+        $ref = if ($env:WINDOTS_REF) { $env:WINDOTS_REF } else { 'main' }
+        $dest = if ($env:WINDOTS_PATH) { $env:WINDOTS_PATH } else { Join-Path $HOME 'windots' }
+
+        Step 'Git'
+        if (Get-Command git.exe -ErrorAction SilentlyContinue) {
+            Write-Host "  - already installed ($((git --version) -join ' '))"
+        } else {
+            if (-not (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
+                throw 'winget not found: install "App Installer" from the Microsoft Store (Windows 11 has it), then run this again.'
+            }
+            Write-Host '  - installing Git for Windows with winget (a UAC prompt may show)'
+            winget install --id Git.Git --exact --source winget --silent --disable-interactivity `
+                --accept-package-agreements --accept-source-agreements
+            $alreadyThere = -1978335189, -1978335135   # 0x8A15002B / 0x8A150061: installed / nothing newer
+            if ($LASTEXITCODE -ne 0 -and $alreadyThere -notcontains $LASTEXITCODE) {
+                throw ("winget could not install Git (exit 0x{0:X8}); try: winget install --id Git.Git" -f $LASTEXITCODE)
+            }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+            if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) {
+                $cmd = Join-Path $env:ProgramFiles 'Git\cmd'
+                if (Test-Path (Join-Path $cmd 'git.exe')) { $env:Path += ";$cmd" }
+            }
+            if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) {
+                throw 'Git was installed but is not on PATH yet: open a new terminal and run this again.'
+            }
+            Write-Host "  - installed ($((git --version) -join ' '))"
+        }
+
+        Step "windots in $dest"
+        if (Test-Path (Join-Path $dest '.git')) {
+            Write-Host '  - already there: updating it'
+            git -C $dest pull --ff-only
+            if ($LASTEXITCODE -ne 0) { throw "git pull failed in $dest (local changes?); fix it and run this again." }
+            git -C $dest submodule update --init
+            if ($LASTEXITCODE -ne 0) { throw 'git submodule update failed; see above.' }
+        } elseif ((Test-Path $dest) -and @(Get-ChildItem $dest -Force).Count) {
+            throw "$dest exists, is not empty and is not a windots clone: move it away, or set WINDOTS_PATH to another folder."
+        } else {
+            git clone --recurse-submodules --branch $ref $repoUrl $dest
+            if ($LASTEXITCODE -ne 0) { throw "git clone failed ($repoUrl, $ref); see above." }
+        }
+        $bin = Join-Path $dest 'bin'
+        if (-not (Test-Path (Join-Path $bin 'windots-install.ps1'))) { throw "$dest does not look like windots (no bin\windots-install.ps1)." }
+
+        Step 'Git name and email'
+        $gitArgs = @()
+        if ($env:WINDOTS_GIT_NAME) { $gitArgs += "--name=$($env:WINDOTS_GIT_NAME)" }
+        if ($env:WINDOTS_GIT_EMAIL) { $gitArgs += "--email=$($env:WINDOTS_GIT_EMAIL)" }
+        Invoke-Windots (Join-Path $bin 'windots-setup-git.ps1') $gitArgs
+
+        if ($env:WINDOTS_NO_INSTALL -eq '1') {
+            Write-Host "`nStopped before the install (WINDOTS_NO_INSTALL=1). To finish: powershell -ExecutionPolicy Bypass -File $bin\windots-install.ps1" -ForegroundColor Yellow
+            return
+        }
+
+        # This same file, from the clone: now it is inside a repo, so it does the real install.
+        $forward = @($bootArgs) + @(([string]$env:WINDOTS_INSTALL_ARGS) -split '\s+' | Where-Object { $_ })
+        Step 'windots-install'
+        Invoke-Windots (Join-Path $bin 'windots-install.ps1') $forward
+
+        # Only the first time: a machine that already had windots may have migrations it never ran.
+        $stateDir = if ($env:WINDOTS_MIGRATION_STATE) { $env:WINDOTS_MIGRATION_STATE } else { Join-Path $HOME '.local\state\windots\migrations' }
+        if (-not (Test-Path $stateDir)) {
+            Step 'Migrations: a new machine has what they change'
+            Invoke-Windots (Join-Path $bin 'windots-migrate.ps1') @('--mark-all')
+        }
+
+        Write-Host "`nwindots is installed. Restart (or sign out and in) so komorebi and the other startup apps come up." -ForegroundColor Green
+        Write-Host 'Then try: windots commands' -ForegroundColor Green
+    }
+    return
+}
+# ---------------------------------------------------------------- end of the bootstrap
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 

@@ -3,7 +3,7 @@
 # windots:examples=windots install git
 #
 # Git comes first: windots itself, windots-update and the retropet submodule all need it, so it
-# has its own command (install.ps1, the one-line installer, does the same step before it can
+# has its own command (windots-install.ps1, run as the one-line installer, does the same step before it can
 # clone anything). Nothing happens when Git is already installed. winget asks for the UAC prompt
 # the Git installer needs. Then run windots-setup-git to set the name and email for commits.
 # Works on Windows PowerShell 5.1 and PowerShell 7.

@@ -12,7 +12,7 @@
 #   (no flag)    run the pending ones; windots-update does this after re-applying windots
 #   --pending    list the pending ones; exit 0 when there are some, 1 when there are none
 #   --mark-all   mark every migration as done without running it: a machine that was just
-#                installed already has everything they would change (install.ps1 does this)
+#                installed already has everything they would change (the one-line installer does this)
 # New one: windots-dev-add-migration.
 # Each migration runs in Windows PowerShell 5.1 with $env:WINDOTS_PATH set to the repo.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
