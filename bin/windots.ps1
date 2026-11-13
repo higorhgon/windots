@@ -26,7 +26,7 @@ $groupInfo = [ordered]@{
     refresh   = 'Regenerate generated files'
     reinstall = 'Reinstall default apps and reset dotfiles'
     restart   = 'Restart an app so it reloads its config'
-    setup     = 'Machine setup: git, sudo, SSH (the last two need admin)'
+    setup     = 'Machine setup: git, WSL, sudo, SSH (the last two need admin)'
     toggle    = 'Toggle window and system states'
     update    = 'Update windots, winget packages and mise tools'
 }

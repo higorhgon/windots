@@ -21,6 +21,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `Configs/<group>/` | dotfiles linked by [tuckr](https://github.com/RaphGL/Tuckr); each group mirrors `~` (`Configs/starship/.config/starship.toml` -> `~\.config\starship.toml`) |
 | `bin/windots-*` | commands, like omarchy's `bin`; `~\windots\bin` is on the user PATH |
 | `bin/windots-install.ps1` | also the one-line installer (`irm .../bin/windots-install.ps1 \| iex`): outside a clone it installs Git, clones the repo, sets the git identity and runs its own copy from the clone (self-contained up to there: the repo is not in place yet; child scripts run with `-ExecutionPolicy Bypass`) |
+| `default/wsl/setup.sh` | the part of `windots-setup-wsl` that runs inside Arch on WSL, as root (`.gitattributes` keeps `*.sh` at LF: with `core.autocrlf` bash would choke on CRLF) |
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
