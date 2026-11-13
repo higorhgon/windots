@@ -136,8 +136,17 @@ foreach ($t in $targets) {
 }
 
 Step 'Linking dotfiles with tuckr'
-$groups = @($targets | ForEach-Object Group | Sort-Object -Unique)
-& $tuckr add @groups --force --assume-yes
+# tuckr add --force deletes a link that points straight at the repo (as Repoint-DotfileLinks
+# leaves them) and makes no new one: a second run used to leave ~ with no dotfiles. So tuckr
+# only runs for groups with a file not linked yet, and their direct links are removed first.
+$isLinked = { param($t) (Get-RepoLinkTarget (Get-Item -LiteralPath $t.Target -Force -ErrorAction SilentlyContinue) $Repo) -eq $t.Source }
+$groups = @($targets | Where-Object { -not (& $isLinked $_) } | ForEach-Object Group | Sort-Object -Unique)
+if ($groups) {
+    foreach ($t in @($targets | Where-Object { $groups -contains $_.Group })) {
+        if (& $isLinked $t) { Remove-Dotfile $t.Target }   # a link: removed, tuckr makes it again
+    }
+    & $tuckr add @groups --force --assume-yes
+}
 # tuckr status lists a group as symlinked even when some of its files failed: check each file.
 $notLinked = @($targets | Where-Object { -not (Get-Item $_.Target -Force -ErrorAction SilentlyContinue).LinkType })
 if ($notLinked) {
