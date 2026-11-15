@@ -66,6 +66,11 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-reinstall-configs [-y]` | como o `omarchy-reinstall-configs`: apaga o que estiver em `~` no lugar de cada dotfile (cópias, links antigos, links para arquivos que saíram do repositório), guarda backup (`.bak.<tempo>`) do que for diferente do repositório e linka tudo de novo com o `windots-install --skip-packages --skip-system`; use quando algo ficou em conflito |
 | `windots-update-herdr-app [--app] [--retropet]` | `--app` (padrão) atualiza o herdr-app com o instalador oficial (pula se ele estiver aberto); `--retropet` leva o submódulo `default/retropet` ao último commit do GitHub e copia de novo, mostrando o comando para registrar o novo commit no windots (nunca commita sozinho). O `windots-update` roda a parte `--app` |
 | `windots-update-winget` | `winget upgrade --all` sem nenhuma pergunta (como `pacman -Syu --noconfirm`), com um único UAC via sudo |
+| `windots-update-dev` | como o `omarchy-update-dev`: `git pull --ff-only` e atualiza os submódulos; para com mensagem se houver mudanças locais no caminho |
+| `windots-update-mise [--prune]` | como o `omarchy-update-mise`: `mise up` sem a espera por releases novas; `--prune` também apaga as versões sem uso |
+| `windots-update-restart [--snapshot \| <app>...]` | `--snapshot` lista os apps do windots abertos (komorebi, whkd, masir, komorebi-switcher, Flow Launcher); com nomes, abre de novo os que não estão rodando. O `windots-update` tira o snapshot antes e reabre o que o instalador fechou; o herdr-app fica de fora de propósito |
+| `windots-update-available` | como o `omarchy-update-available`: faz `git fetch` e diz se há commits novos (sai com 0 se há, 1 se está em dia, 2 se não deu para saber) |
+| `windots-hook <nome> [args...]` | como o `omarchy-hook`: roda `~\.config\windots\hooks\<nome>.ps1` se existir (por máquina, fora do repositório); o `windots-update` roda o `post-update` no fim. Hook que falha só avisa |
 
 ## Instalação numa máquina nova
 

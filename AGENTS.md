@@ -62,7 +62,9 @@ setup: git, and sudo/ssh, which need admin and re-run themselves through sudo, h
 `bin/lib/elevation.ps1`), `windots-migrate` / `windots-dev-*` (migrations), `windots-toggle-*`,
 `windots-refresh-*`, `windots-restart-*` (like omarchy's `omarchy-restart-*`: an app
 reloads its config only when it starts), `windots-update-*` (steps of `windots-update`, like
-`omarchy-update`: git pull, winget, re-apply via `windots-install`, mise). Every script starts with a usage comment block.
+`omarchy-update`: git pull, winget, re-apply via `windots-install`, mise; each step is a command, and
+`windots-update` checks the exit code of every one that must succeed: `& script.ps1` with `exit 1` does not
+throw), `windots-hook` (per-machine hooks in `~\.config\windots\hooks`). Every script starts with a usage comment block.
 
 `windots` is the command center, like `omarchy`: `windots update -y` runs
 `windots-update -y` (longest file-name match on the words), `windots <group>`
