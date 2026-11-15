@@ -154,6 +154,20 @@ in the `windots` skill). A new script without them is missing from the help.
   and workspace layers lost) and restarts what subscribes to it (komorebi-switcher,
   `windots-float-ontop`): don't run it on the person's desktop just to test.
 
+**WSL** (`bin/windots-setup-wsl.ps1`)
+- A restart is needed only when WSL is installed and no hypervisor is running yet
+  (`Win32_ComputerSystem.HypervisorPresent`). Then the script writes a `RunOnce` entry that
+  continues it at the next sign-in (`--resumed`, never `--reinstall`, never a password). When
+  WSL is installed, nothing is pending and there is still no hypervisor, virtualization is off
+  in the firmware: it says so and stops WITHOUT scheduling a resume, or it would loop forever.
+- Network: `--network=mirrored` is the supported way. `bridged` (own IP) is deprecated since WSL
+  2.4.5 and needs a Hyper-V external switch, which Windows Home does not have: don't add it.
+  Mirrored shares the Windows port space (a WSL sshd cannot take 22 while the Windows sshd has it).
+- A bash script piped to `wsl --exec bash` from PowerShell gets a CRLF at the end: strip CR inside
+  Linux (`tr -d '\r'`), or the last command is `locale-gen\r: command not found`.
+- PowerShell hands `--lan-ports=22,8080` over as a list when typed unquoted: `windots-setup-wsl`
+  joins lists back; do the same for any option whose value has a comma.
+
 **Startup items** are only created by `windots-refresh-autostart`. Agents are
 often not allowed to create them: change the script, then ask the person to run
 `pwsh -NoProfile -ExecutionPolicy Bypass -File ~/windots/bin/windots-refresh-autostart.ps1`.
