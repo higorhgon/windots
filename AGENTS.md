@@ -232,6 +232,15 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   every open Neovim. The installer never replaces the person's config: it merges (`lazyvim.json` extras, three lines in
   `options.lua`) and backs up what it overwrites as `<file>.bak.<unix time>`. Try it beside the real one with
   `windots install lazyvim --appname nvim-test` (`NVIM_APPNAME`), then delete `nvim-test` and `nvim-test-data`.
+- Files (files.community) is the file manager that takes the theme everywhere. Explorer cannot: Windhawk's File Explorer Styler
+  only reaches the XAML parts (tabs, bars, details pane); the file list and sidebar are Win32 (tested, and the mod's own guide
+  says so). So the Explorer mod was dropped and `windots-install-files` makes Files the default file manager (the same HKCU
+  `.reg` Files' own Settings > Advanced switch imports: no UAC; Win+E and folders open Files; `explorer.exe` keeps running as
+  the shell). The colours are `AppTheme*BackgroundColor` / `AppThemeMode` in `LocalState\settings\user_settings.json`,
+  edited as text (`Set-FilesTheme`, `bin\lib\themes.ps1`) with catppuccin's own mapping. A running Files ignores a file edit
+  (measured, 40 s) and reads it only at start: `Update-FilesTheme` restarts it, or with `--no-restart` sends a toast
+  (`windots-notify`) whose click opens `windots:restart-files` (`windots-uri.ps1`, a whitelist: never run anything else from
+  a link). Live theming would mean a fork of Files; not done.
 - Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app,
   komorebi borders. Official catppuccin ports are used there until they are.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:

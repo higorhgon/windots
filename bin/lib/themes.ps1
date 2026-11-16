@@ -307,3 +307,136 @@ function Set-ThemeWallpaper($Name) {
     Set-Content $state $source -NoNewline
     if ($source -eq $current) { 'same' } else { 'changed' }
 }
+
+
+# ---- Files (files.community) ----------------------------------------------------------------
+# Files keeps its colours in LocalState\settings\user_settings.json (AppTheme*BackgroundColor, AppThemeMode), the keys
+# catppuccin's own installer writes: base on the address bar, toolbar and file area, mantle on the sidebar and the
+# window. It reads them when it starts (an edit in the file is not noticed by a running Files: measured, 40 s), so a
+# running Files is restarted, or a notification asks the person to (click = restart).
+$script:FilesFamily = 'Files_1y0xx7n9077q4'   # the stable package, the one winget installs
+$script:FilesPackages = @($script:FilesFamily, 'FilesDev_ykqwq8d6ps0ag', 'Files_wvne1zexy08sa', 'FilesPreview_1y0xx7n9077q4',
+    '49306atecsolution.FilesUWP_et10x9a9vyk8t', '49306atecsolution.FilesPreview_et10x9a9vyk8t')
+
+function Get-FilesSettingsPaths {
+    $out = @()
+    foreach ($p in $script:FilesPackages) {
+        $f = Join-Path $env:LOCALAPPDATA "Packages\$p\LocalState\settings\user_settings.json"
+        if (Test-Path $f) { $out += $f }
+    }
+    $out
+}
+
+function Get-FilesPackage {
+    Get-AppxPackage -Name Files -ErrorAction SilentlyContinue | Where-Object { $_.PackageFamilyName -eq $script:FilesFamily } | Select-Object -First 1
+}
+
+function Test-FilesRunning { [bool](Get-Process -Name Files -ErrorAction SilentlyContinue) }
+
+# mantle = the background darkened toward black: catppuccin's own mantle is base x 0.8 (mocha) and x 0.96 (latte)
+function ConvertTo-FilesColors($c) {
+    $dark = $c.mode -ne 'light'
+    $f = if ($dark) { 0.8 } else { 0.96 }
+    $hex = ([string]$c.background).TrimStart('#')
+    $rgb = foreach ($i in 0, 2, 4) { [int][Math]::Round([Convert]::ToInt32($hex.Substring($i, 2), 16) * $f) }
+    $mantle = '#{0:x2}{1:x2}{2:x2}' -f $rgb[0], $rgb[1], $rgb[2]
+    $base = ([string]$c.background).ToLower()
+    [ordered]@{
+        AppThemeMode                     = $(if ($dark) { 'Dark' } else { 'Light' })
+        AppThemeBackgroundColor          = $mantle
+        AppThemeAddressBarBackgroundColor = $base
+        AppThemeToolbarBackgroundColor   = $base
+        AppThemeFileAreaBackgroundColor  = $base
+        AppThemeSidebarBackgroundColor   = $mantle
+    }
+}
+
+# Writes the colours into user_settings.json, as text, so the rest of the file stays as Files wrote it.
+# 'changed', 'same' or 'none' (Files has no settings file: not installed, or never started).
+function Set-FilesTheme($c) {
+    $paths = @(Get-FilesSettingsPaths)
+    if (-not $paths.Count) { return 'none' }
+    $want = ConvertTo-FilesColors $c
+    $result = 'same'
+    foreach ($path in $paths) {
+        $text = [IO.File]::ReadAllText($path)
+        $new = $text
+        foreach ($k in $want.Keys) {
+            $pattern = '("' + $k + '"\s*:\s*)"[^"]*"'
+            if ($new -match $pattern) { $new = [regex]::Replace($new, $pattern, ('${1}"' + $want[$k] + '"')) }
+            else { $new = [regex]::Replace($new, '^\s*\{', ('{' + "`n" + '  "' + $k + '": "' + $want[$k] + '",'), 1) }
+        }
+        if ($new -ne $text) {
+            $backup = "$path.windots-original"
+            if (-not (Test-Path $backup)) { Copy-Item $path $backup }   # once: how the file was before windots
+            [IO.File]::WriteAllText($path, $new, (New-Object Text.UTF8Encoding $false))
+            $result = 'changed'
+        }
+    }
+    $result
+}
+
+# windots:<action> links, for what a notification does when it is clicked. Only the actions listed in
+# windots-uri.ps1 run, so a link on a web page cannot start anything else.
+function Register-WindotsProtocol {
+    $handler = Join-Path $script:ThemeRepo 'bin\windots-uri.ps1'
+    $cmd = 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $handler + '" "%1"'
+    $key = 'HKCU:\Software\Classes\windots'
+    if ((Test-Path "$key\shell\open\command") -and ((Get-ItemProperty "$key\shell\open\command").'(default)' -eq $cmd)) { return }
+    New-Item "$key\shell\open\command" -Force | Out-Null
+    Set-ItemProperty $key '(default)' 'URL:windots'
+    Set-ItemProperty $key 'URL Protocol' ''
+    Set-ItemProperty "$key\shell\open\command" '(default)' $cmd
+}
+
+# After a theme change: Files running -> restart it, or (--no-restart) ask with a notification. Returns the line to print.
+function Update-FilesTheme($Name, $c, $NoRestart) {
+    switch (Set-FilesTheme $c) {
+        'none' { return 'Files: not installed (windots install files), skipped' }
+        'same' { return 'Files: already right' }
+    }
+    if (-not (Test-FilesRunning)) { return 'Files: colours changed; they show the next time it starts' }
+    if ($NoRestart) {
+        Register-WindotsProtocol
+        $title = 'Files: new theme ' + (Get-ThemeTitle $Name)
+        $text = 'Restart Files to apply the colours. Clicking this notification restarts Files now (windows and tabs come back).'
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $script:ThemeRepo 'bin\windots-notify.ps1') $title $text '--launch=windots:restart-files' | Out-Null
+        return 'Files: colours changed; notification sent (clicking it restarts Files)'
+    }
+    & (Join-Path $script:ThemeRepo 'bin\windots-restart-files.ps1') --if-running | Out-Null
+    'Files: restarted to apply the colours'
+}
+
+# ---- Files as the default file manager ------------------------------------------------------
+# What Files' own Settings > Advanced switch does: copies Assets\FilesOpenDialog (the launcher and two .reg files) to
+# %LOCALAPPDATA%\Files and imports SetFilesAsDefault.reg, which only writes under HKCU (so no UAC): folders, Win+E and
+# "show in folder" open Files. Unset... puts Explorer back.
+function Test-FilesDefault {
+    $k = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey('Folder\shell\open\command')
+    if (-not $k) { return $false }
+    $v = [string]$k.GetValue('')
+    $k.Close()
+    $v -like '*Files.App.Launcher.exe*'
+}
+
+function Set-FilesDefault($Enable) {
+    $dest = Join-Path $env:LOCALAPPDATA 'Files'
+    if ($Enable) {
+        $pkg = Get-FilesPackage
+        if (-not $pkg) { throw 'Files is not installed' }
+        New-Item -ItemType Directory -Force $dest | Out-Null
+        Copy-Item (Join-Path $pkg.InstallLocation 'Assets\FilesOpenDialog\*') $dest -Recurse -Force
+        [IO.File]::WriteAllText((Join-Path $dest 'Branch.txt'), 'files-stable', (New-Object Text.UTF8Encoding $false))
+        $reg = Join-Path $dest 'SetFilesAsDefault.reg'
+    } else {
+        $reg = Join-Path $dest 'UnsetFilesAsDefault.reg'
+        if (-not (Test-Path $reg)) {
+            $pkg = Get-FilesPackage
+            if (-not $pkg) { return $false }
+            New-Item -ItemType Directory -Force $dest | Out-Null
+            Copy-Item (Join-Path $pkg.InstallLocation 'Assets\FilesOpenDialog\UnsetFilesAsDefault.reg') $reg -Force
+        }
+    }
+    & reg.exe import $reg 2>&1 | Out-Null
+    (Test-FilesDefault) -eq [bool]$Enable
+}
