@@ -9,7 +9,7 @@
 # tokyo-night are the same theme.
 #   Windows Terminal    the "windots" colour scheme and UI theme, made from the palette
 #   taskbar             background = the theme's background (Windhawk Taskbar Styler; needs
-#                       windots-install-windhawk, and admin unless --allow-user-settings was done)
+#                       windots-install-windhawk; no UAC once it granted the user write access to the mod's settings)
 #   light / dark mode   Windows' flags follow the theme's mode, so the taskbar text, the tray and the
 #                       switcher numbers stay readable on a light taskbar
 #   komorebi-switcher   active workspace = the accent, workspaces with windows = the muted colour

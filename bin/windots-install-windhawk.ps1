@@ -15,10 +15,11 @@
 #      when the mod was just installed: a new colour in an installed mod shows ~0.3 s after the settings write
 #   --color=#rrggbb   the taskbar colour (default: the one in default/windhawk/taskbar-styler.json)
 #   --check           say what is installed and which colour is set; change nothing
-#   --allow-user-settings   let this user change the mod's settings without admin (one UAC now, none
-#                     when a theme changes the colour later). A deliberate trade-off, never done by
-#                     default: any program running as this user could then restyle the taskbar.
-#                     --block-user-settings takes the permission back.
+#   --allow-user-settings   let this user change the mod's settings without admin: the default (one UAC the
+#                     first time, none when a theme changes the colour later). A deliberate trade-off, chosen
+#                     by the person: any program running as this user can restyle the taskbar. It is kept
+#                     off for good by --block-user-settings (state file windhawk-no-user-settings) until
+#                     --allow-user-settings is given again.
 # Idempotent: with the same mod version and settings nothing is downloaded or rewritten.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
@@ -41,6 +42,14 @@ for ($i = 0; $i -lt $args.Count; $i++) {
     elseif ($a -like '--color=*') { $color = $a.Substring(8) }
     else { Write-Host "unknown option: $a (see windots install windhawk --help)" -ForegroundColor Red; exit 2 }
 }
+# the person's choice, kept between runs: user settings are allowed unless --block-user-settings was given
+$optOut = Join-Path $HOME '.local\state\windots\windhawk-no-user-settings'
+if ($allow -and $block) { Write-Host '--allow-user-settings and --block-user-settings together make no sense' -ForegroundColor Red; exit 2 }
+if (-not $apply) {
+    if ($block) { New-Item -ItemType Directory -Force (Split-Path $optOut) | Out-Null; Set-Content $optOut 'blocked' }
+    if ($allow) { Remove-Item $optOut -ErrorAction SilentlyContinue }
+}
+$wantAccess = $allow -or (-not $block -and -not (Test-Path $optOut))
 if ($color -notmatch '^#[0-9A-Fa-f]{6}$') { Write-Host "--color must look like #1e1e2e, not '$color'" -ForegroundColor Red; exit 2 }
 $color = $color.ToLower()
 
@@ -67,10 +76,18 @@ function Test-SettingsMatch {
 }
 function Get-ModVersion { (Get-ItemProperty $regMod -ErrorAction SilentlyContinue).Version }
 
+# The registry keys of the mod, opened with SetValue + QueryValues only: that is all the permission --allow-user-settings
+# gives, and PowerShell's registry provider asks for more (Set-ItemProperty fails with "Requested registry access is
+# not allowed"), so the settings are written through .NET.
+function Open-ModKey($Sub) {
+    [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Sub, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
+        ([Security.AccessControl.RegistryRights]::SetValue -bor [Security.AccessControl.RegistryRights]::QueryValues))
+}
+
 # Can this process write the mod's settings (admin, or --allow-user-settings was done)?
 function Test-SettingsWritable {
     foreach ($sub in "SOFTWARE\Windhawk\Engine\Mods\$modId\Settings", "SOFTWARE\Windhawk\Engine\Mods\$modId") {
-        try { $k = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($sub, $true) } catch { return $false }
+        try { $k = Open-ModKey $sub } catch { return $false }
         if (-not $k) { return $false }
         $k.Close()
     }
@@ -82,20 +99,42 @@ function Write-ModSettings {
     $sk = "$regMod\Settings"
     if (-not (Test-Path $sk)) { New-Item $sk -Force | Out-Null }
     $s = Get-ModSettings
-    $have = Get-Item $sk
-    foreach ($n in @($have.GetValueNames())) { if (-not $s.Contains($n)) { Remove-ItemProperty $sk $n } }
-    foreach ($n in $s.Keys) {
-        if ($s[$n] -is [int]) { Set-ItemProperty $sk $n $s[$n] -Type DWord } else { Set-ItemProperty $sk $n ([string]$s[$n]) -Type String }
-    }
-    Set-ItemProperty $regMod SettingsChangeTime ([int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -Type DWord
+    $k = Open-ModKey "SOFTWARE\Windhawk\Engine\Mods\$modId\Settings"
+    try {
+        foreach ($n in @($k.GetValueNames())) { if (-not $s.Contains($n)) { $k.DeleteValue($n) } }
+        foreach ($n in $s.Keys) {
+            if ($s[$n] -is [int]) { $k.SetValue($n, [int]$s[$n], [Microsoft.Win32.RegistryValueKind]::DWord) }
+            else { $k.SetValue($n, [string]$s[$n], [Microsoft.Win32.RegistryValueKind]::String) }
+        }
+    } finally { $k.Close() }
+    $m = Open-ModKey "SOFTWARE\Windhawk\Engine\Mods\$modId"
+    try { $m.SetValue('SettingsChangeTime', [int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds(), [Microsoft.Win32.RegistryValueKind]::DWord) } finally { $m.Close() }
 }
 
-function Set-UserSettingsAccess($Allow) {
+# Does an ACL rule already let this user write the mod's settings (not just: can this process, which admin always can)?
+function Test-UserAccess {
     $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
     foreach ($key in "$regMod\Settings", $regMod) {
+        try { $acl = Get-Acl $key -ErrorAction Stop } catch { return $false }
+        $hit = @($acl.Access | Where-Object {
+            $_.AccessControlType -eq 'Allow' -and ($_.RegistryRights -band [Security.AccessControl.RegistryRights]::SetValue) -and
+            $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]) -eq $sid })
+        if (-not $hit.Count) { return $false }
+    }
+    $true
+}
+
+# Windhawk's own ACLs are not in canonical order, so the .NET AddAccessRule refuses them: edit the SDDL text instead.
+# The rule is "allow SetValue (0x2) to this user", on the mod's key and its Settings key, and nothing else.
+function Set-UserSettingsAccess($Allow) {
+    $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $ace = "(A;;0x2;;;$sid)"
+    foreach ($key in "$regMod\Settings", $regMod) {
         $acl = Get-Acl $key
-        $rule = New-Object Security.AccessControl.RegistryAccessRule($sid, [Security.AccessControl.RegistryRights]::SetValue, 'None', 'None', 'Allow')
-        if ($Allow) { $acl.AddAccessRule($rule) } else { [void]$acl.RemoveAccessRule($rule) }
+        $sddl = $acl.GetSecurityDescriptorSddlForm('Access')
+        if ($Allow) { if (-not $sddl.Contains($ace)) { $sddl = $sddl -replace '^(D:[A-Z]*)', ('${1}' + $ace) } }
+        else { $sddl = $sddl.Replace($ace, '') }
+        $acl.SetSecurityDescriptorSddlForm($sddl, 'Access')
         Set-Acl $key $acl
     }
 }
@@ -175,12 +214,14 @@ if (-not (Test-Path $exe)) {
 Write-Host '==> Installing the Taskbar Styler mod'
 $fresh = -not (Get-ModVersion)
 $changed = $fresh -or -not (Test-SettingsMatch)
+$haveAccess = (-not $fresh) -and (Test-UserAccess)
+$accessChange = if ($wantAccess) { -not $haveAccess } else { $haveAccess }   # the permission has to be granted or taken back
 $flags = @("--color=$color")
-if ($allow) { $flags += '--allow-user-settings' }
-if ($block) { $flags += '--block-user-settings' }
-if (-not $fresh -and -not $allow -and -not $block -and (Test-SettingsMatch)) {
+if ($wantAccess -and -not $haveAccess) { $flags += '--allow-user-settings' }
+if (-not $wantAccess -and $haveAccess) { $flags += '--block-user-settings' }
+if (-not $fresh -and -not $accessChange -and (Test-SettingsMatch)) {
     Write-Host '  - already installed with these settings'; $code = 0
-} elseif (-not $fresh -and -not $allow -and -not $block -and (Test-SettingsWritable)) {
+} elseif (-not $fresh -and -not $accessChange -and (Test-SettingsWritable)) {
     Write-ModSettings; Write-Host "  - taskbar colour $color applied (no admin needed)"; $code = 0   # the theme path: no UAC
 } elseif (Test-Admin) { & $PSCommandPath --apply @flags; $code = $LASTEXITCODE }
 else { $code = Invoke-Elevated $PSCommandPath (@('--apply') + $flags) }

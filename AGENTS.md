@@ -214,9 +214,12 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   readable by turning `SystemUsesLightTheme` and `AppsUseLightTheme` on for `mode = light` (Explorer
   must restart to show it). A new colour shows within seconds; a mod that was not installed before
   needs an Explorer restart.
-- The Windhawk settings are in HKLM: a theme switch asks for admin (sudo, one UAC) unless
-  `windots install windhawk --allow-user-settings` was done once. That is a deliberate security
-  trade-off (any process of this user could then restyle the taskbar): never do it by default.
+- The Windhawk settings are in HKLM. By the person's choice `windots install windhawk` grants this user `SetValue` on
+  the mod's keys (`--allow-user-settings` is the default), so a theme switch needs no UAC; any process of this user
+  can then restyle the taskbar, a trade-off accepted on purpose. `--block-user-settings` undoes it and is remembered
+  (`~\.local\state\windots\windhawk-no-user-settings`). Windhawk's ACLs are not canonical: edit them as SDDL, never
+  with `AddAccessRule`; and write the values through .NET `OpenSubKey(.., SetValue)`, not `Set-ItemProperty` (the
+  provider asks for more rights than granted). A new colour needs no Windhawk or Explorer restart (measured ~0.3 s).
 - komorebi-switcher colours: only `[colors] active_indicator` / `busy_indicator` exist (text and
   background follow Windows); the file is per machine, so only its `[colors]` table is rewritten.
 - Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain
