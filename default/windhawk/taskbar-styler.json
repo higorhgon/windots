@@ -1,0 +1,10 @@
+{
+  "mod": "windows-11-taskbar-styler",
+  "color": "#1e1e2e",
+  "controlStyles": [
+    {
+      "target": "Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid > Rectangle#BackgroundFill",
+      "styles": ["Fill={color}"]
+    }
+  ]
+}

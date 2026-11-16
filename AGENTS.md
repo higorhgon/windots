@@ -51,6 +51,7 @@ instead; edit the `default/` data and the script, then run it:
 |---|---|---|
 | Windows Terminal `settings.json` | `windots-install-windows-terminal` | `default/windows-terminal/` + the fragment in `Configs/windows-terminal` |
 | Flow Launcher `Settings.json` | `windots-install-flow-launcher` | `default/flow-launcher/settings.json` |
+| Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
 | herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
 

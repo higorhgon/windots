@@ -13,3 +13,4 @@ LGUG2Z.masir                  # focus follows mouse (started by komorebic --masi
 AutoHotkey.AutoHotkey
 Flow-Launcher.Flow-Launcher
 aristocratos.btop4win         # btop (alt+shift+t)
+RamenSoftware.Windhawk       # paints the taskbar in the theme's colour (windots install windhawk adds the mod)
