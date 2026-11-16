@@ -93,6 +93,8 @@ if ($noRestart) {
 } elseif ($modeChanged) {
     Step 'restarting Explorer for the light / dark change'
     & (Join-Path $PSScriptRoot 'windots-restart-explorer.ps1')   # restarts the switcher too
+} elseif ($switcherChanged -and (Test-SwitcherLiveReload)) {
+    Step 'komorebi-switcher takes the new colours by itself (no restart)'
 } elseif ($switcherChanged) {
     & (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1')
 }

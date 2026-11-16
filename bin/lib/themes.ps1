@@ -141,6 +141,17 @@ function Set-TerminalTheme($c) {
 # default\komorebi\komorebi-switcher.toml, and only the [colors] section is ever rewritten here.
 $script:SwitcherToml = Join-Path $HOME '.config\komorebi-switcher.toml'
 
+# windots' komorebi-switcher from release -windots.2 on (or built here) reads its toml again when the file changes: a colour
+# change then needs no restart. The marker is written by windots-install-komorebi-switcher.
+function Test-SwitcherLiveReload {
+    $marker = Join-Path $HOME '.local\state\windots\komorebi-switcher.release'
+    if (-not (Test-Path $marker)) { return $false }
+    $tag = (Get-Content $marker -Raw).Trim()
+    if ($tag -eq 'built-here') { return $true }
+    $m = [regex]::Match($tag, 'windots\.(\d+)$')
+    $m.Success -and [int]$m.Groups[1].Value -ge 2
+}
+
 function Initialize-SwitcherConfig {
     $item = Get-Item -LiteralPath $script:SwitcherToml -Force -ErrorAction SilentlyContinue
     if ($item -and $item.LinkType) {   # an older install linked it into the repo: keep the content, make it a real file

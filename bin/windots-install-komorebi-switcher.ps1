@@ -31,6 +31,7 @@ $Build = Join-Path $HOME '.local\share\windots-build\komorebi-switcher'
 $State = Join-Path $HOME '.local\state\windots\komorebi-switcher.release'
 $Exe = Join-Path $env:LOCALAPPDATA 'Programs\komorebi-switcher\komorebi-switcher.exe'
 $Orig = "$Exe.orig"
+. (Join-Path $PSScriptRoot 'lib	hemes.ps1')   # Test-SwitcherLiveReload
 $Toml = Join-Path $HOME '.config\komorebi-switcher.toml'
 
 $n = 5; $alignment = 'center'; $revert = $false; $check = $false; $build = $false
@@ -117,7 +118,7 @@ if ($revert) {
 }
 
 Write-Host '==> komorebi-switcher with the windots patch' -ForegroundColor Cyan
-$newExe = $null; $releaseTag = $null
+$newExe = $null; $releaseTag = $null; $replaced = $false
 if (-not $build) {
     $rel = Get-ReleaseInfo
     if (-not $rel) { Write-Host 'no windots release found on GitHub: run with --build to compile it here' -ForegroundColor Yellow; exit 1 }
@@ -169,13 +170,15 @@ if ($newExe) {
     if ((Test-Path $Orig) -and ((Get-FileHash $newExe).Hash -eq (Get-FileHash $Exe).Hash)) { Step 'this build is already installed' }
     else {
         if (-not (Install-Exe $newExe)) { exit 1 }
-        Step 'patched komorebi-switcher.exe installed'
+        Step 'patched komorebi-switcher.exe installed'; $replaced = $true
     }
     New-Item -ItemType Directory -Force (Split-Path $State -Parent) | Out-Null
-    if ($releaseTag) { Set-Content -Path $State -Value $releaseTag } else { Remove-Item $State -Force -ErrorAction SilentlyContinue }
+    Set-Content -Path $State -Value $(if ($releaseTag) { $releaseTag } else { 'built-here' })
 }
 
 if ((Get-Key 'persistent_workspaces') -ne "$n") { Set-Key 'persistent_workspaces' $n; Step "persistent_workspaces = $n" }
 if ((Get-Key 'alignment') -ne $alignment) { Set-Key 'alignment' "`"$alignment`""; Step "alignment = $alignment" }
-& (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1')
+# a new exe has to be started; the keys alone are read again by a build that watches its toml
+if ($replaced -or -not (Test-SwitcherLiveReload)) { & (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1') }
+else { Step 'komorebi-switcher takes the keys by itself (no restart)' }
 exit 0

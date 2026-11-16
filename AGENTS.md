@@ -234,7 +234,9 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   the `v0.10.4` tag + `default/komorebi-switcher/windots.patch` (new keys in the toml: `alignment = left|center|right`, which
   finds the Start button and the tray through UI Automation (Windows 11 draws both in XAML, no handles; `src/windows/anchors.rs`)
   and re-places the switcher whenever its width or the taskbar changes, ignoring the monitor's `x`; and `persistent_workspaces = N`:
-  1..N always shown, the others only while busy or focused, empty ones dimmed). There is no centering script any more
+  1..N always shown, the others only while busy or focused, empty ones dimmed). It also reads the toml again within ~2 s
+  of a change on disk (release `-windots.2` on, or a local build): `windots-theme-set` and the installer then do not restart it
+  (`Test-SwitcherLiveReload`, from the marker `~\.local\state\windots\komorebi-switcher.release`). There is no centering script any more
   (`windots-center-switcher` is gone: windots is opinionated, one layout). The build comes from a release of this repo made by
   `.github/workflows/komorebi-switcher.yml` when a tag `komorebi-switcher-v<upstream>-windots.<n>` is pushed (a change to the patch
   means a new tag); `windots install komorebi switcher` downloads the newest one (SHA-256 checked), `--build` compiles locally with a

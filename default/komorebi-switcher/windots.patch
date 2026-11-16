@@ -12,7 +12,7 @@ index f52acfa..85c0df2 100644
  
  [target.'cfg(target_os = "macos")'.dependencies]
 diff --git a/src/config.rs b/src/config.rs
-index e30213d..90e96ad 100644
+index e30213d..01696b3 100644
 --- a/src/config.rs
 +++ b/src/config.rs
 @@ -81,6 +81,15 @@ pub struct Config {
@@ -31,6 +31,30 @@ index e30213d..90e96ad 100644
  
  	#[serde(default, skip_serializing_if = "Option::is_none")]
  	pub font_family: Option<String>,
+@@ -170,3 +179,23 @@ impl Config {
+ fn default_true() -> bool {
+ 	true
+ }
++
++/// windots patch: the config as it is on disk when the file changed since the last call, so a theme switch or an edit
++/// of the toml shows up without restarting the switcher. The first call only remembers the file's date.
++pub fn reload_if_changed() -> Option<Config> {
++	static LAST: std::sync::Mutex<Option<std::time::SystemTime>> = std::sync::Mutex::new(None);
++
++	let modified = std::fs::metadata(Config::path().ok()?).ok()?.modified().ok()?;
++	let mut last = LAST.lock().ok()?;
++	match *last {
++		Some(previous) if previous == modified => None,
++		Some(_) => {
++			*last = Some(modified);
++			Config::load().ok()
++		}
++		None => {
++			*last = Some(modified);
++			None
++		}
++	}
++}
 diff --git a/src/windows/anchors.rs b/src/windows/anchors.rs
 new file mode 100644
 index 0000000..6170be2
@@ -181,7 +205,7 @@ index b432723..496949f 100644
  			text_color.gamma_multiply(0.75)
  		};
 diff --git a/src/windows/windows/switcher/mod.rs b/src/windows/windows/switcher/mod.rs
-index 1944249..e91cdd1 100644
+index 1944249..1cc0bb6 100644
 --- a/src/windows/windows/switcher/mod.rs
 +++ b/src/windows/windows/switcher/mod.rs
 @@ -206,11 +206,12 @@ impl SwitcherWindowView {
@@ -244,14 +268,25 @@ index 1944249..e91cdd1 100644
  
  			self.workspace_button(ui, workspace, monitor_config, config);
  		}
-@@ -498,9 +524,14 @@ impl EguiView for SwitcherWindowView {
+@@ -488,6 +514,12 @@ impl EguiView for SwitcherWindowView {
+ 			self.show_context_menu();
+ 		}
+ 
++		// windots patch: take the toml again when it changed on disk (a theme switch, an edit)
++		if let Some(fresh) = crate::config::reload_if_changed() {
++			tracing::info!("Config changed on disk, reloaded");
++			*self.config.write().unwrap() = fresh;
++		}
++
+ 		// Load effective config.
+ 		let config = self.effective_config();
+ 		let monitor_config = config.get_monitor(&self.monitor_state.id);
+@@ -498,9 +530,12 @@ impl EguiView for SwitcherWindowView {
  		// Draw ui
  		let response = self.switcher_panel(ctx, &config, &monitor_config);
  
-+		// windots patch: look at the Start button and the tray again every now and then
-+		if config.alignment.is_some() {
-+			ctx.request_repaint_after(std::time::Duration::from_secs(2));
-+		}
++		// windots patch: look at the config file, the Start button and the tray again every now and then
++		ctx.request_repaint_after(std::time::Duration::from_secs(2));
 +
  		// Resize host to match the content rect.
  		let ppp = ctx.pixels_per_point();
