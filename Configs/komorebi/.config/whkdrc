@@ -8,7 +8,7 @@ alt + return         : start wt  # Terminal
 alt + shift + return : start msedge  # Navegador
 alt + shift + b      : start msedge  # Navegador
 alt + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
-alt + shift + f      : start explorer  # Gerenciador de arquivos
+alt + shift + f      : windots-launch-files  # Gerenciador de arquivos (Files)
 alt + shift + n      : start wt nvim  # Editor (nvim)
 alt + ctrl + q       : start calc  # Calculadora
 alt + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
