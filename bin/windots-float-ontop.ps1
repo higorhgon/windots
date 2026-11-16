@@ -57,6 +57,8 @@ while ($true) {
         & $komorebic subscribe-pipe $pipeName 2>$null
         $connect = $server.WaitForConnectionAsync()
         if (-not $connect.Wait(5000)) { throw 'komorebi did not connect' }
+        # komorebi started with the colours of komorebi.json: put the current theme's borders on it (a failure here is not worth the loop)
+        try { & (Join-Path $PSScriptRoot 'windots-theme-borders.ps1') *>$null } catch { }
         $reader = [IO.StreamReader]::new($server)
         while ($null -ne ($line = $reader.ReadLine())) {
             if (-not $line) { continue }

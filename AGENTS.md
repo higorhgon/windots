@@ -265,8 +265,14 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   (measured, 40 s) and reads it only at start: `Update-FilesTheme` restarts it, or with `--no-restart` sends a toast
   (`windots-notify`) whose click opens `windots:restart-files` (`windots-uri.ps1`, a whitelist: never run anything else from
   a link). Live theming would mean a fork of Files; not done.
-- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app,
-  komorebi borders. Official catppuccin ports are used there until they are.
+- komorebi borders follow the theme like omarchy's Hyprland ones (`Set-KomorebiBorders`, `windots-theme-borders`): active, stack
+  and floating = the theme's `hyprland_active_border` (first colour of the gradient) or its accent, monocle = its orange,
+  unfocused = `hyprland_inactive_border` or #595959. `komorebic border-colour` changes them in the running komorebi, so a theme
+  switch restarts nothing; komorebi starts with the colours of komorebi.json, so `windots-float-ontop` (it runs while komorebi
+  does) applies the current theme's whenever it connects. Animation: 180 ms (`animation.duration` in komorebi.json; live with
+  `komorebic animation-duration 180`).
+- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app. Official catppuccin ports are used there
+  until they are.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
   `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.
 Font: JetBrainsMonoNL Nerd Font (`windots-install-font`).

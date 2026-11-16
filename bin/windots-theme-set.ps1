@@ -1,5 +1,5 @@
 # windots-theme-set [<name>] [--skip-taskbar] [--skip-wallpaper] [--skip-files] [--no-restart]
-# windots:summary=Apply an omarchy theme: taskbar, komorebi-switcher, Windows Terminal, Neovim, Files, wallpaper, light/dark mode
+# windots:summary=Apply an omarchy theme: taskbar, komorebi borders and switcher, Windows Terminal, Neovim, Files, wallpaper, light/dark mode
 # windots:args=[<name>] [--skip-taskbar] [--skip-wallpaper] [--skip-files] [--no-restart]
 # windots:examples=windots theme set | windots theme set "Tokyo Night" | windots theme set catppuccin-latte --no-restart
 #
@@ -12,6 +12,8 @@
 #                       windots-install-windhawk; no UAC once it granted the user write access to the mod's settings)
 #   light / dark mode   Windows' flags follow the theme's mode, so the taskbar text, the tray and the
 #                       switcher numbers stay readable on a light taskbar
+#   komorebi borders    active / stack / floating = the theme's active border or accent, monocle = its orange,
+#                       unfocused = its inactive border (omarchy's Hyprland borders); changed live, no restart
 #   komorebi-switcher   active workspace = the accent, workspaces with windows = the muted colour
 #   Neovim (LazyVim)    lua\plugins\theme.lua = the theme's colorscheme (omarchy's neovim.lua, or its aether template
 #                       with the palette); open Neovims reload it live. Only when windots-install-lazyvim was run.
@@ -23,7 +25,7 @@
 #   --skip-taskbar   leave the taskbar and the Windows mode alone
 #   --skip-wallpaper leave the desktop background alone
 #   --skip-files     leave Files alone
-# Not themed yet: btop, atuin, fzf, starship, herdr-app, komorebi borders.
+# Not themed yet: btop, atuin, fzf, starship, herdr-app.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
@@ -71,6 +73,8 @@ if (-not $skipWallpaper) {
 }
 
 if (-not $skipFiles) { Step (Update-FilesTheme $name $c $noRestart) }
+
+Step (Set-KomorebiBorders $c)
 
 $switcherChanged = Set-SwitcherColors $c
 Step $(if ($switcherChanged) { 'komorebi-switcher: indicator colours changed' } else { 'komorebi-switcher: colours already right' })

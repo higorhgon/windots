@@ -134,6 +134,38 @@ function Set-TerminalTheme($c) {
     'changed'
 }
 
+# --- komorebi borders ---------------------------------------------------------------------
+# omarchy's Hyprland borders: active = the theme's `hyprland_active_border` or its accent, inactive = `hyprland_inactive_border`
+# or #595959 (default\themed\hyprland.lua.tpl). Hyprland takes a gradient ("rgba(..) rgba(..) 45deg"); komorebi one colour,
+# so the first one of it. `komorebic border-colour` changes it in the running komorebi: nothing restarts. komorebi.json has
+# the same colours for the next start, and windots-float-ontop applies the theme's again whenever komorebi comes up.
+function ConvertFrom-HyprColor($Value) {
+    $m = [regex]::Match([string]$Value, 'rgba?\(([0-9a-fA-F]{6})')
+    if ($m.Success) { return '#' + $m.Groups[1].Value }
+    $null
+}
+
+function Set-KomorebiBorders($c) {
+    $k = (Get-Command komorebic.exe -ErrorAction SilentlyContinue | Select-Object -First 1).Source
+    if (-not $k) { return 'komorebi borders: komorebi is not installed, skipped' }
+    $active = ConvertFrom-HyprColor $c.hyprland_active_border; if (-not $active) { $active = $c.accent }
+    $inactive = ConvertFrom-HyprColor $c.hyprland_inactive_border; if (-not $inactive) { $inactive = '#595959' }
+    $kinds = [ordered]@{ single = $active; stack = $active; floating = $active; monocle = $c.orange; unfocused = $inactive }
+    foreach ($kind in $kinds.Keys) {
+        $hex = ([string]$kinds[$kind]).TrimStart('#')
+        $rgb = foreach ($i in 0, 2, 4) { [Convert]::ToInt32($hex.Substring($i, 2), 16) }
+        # komorebi answers late when it is busy (right after Files was restarted, say): try a few times before saying it is down
+        $ok = $false
+        foreach ($try in 1..8) {
+            & $k border-colour --window-kind $kind $rgb[0] $rgb[1] $rgb[2] 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+            Start-Sleep -Milliseconds 500
+        }
+        if (-not $ok) { return 'komorebi borders: komorebi is not running (or not answering), they are applied when it starts' }
+    }
+    "komorebi borders: active $active, monocle $($c.orange), inactive $inactive"
+}
+
 # --- komorebi-switcher --------------------------------------------------------------------
 # The switcher keeps the colour of its indicators in a [colors] section of
 # ~\.config\komorebi-switcher.toml (its text and background follow Windows' light / dark mode and the
