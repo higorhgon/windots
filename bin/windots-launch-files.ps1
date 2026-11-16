@@ -2,7 +2,7 @@
 # windots:summary=Open the file manager: Files (focus it if open) when installed, else Explorer
 # windots:examples=windots launch files
 #
-# The Alt+Shift+F hotkey (omarchy's Super+Shift+F opens nautilus). Files is the file manager that
+# The Win+Shift+F hotkey (omarchy's Super+Shift+F opens nautilus). Files is the file manager that
 # takes the theme (windots install files); on a machine without it this opens Explorer.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 

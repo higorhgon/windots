@@ -1,5 +1,5 @@
 # windots-menu-keybindings [--pick | --list]
-# windots:summary=Searchable list of every hotkey (Alt+K)
+# windots:summary=Searchable list of every hotkey (Win+K)
 # windots:args=[--pick | --list]
 # windots:examples=windots menu keybindings | windots menu keybindings --list
 #
@@ -52,7 +52,7 @@ $rows = New-Object System.Collections.Generic.List[object]
 # (the trailing comment, when there is one, is shown instead of the command)
 $section = ''
 foreach ($line in Get-Content $whkdrc) {
-    # section names drop their "(...)" hints: "Foco (Alt+setas)" -> "Foco"
+    # section names drop their "(...)" hints: "Foco (Win+setas)" -> "Foco"
     if ($line -match '^#\s*---\s*(.+?)\s*---') { $section = $Matches[1] -replace '\s*\(.*\)$', ''; continue }
     if ($line -match '^#\s*(.+)$') { if ($section) { $section = $Matches[1] -replace '\s*\(.*\)$', '' }; continue }
     if ($line -match '^([^:#.][^:]*?)\s+:\s+(.+)$') {

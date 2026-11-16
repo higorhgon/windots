@@ -1,104 +1,104 @@
 .shell pwsh
 
-# Keys follow omarchy, with Super mapped to Alt.
-# The "# ..." at the end of a line is its description in windots-menu-keybindings (Alt+K).
+# Keys follow omarchy, with Super = the Windows key (Win+L lock and Win+R run are left alone).
+# The "# ..." at the end of a line is its description in windots-menu-keybindings (Win+K).
 
 # --- Apps ---
-alt + return         : start wt  # Terminal
-alt + shift + return : start msedge  # Navegador
-alt + shift + b      : start msedge  # Navegador
-alt + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
-alt + shift + f      : windots-launch-files  # Gerenciador de arquivos (Files)
-alt + shift + n      : start wt nvim  # Editor (nvim)
-alt + ctrl + q       : start calc  # Calculadora
-alt + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
-alt + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk
+win + return         : start wt  # Terminal
+win + shift + return : start msedge  # Navegador
+win + shift + b      : start msedge  # Navegador
+win + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
+win + shift + f      : windots-launch-files  # Gerenciador de arquivos (Files)
+win + shift + n      : start wt nvim  # Editor (nvim)
+win + ctrl + q       : start calc  # Calculadora
+win + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
+win + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk
 
 # --- Tema, fontes e menus (omarchy: Super+Ctrl+T, Super+Ctrl+W, Super+K) ---
-alt + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
-# Alt+K (atalhos) e Alt+Ctrl+Shift+Space (temas) estão em windots-hotkeys.ahk: o whkd abre um pwsh a cada atalho, o AutoHotkey já está rodando.
-alt + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
-alt + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
+win + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
+# Win+K (atalhos) e Alt+Ctrl+Shift+Space (temas) estão em windots-hotkeys.ahk: o whkd abre um pwsh a cada atalho, o AutoHotkey já está rodando.
+win + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
+win + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
 
 # --- Configurações (omarchy: Super+Ctrl+A/B/N/P) ---
-alt + ctrl + a       : start ms-settings:sound  # Configurações de som
-alt + ctrl + b       : start ms-settings:bluetooth  # Configurações de bluetooth
-alt + ctrl + n       : start ms-settings:network  # Configurações de rede
-alt + ctrl + p       : start ms-settings:powersleep  # Configurações de energia
-alt + ctrl + shift + f : windots-install-font  # Instalar fonte (Nerd Fonts)
+win + ctrl + a       : start ms-settings:sound  # Configurações de som
+win + ctrl + b       : start ms-settings:bluetooth  # Configurações de bluetooth
+win + ctrl + n       : start ms-settings:network  # Configurações de rede
+win + ctrl + p       : start ms-settings:powersleep  # Configurações de energia
+win + ctrl + shift + f : windots-install-font  # Instalar fonte (Nerd Fonts)
 
 # --- Captura (Print abre o recorte nativo do Windows) ---
-alt + ctrl + shift + c : start ms-screenclip:  # Captura de tela (recorte)
+win + ctrl + shift + c : start ms-screenclip:  # Captura de tela (recorte)
 
 # --- Janelas ---
-alt + w              : komorebic close  # Fechar janela
-alt + q              : komorebic close  # Fechar janela
-alt + f              : windots-toggle-fullscreen  # Tela cheia (cobre a barra do Windows)
-alt + ctrl + f       : komorebic toggle-monocle  # Tela cheia no tile (monocle)
-alt + t              : komorebic toggle-float  # Alternar flutuante/tile
-alt + j              : komorebic flip-layout horizontal  # Inverter divisão na horizontal
-alt + shift + j      : komorebic flip-layout vertical  # Inverter divisão na vertical
-alt + m              : komorebic minimize  # Minimizar janela
-alt + e              : komorebic retile  # Reorganizar janelas (retile)
+win + w              : komorebic close  # Fechar janela
+win + q              : komorebic close  # Fechar janela
+win + f              : windots-toggle-fullscreen  # Tela cheia (cobre a barra do Windows)
+win + ctrl + f       : komorebic toggle-monocle  # Tela cheia no tile (monocle)
+win + t              : komorebic toggle-float  # Alternar flutuante/tile
+win + j              : komorebic flip-layout horizontal  # Inverter divisão na horizontal
+win + shift + j      : komorebic flip-layout vertical  # Inverter divisão na vertical
+win + m              : komorebic minimize  # Minimizar janela
+win + e              : komorebic retile  # Reorganizar janelas (retile)
 
-# --- Foco (Alt+setas) ---
-alt + left           : komorebic focus left  # Focar janela à esquerda
-alt + right          : komorebic focus right  # Focar janela à direita
-alt + up             : komorebic focus up  # Focar janela acima
-alt + down           : komorebic focus down  # Focar janela abaixo
+# --- Foco (Win+setas) ---
+win + left           : komorebic focus left  # Focar janela à esquerda
+win + right          : komorebic focus right  # Focar janela à direita
+win + up             : komorebic focus up  # Focar janela acima
+win + down           : komorebic focus down  # Focar janela abaixo
 
-# --- Trocar janelas de lugar (Alt+Shift+setas) ---
-alt + shift + left   : komorebic move left  # Mover janela para a esquerda
-alt + shift + right  : komorebic move right  # Mover janela para a direita
-alt + shift + up     : komorebic move up  # Mover janela para cima
-alt + shift + down   : komorebic move down  # Mover janela para baixo
+# --- Trocar janelas de lugar (Win+Shift+setas) ---
+win + shift + left   : komorebic move left  # Mover janela para a esquerda
+win + shift + right  : komorebic move right  # Mover janela para a direita
+win + shift + up     : komorebic move up  # Mover janela para cima
+win + shift + down   : komorebic move down  # Mover janela para baixo
 
-# --- Redimensionar (Alt+-/= na largura, Alt+Shift+-/= na altura) ---
-alt + oem_minus         : komorebic resize-axis horizontal decrease  # Diminuir largura
-alt + oem_plus          : komorebic resize-axis horizontal increase  # Aumentar largura
-alt + shift + oem_minus : komorebic resize-axis vertical decrease  # Diminuir altura
-alt + shift + oem_plus  : komorebic resize-axis vertical increase  # Aumentar altura
+# --- Redimensionar (Win+-/= na largura, Win+Shift+-/= na altura) ---
+win + oem_minus         : komorebic resize-axis horizontal decrease  # Diminuir largura
+win + oem_plus          : komorebic resize-axis horizontal increase  # Aumentar largura
+win + shift + oem_minus : komorebic resize-axis vertical decrease  # Diminuir altura
+win + shift + oem_plus  : komorebic resize-axis vertical increase  # Aumentar altura
 
 # --- Workspaces ---
-alt + tab            : komorebic cycle-workspace next  # Próximo workspace
-alt + shift + tab    : komorebic cycle-workspace previous  # Workspace anterior
+win + tab            : komorebic cycle-workspace next  # Próximo workspace
+win + shift + tab    : komorebic cycle-workspace previous  # Workspace anterior
 
-alt + 1              : komorebic focus-workspace 0  # Ir para o workspace 1
-alt + 2              : komorebic focus-workspace 1  # Ir para o workspace 2
-alt + 3              : komorebic focus-workspace 2  # Ir para o workspace 3
-alt + 4              : komorebic focus-workspace 3  # Ir para o workspace 4
-alt + 5              : komorebic focus-workspace 4  # Ir para o workspace 5
-alt + 6              : komorebic focus-workspace 5  # Ir para o workspace 6
-alt + 7              : komorebic focus-workspace 6  # Ir para o workspace 7
-alt + 8              : komorebic focus-workspace 7  # Ir para o workspace 8
-alt + 9              : komorebic focus-workspace 8  # Ir para o workspace 9
-alt + 0              : komorebic focus-workspace 9  # Ir para o workspace 10
+win + 1              : komorebic focus-workspace 0  # Ir para o workspace 1
+win + 2              : komorebic focus-workspace 1  # Ir para o workspace 2
+win + 3              : komorebic focus-workspace 2  # Ir para o workspace 3
+win + 4              : komorebic focus-workspace 3  # Ir para o workspace 4
+win + 5              : komorebic focus-workspace 4  # Ir para o workspace 5
+win + 6              : komorebic focus-workspace 5  # Ir para o workspace 6
+win + 7              : komorebic focus-workspace 6  # Ir para o workspace 7
+win + 8              : komorebic focus-workspace 7  # Ir para o workspace 8
+win + 9              : komorebic focus-workspace 8  # Ir para o workspace 9
+win + 0              : komorebic focus-workspace 9  # Ir para o workspace 10
 
-# Mover a janela e ir junto (Alt+Shift+número)
-alt + shift + 1      : komorebic move-to-workspace 0  # Levar janela ao workspace 1
-alt + shift + 2      : komorebic move-to-workspace 1  # Levar janela ao workspace 2
-alt + shift + 3      : komorebic move-to-workspace 2  # Levar janela ao workspace 3
-alt + shift + 4      : komorebic move-to-workspace 3  # Levar janela ao workspace 4
-alt + shift + 5      : komorebic move-to-workspace 4  # Levar janela ao workspace 5
-alt + shift + 6      : komorebic move-to-workspace 5  # Levar janela ao workspace 6
-alt + shift + 7      : komorebic move-to-workspace 6  # Levar janela ao workspace 7
-alt + shift + 8      : komorebic move-to-workspace 7  # Levar janela ao workspace 8
-alt + shift + 9      : komorebic move-to-workspace 8  # Levar janela ao workspace 9
-alt + shift + 0      : komorebic move-to-workspace 9  # Levar janela ao workspace 10
+# Mover a janela e ir junto (Win+Shift+número)
+win + shift + 1      : komorebic move-to-workspace 0  # Levar janela ao workspace 1
+win + shift + 2      : komorebic move-to-workspace 1  # Levar janela ao workspace 2
+win + shift + 3      : komorebic move-to-workspace 2  # Levar janela ao workspace 3
+win + shift + 4      : komorebic move-to-workspace 3  # Levar janela ao workspace 4
+win + shift + 5      : komorebic move-to-workspace 4  # Levar janela ao workspace 5
+win + shift + 6      : komorebic move-to-workspace 5  # Levar janela ao workspace 6
+win + shift + 7      : komorebic move-to-workspace 6  # Levar janela ao workspace 7
+win + shift + 8      : komorebic move-to-workspace 7  # Levar janela ao workspace 8
+win + shift + 9      : komorebic move-to-workspace 8  # Levar janela ao workspace 9
+win + shift + 0      : komorebic move-to-workspace 9  # Levar janela ao workspace 10
 
-# Mover a janela sem ir junto (Alt+Ctrl+Shift+número)
-alt + ctrl + shift + 1 : komorebic send-to-workspace 0  # Enviar janela ao workspace 1
-alt + ctrl + shift + 2 : komorebic send-to-workspace 1  # Enviar janela ao workspace 2
-alt + ctrl + shift + 3 : komorebic send-to-workspace 2  # Enviar janela ao workspace 3
-alt + ctrl + shift + 4 : komorebic send-to-workspace 3  # Enviar janela ao workspace 4
-alt + ctrl + shift + 5 : komorebic send-to-workspace 4  # Enviar janela ao workspace 5
-alt + ctrl + shift + 6 : komorebic send-to-workspace 5  # Enviar janela ao workspace 6
-alt + ctrl + shift + 7 : komorebic send-to-workspace 6  # Enviar janela ao workspace 7
-alt + ctrl + shift + 8 : komorebic send-to-workspace 7  # Enviar janela ao workspace 8
-alt + ctrl + shift + 9 : komorebic send-to-workspace 8  # Enviar janela ao workspace 9
-alt + ctrl + shift + 0 : komorebic send-to-workspace 9  # Enviar janela ao workspace 10
+# Mover a janela sem ir junto (Win+Ctrl+Shift+número)
+win + ctrl + shift + 1 : komorebic send-to-workspace 0  # Enviar janela ao workspace 1
+win + ctrl + shift + 2 : komorebic send-to-workspace 1  # Enviar janela ao workspace 2
+win + ctrl + shift + 3 : komorebic send-to-workspace 2  # Enviar janela ao workspace 3
+win + ctrl + shift + 4 : komorebic send-to-workspace 3  # Enviar janela ao workspace 4
+win + ctrl + shift + 5 : komorebic send-to-workspace 4  # Enviar janela ao workspace 5
+win + ctrl + shift + 6 : komorebic send-to-workspace 5  # Enviar janela ao workspace 6
+win + ctrl + shift + 7 : komorebic send-to-workspace 6  # Enviar janela ao workspace 7
+win + ctrl + shift + 8 : komorebic send-to-workspace 7  # Enviar janela ao workspace 8
+win + ctrl + shift + 9 : komorebic send-to-workspace 8  # Enviar janela ao workspace 9
+win + ctrl + shift + 0 : komorebic send-to-workspace 9  # Enviar janela ao workspace 10
 
 # --- komorebi / whkd ---
-alt + shift + r      : komorebic reload-configuration  # Recarregar config do komorebi
-alt + shift + p      : komorebic toggle-pause  # Pausar/retomar o komorebi
-alt + o              : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden  # Reiniciar o whkd
+win + shift + r      : komorebic reload-configuration  # Recarregar config do komorebi
+win + shift + p      : komorebic toggle-pause  # Pausar/retomar o komorebi
+win + o              : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden  # Reiniciar o whkd

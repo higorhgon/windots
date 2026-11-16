@@ -2,8 +2,8 @@
 ;
 ; Hotkeys whkd can't handle. Started at login by windots-refresh-autostart.
 ;   - Win key never opens the Start menu
-;   - Alt+drag moves a window, Alt+right-drag resizes it
-;   - Alt+Shift+/ on ABNT2 keyboards (whkd breaks with custom key codes like 0xC1;
+;   - Win+drag moves a window, Win+right-drag resizes it
+;   - Win+Shift+/ on ABNT2 keyboards (whkd breaks with custom key codes like 0xC1;
 ;     US / US-Intl "/" stays in whkdrc as oem_2)
 
 #Requires AutoHotkey v2.0
@@ -38,7 +38,7 @@ CallbackFree(EnumProc)
 ; windots-launcher keeps one resident process that listens on a named pipe. Writing to the pipe from here
 ; opens the menu in a few milliseconds; starting windots-launcher.exe with the verb costs a whole .NET
 ; process (~300 ms), so that is only the fallback, for when no resident process is running yet.
-; whkd can't take a combination with the Windows key. Not installed: windots install launcher.
+; Not installed: windots install launcher.
 LauncherMenu(verb, route := "root", fallback := "") {
     DllCall("AllowSetForegroundWindow", "UInt", 0xFFFFFFFF)   ; the resident process may take focus
     h := DllCall("CreateFileW", "Str", "\\.\pipe\windots-launcher", "UInt", 0x40000000, "UInt", 0, "Ptr", 0
@@ -65,20 +65,23 @@ LauncherMenu(verb, route := "root", fallback := "") {
 ; and searches apps, commands, themes, calculations, `> shell` and `kill` as you type. Alt+Space is not bound.
 #!Space::LauncherMenu("toggle", "launcher")   ; Lançador (apps, comandos, temas, contas)
 
-; These two used to be whkd bindings: whkd starts a pwsh for every hotkey (~300 ms), AutoHotkey is resident.
-!k::LauncherMenu("toggle", "keys", "pwsh -NoProfile -Command windots-menu-keybindings")   ; Atalhos de teclado (este menu)
-!^+Space::LauncherMenu("toggle", "style.theme", "pwsh -NoProfile -Command windots-menu-theme")   ; Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
+; Win+R is Run, like Windows': the launcher with "> " already typed (Enter: in a terminal, Shift+Enter: no window).
+#r::LauncherMenu("toggle", "run", "rundll32.exe shell32.dll,#61")   ; Executar (comando no lançador)
 
-; --- Alt+Shift+/ on ABNT2 (VK_ABNT_C1): passwords, like omarchy ---
-!+vkC1:: {
+; These two used to be whkd bindings: whkd starts a pwsh for every hotkey (~300 ms), AutoHotkey is resident.
+#k::LauncherMenu("toggle", "keys", "pwsh -NoProfile -Command windots-menu-keybindings")   ; Atalhos de teclado (este menu)
+#^+Space::LauncherMenu("toggle", "style.theme", "pwsh -NoProfile -Command windots-menu-theme")   ; Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
+
+; --- Win+Shift+/ on ABNT2 (VK_ABNT_C1): passwords, like omarchy ---
+#+vkC1:: {
     exe := EnvGet("LOCALAPPDATA") "\Programs\omapass\omapass.exe"
     Run "pwsh -NoProfile -Command windots-launch-or-focus --float '^(omapass)$' `"" exe "`"", , "Hide"
 }
 
-; --- Alt+drag: move / Alt+right-drag: resize ---
+; --- Win+drag: move / Win+right-drag: resize ---
 CoordMode "Mouse", "Screen"
 
-!LButton:: {
+#LButton:: {
     MouseGetPos &startX, &startY, &hwnd
     if !hwnd || WinGetMinMax("ahk_id " hwnd) != 0
         return
@@ -90,7 +93,7 @@ CoordMode "Mouse", "Screen"
     }
 }
 
-!RButton:: {
+#RButton:: {
     MouseGetPos &startX, &startY, &hwnd
     if !hwnd || WinGetMinMax("ahk_id " hwnd) != 0
         return

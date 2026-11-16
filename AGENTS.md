@@ -12,7 +12,7 @@ A Windows 11 desktop that behaves like omarchy: komorebi (tiling) + whkd
 Terminal, all in Catppuccin Mocha. **omarchy is the reference**: when adding or
 changing something, look at how omarchy does it (`omacom/omarchy`, branch
 `quattro`: `default/hypr/bindings/*.lua`, `bin/omarchy-*`) and mirror it, with
-**Super mapped to Alt**.
+**Super = the Windows key** (Win+L lock stays the system's; Win+R is the launcher's `run` route).
 
 ## Layout
 
@@ -133,22 +133,27 @@ in the `windots` skill). A new script without them is missing from the help.
 
 **whkd** (`Configs/komorebi/.config/whkdrc`)
 - `.shell pwsh`; the trailing `# ...` on a line is its description in the
-  Alt+K menu (`windots-menu-keybindings`). Keep it, in Portuguese.
+  Win+K menu (`windots-menu-keybindings`). Keep it, in Portuguese.
 - **Never use hex key codes** (`0xc1`): with the full file loaded, whkd keeps
   running but ignores *every* hotkey. Keys whkd can't name go to
   `bin/windots-hotkeys.ahk` (AutoHotkey v2), e.g. the ABNT2 `/` (`vkC1`).
+- Super is the Windows key: `win + ...` works in whkd (checked: Win+2 switches workspace) and `windots-hotkeys.ahk` stops the
+  Start menu. A key whkd binds is swallowed before the shell sees it (Win+E/Q/W/T/F/M/O/J/K showed nothing of the system's);
+  unbound ones stay the system's (Win+A quick settings, Win+N, Win+B, Win+D), so **Win+L (lock) is left unbound on
+  purpose**: never bind it. Win+R is in `windots-hotkeys.ahk`: the launcher's `run` route (the launcher with `> ` typed; falls
+  back to the real Run dialog when the launcher is not installed). When testing, do not simulate `Win+Q` / `Win+W` on a live desktop: they close windows.
 - US/US-Intl `/` is `oem_2`; `-` / `=` are `oem_minus` / `oem_plus`.
 - After editing: `windots restart whkd` (it refreshes the PATH first, or `windots-*`
-  commands aren't found), then verify that `Alt+number` still switches workspaces. The
+  commands aren't found), then verify that `Win+number` still switches workspaces. The
   first key right after a restart is sometimes dropped: retry before concluding.
 - Check conflicts with herdr-app (`default/herdr-app/keys.json`, `default/retropet/keys.json`)
-  and the launcher hotkeys in `windots-hotkeys.ahk`. Alt+number belongs to komorebi workspaces.
-- Hotkeys that open the windots-launcher (`Win+Space` the root menu, `Win+Alt+Space` the launcher: apps first, `Alt+K`
-  the keybindings, `Alt+Ctrl+Shift+Space` the themes) live in `windots-hotkeys.ahk`, not in whkd: whkd starts a `pwsh`
+  and the launcher hotkeys in `windots-hotkeys.ahk`. Win+number belongs to komorebi workspaces.
+- Hotkeys that open the windots-launcher (`Win+Space` the root menu, `Win+Alt+Space` the launcher: apps first, `Win+K`
+  the keybindings, `Win+Ctrl+Shift+Space` the themes) live in `windots-hotkeys.ahk`, not in whkd: whkd starts a `pwsh`
   for every hotkey (~300 ms) and AutoHotkey is resident. They write `verb<TAB>route` to the launcher's named pipe
   `windots-launcher` (a few ms); starting `windots-launcher.exe` costs a whole .NET process (~300 ms) and is only the
   fallback. Never bind the same key in both, or the menu toggles open and shut. A `; description` after a hotkey in the
-  .ahk file is what the Alt+K menu shows for it. `Alt+Space` is free (Flow Launcher, which used it, is gone).
+  .ahk file is what the Win+K menu shows for it. `Alt+Space` is free (Flow Launcher, which used it, is gone).
 
 **Window corners**
 - Windows 11 rounds every window, which clashes with komorebi's square borders. There is no setting for it: no registry
@@ -174,6 +179,8 @@ in the `windots` skill). A new script without them is missing from the help.
   `toggle-float-override` it waits until the state says it is on (komorebi reads the toggle
   late; an app that opens fast beats it). Test it with a throwaway `--config` and an app komorebi
   manages (Notepad): it moves focus and opens windows, so close what you open.
+- The hidden window of an AutoHotkey v2 script (`AutoHotkey64.exe`) is ignored in `applications.json`; without it, restarting
+  the script tiled that invisible window and took half of the workspace.
 - `windots restart komorebi` manages every window again (tiles redone, floating overrides
   and workspace layers lost) and restarts what subscribes to it (komorebi-switcher,
   `windots-float-ontop`): don't run it on the person's desktop just to test.
@@ -220,6 +227,9 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   (`~\.local\state\windots\windhawk-no-user-settings`). Windhawk's ACLs are not canonical: edit them as SDDL, never
   with `AddAccessRule`; and write the values through .NET `OpenSubKey(.., SetValue)`, not `Set-ItemProperty` (the
   provider asks for more rights than granted). A new colour needs no Windhawk or Explorer restart (measured ~0.3 s).
+- The taskbar shows no app buttons: a second Taskbar Styler rule (`Taskbar.TaskListButton`, `Visibility=Collapsed`, in
+  `default/windhawk/taskbar-styler.json`) hides pinned and running apps alike, leaving search, tray and the komorebi-switcher
+  workspaces; Windows has no setting for it. Remove that entry to bring the buttons back (`windots install windhawk`).
 - komorebi-switcher colours: only `[colors] active_indicator` / `busy_indicator` exist (text and
   background follow Windows); the file is per machine, so only its `[colors]` table is rewritten.
 - Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain

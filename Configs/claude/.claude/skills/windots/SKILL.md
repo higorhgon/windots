@@ -8,7 +8,7 @@ description: Change the Windows desktop setup kept in the windots repo (~\windot
 The Windows dotfiles live in `~\windots` (GitHub `higorhgon/windots`). Read
 `~\windots\AGENTS.md` first: layout, rules learned the hard way, testing and
 commit conventions. omarchy (`omacom/omarchy`, branch `quattro`) is the
-reference for behavior and names, with **Super mapped to Alt**.
+reference for behavior and names, with **Super = the Windows key** (Win+L lock and Win+R run stay the system's).
 
 Talk to the person in Portuguese; code, comments and commit messages in English.
 
@@ -24,9 +24,9 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 
 ### Add or change a hotkey
 1. Check the key is free: `~\.config\whkdrc`, `windots-hotkeys.ahk`, herdr-app
-   `keys.json`, `windots-hotkeys.ahk`. Alt+number is komorebi's.
+   `keys.json`, `windots-hotkeys.ahk`. Win+number is komorebi's.
 2. Add the line in the right `# --- Section ---` of `whkdrc`, with a Portuguese
-   description: `alt + ctrl + x : <command>  # Descrição`.
+   description: `win + ctrl + x : <command>  # Descrição`.
    - Named keys only (`oem_2`, `oem_minus`...). **No hex codes** — they disable
      every hotkey. Unnamed keys (e.g. ABNT2 `/` = `vkC1`) go in
      `bin\windots-hotkeys.ahk`.
@@ -34,7 +34,7 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 4. Restart whkd: `windots restart whkd` (it refreshes the PATH, so the `windots-*` commands
    its hotkeys run are found). Other apps have the same: `windots restart komorebi`, `masir`,
    `komorebi switcher`, `float ontop`, `hotkeys`, `herdr app`.
-5. Test the new key and `Alt+1`/`Alt+2` (workspaces) by simulating them; retry
+5. Test the new key and `Win+1`/`Win+2` (workspaces) by simulating them; retry
    once if the very first press after the restart is lost.
 
 ### Open an app from a hotkey

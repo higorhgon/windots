@@ -7,7 +7,7 @@
 # puts each window on its workspace, like Hyprland's `exec-once = [workspace 2 silent; float;
 # size 900 600; move 100 100] app`. The file stays on this machine (not in the repo: the apps of one machine must not open
 # on another; an example is in default\komorebi\workspaces.example.json). It is a list; each entry:
-#   "workspace"  1-10, the number of Alt+number (required)
+#   "workspace"  1-10, the number of Win+number (required)
 #   "monitor"    1 = the first (default)
 #   "command"    what to run: a program on PATH or a full path; %VARIABLES% are expanded (required)
 #   "args"       a list of arguments for it (optional)

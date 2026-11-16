@@ -5,7 +5,7 @@
 #
 # Like omarchy-install-font: install a Nerd Font for the current user (no admin),
 # from the latest ryanoasis/nerd-fonts release.
-#   (nothing)  open the font list as a floating TUI (what Alt+Ctrl+Shift+F runs)
+#   (nothing)  open the font list as a floating TUI (what Win+Ctrl+Shift+F runs)
 #   --pick     pick one in fzf in the current terminal (what that window runs)
 #   name       install it directly, e.g. JetBrainsMono ("JetBrainsMono Nerd Font")
 # Installs the regular family (not the Mono / Propo variants); already installed
@@ -81,7 +81,7 @@ try {
 } finally {
     Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
 }
-# Picked from the list (e.g. Alt+Ctrl+Shift+F's floating window): keep the result on screen.
+# Picked from the list (e.g. Win+Ctrl+Shift+F's floating window): keep the result on screen.
 if ($picked) {
     Write-Host "`n  Use it as `"$name Nerd Font`" (or `"$($name)NL Nerd Font`" when there is an NL variant)."
     Read-Host '  Enter to close' | Out-Null
