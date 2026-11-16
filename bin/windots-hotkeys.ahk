@@ -13,6 +13,41 @@
 ~LWin::Send "{Blind}{vkE8}"
 ~RWin::Send "{Blind}{vkE8}"
 
+; --- Win+Space: the windots menu, like omarchy's Super+Space ---
+; windots-launcher keeps one resident process that listens on a named pipe. Writing to the pipe from here
+; opens the menu in a few milliseconds; starting windots-launcher.exe with the verb costs a whole .NET
+; process (~300 ms), so that is only the fallback, for when no resident process is running yet.
+; whkd can't take a combination with the Windows key. Not installed: windots install launcher.
+LauncherMenu(verb, route := "root", fallback := "") {
+    DllCall("AllowSetForegroundWindow", "UInt", 0xFFFFFFFF)   ; the resident process may take focus
+    h := DllCall("CreateFileW", "Str", "\\.\pipe\windots-launcher", "UInt", 0x40000000, "UInt", 0, "Ptr", 0
+        , "UInt", 3, "UInt", 0, "Ptr", 0, "Ptr")
+    if (h != -1) {
+        msg := verb "`t" route "`n"
+        buf := Buffer(StrPut(msg, "UTF-8") - 1)
+        StrPut(msg, buf, "UTF-8")
+        ok := DllCall("WriteFile", "Ptr", h, "Ptr", buf, "UInt", buf.Size, "UInt*", &written := 0, "Ptr", 0)
+        DllCall("CloseHandle", "Ptr", h)
+        if ok
+            return
+    }
+    exe := EnvGet("USERPROFILE") "\.local\share\windots-launcher\windots-launcher.exe"
+    if FileExist(exe)
+        Run '"' exe '" ' verb ' ' route
+    else if (fallback != "")
+        Run fallback, , "Hide"   ; the fzf menu, for a machine without the launcher
+}
+
+#Space::LauncherMenu("toggle")   ; Menu do windots (menu raiz)
+
+; Win+Alt+Space is the launcher, like omarchy's Super+Alt+Space (apps): it opens listing the apps, most used first,
+; and searches apps, commands, themes, calculations, `> shell` and `kill` as you type. Alt+Space is not bound.
+#!Space::LauncherMenu("toggle", "launcher")   ; Lançador (apps, comandos, temas, contas)
+
+; These two used to be whkd bindings: whkd starts a pwsh for every hotkey (~300 ms), AutoHotkey is resident.
+!k::LauncherMenu("toggle", "keys", "pwsh -NoProfile -Command windots-menu-keybindings")   ; Atalhos de teclado (este menu)
+!^+Space::LauncherMenu("toggle", "style.theme", "pwsh -NoProfile -Command windots-menu-theme")   ; Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
+
 ; --- Alt+Shift+/ on ABNT2 (VK_ABNT_C1): passwords, like omarchy ---
 !+vkC1:: {
     exe := EnvGet("LOCALAPPDATA") "\Programs\omapass\omapass.exe"

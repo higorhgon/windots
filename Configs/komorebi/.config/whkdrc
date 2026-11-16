@@ -16,7 +16,7 @@ alt + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCAL
 
 # --- Tema, fontes e menus (omarchy: Super+Ctrl+T, Super+Ctrl+W, Super+K) ---
 alt + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
-alt + ctrl + shift + space : windots-menu-theme  # Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
+# Alt+K (atalhos) e Alt+Ctrl+Shift+Space (temas) estão em windots-hotkeys.ahk: o whkd abre um pwsh a cada atalho, o AutoHotkey já está rodando.
 alt + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
 alt + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
 
@@ -26,7 +26,6 @@ alt + ctrl + b       : start ms-settings:bluetooth  # Configurações de bluetoo
 alt + ctrl + n       : start ms-settings:network  # Configurações de rede
 alt + ctrl + p       : start ms-settings:powersleep  # Configurações de energia
 alt + ctrl + shift + f : windots-install-font  # Instalar fonte (Nerd Fonts)
-alt + k              : windots-menu-keybindings  # Atalhos de teclado (este menu)
 
 # --- Captura (Print abre o recorte nativo do Windows) ---
 alt + ctrl + shift + c : start ms-screenclip:  # Captura de tela (recorte)

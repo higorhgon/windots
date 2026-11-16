@@ -1,6 +1,6 @@
 ---
 name: windots
-description: Change the Windows desktop setup kept in the windots repo (~\windots) — komorebi tiling, whkd hotkeys, Flow Launcher menus, herdr-app, Windows Terminal, themes, fonts, startup apps, windots-* commands. Use whenever the person asks to add/change a keyboard shortcut, open an app floating or tiled, add a config file or app to the dotfiles, create a windots-* command, change the theme/colors/font, or anything "like omarchy" on Windows.
+description: Change the Windows desktop setup kept in the windots repo (~\windots) — komorebi tiling, whkd hotkeys, the windots-launcher menu, herdr-app, Windows Terminal, themes, fonts, startup apps, windots-* commands. Use whenever the person asks to add/change a keyboard shortcut, open an app floating or tiled, add a config file or app to the dotfiles, create a windots-* command, change the theme/colors/font, or anything "like omarchy" on Windows.
 ---
 
 # windots
@@ -24,7 +24,7 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 
 ### Add or change a hotkey
 1. Check the key is free: `~\.config\whkdrc`, `windots-hotkeys.ahk`, herdr-app
-   `keys.json`, Flow `CustomPluginHotkeys`. Alt+number is komorebi's.
+   `keys.json`, `windots-hotkeys.ahk`. Alt+number is komorebi's.
 2. Add the line in the right `# --- Section ---` of `whkdrc`, with a Portuguese
    description: `alt + ctrl + x : <command>  # Descrição`.
    - Named keys only (`oem_2`, `oem_minus`...). **No hex codes** — they disable
@@ -33,7 +33,7 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 3. Copy to `Configs\komorebi\.config\whkdrc` if it isn't linked.
 4. Restart whkd: `windots restart whkd` (it refreshes the PATH, so the `windots-*` commands
    its hotkeys run are found). Other apps have the same: `windots restart komorebi`, `masir`,
-   `komorebi switcher`, `flow launcher`, `float ontop`, `hotkeys`, `herdr app`.
+   `komorebi switcher`, `float ontop`, `hotkeys`, `herdr app`.
 5. Test the new key and `Alt+1`/`Alt+2` (workspaces) by simulating them; retry
    once if the very first press after the restart is lost.
 
@@ -46,9 +46,10 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 - A Settings page: `start ms-settings:<page>`.
 
 ### A menu like omarchy's
-- Flow Launcher can open with a query (`default\flow-launcher\settings.json`,
-  `CustomPluginHotkeys` + plugin `ActionKeywords`), then run
-  `windots-install-flow-launcher`. The keyword stays visible in the query box.
+- The windots-launcher (`windots menu`, its own project in `~\Projetos\windots-launcher`) draws the menus. Its menu is
+  `menus/default.jsonc` in that project (omarchy's `omarchy-menu.jsonc` format), extended per machine by
+  `~\.config\windots\menu.jsonc`; add a row there, with a route, and bind a hotkey in `windots-hotkeys.ahk`
+  (`LauncherMenu("toggle", "<route>")`).
 - A menu with an empty search box: an fzf TUI script in `bin` (see
   `windots-menu-keybindings`: no args -> launches itself floating; `--pick` ->
   runs fzf; colors from `catppuccin-fzf-mocha.ps1`).

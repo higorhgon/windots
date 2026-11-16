@@ -4,7 +4,9 @@
 # windots:examples=windots menu keybindings | windots menu keybindings --list
 #
 # Like omarchy's Super+K: a searchable list of every hotkey (whkd + windots-hotkeys.ahk).
-# Opens a floating terminal with fzf; Enter runs the selected whkd binding, Esc closes.
+# Opens a floating terminal with fzf; Enter runs the selected whkd binding, Esc closes. When
+# windots-launcher is installed (windots-install-launcher) its menu opens instead
+# (windots-menu summon keybindings); --pick and --list keep using fzf and the plain list.
 #   --pick  run the list in the current terminal (what the floating window runs)
 #   --list  just print it
 
@@ -13,6 +15,12 @@ if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1
 $ErrorActionPreference = 'Stop'
 $whkdrc = Join-Path $HOME '.config\whkdrc'
 $ahk = Join-Path $PSScriptRoot 'windots-hotkeys.ahk'
+
+# windots-launcher (windots install launcher) draws this menu when it is installed; fzf is the fallback
+if ($args[0] -notin '--pick', '--list' -and (Test-Path (Join-Path $HOME '.local\share\windots-launcher\windots-launcher.exe'))) {
+    & (Join-Path $PSScriptRoot 'windots-menu.ps1') summon keybindings
+    return
+}
 
 if ($args[0] -notin '--pick', '--list') {
     $self = $MyInvocation.MyCommand.Path
@@ -56,23 +64,6 @@ foreach ($line in Get-Content $whkdrc) {
     }
 }
 
-# Flow Launcher: its main hotkey and the custom query hotkeys (shown, not run)
-$flowSettings = Join-Path $env:APPDATA 'FlowLauncher\Settings\Settings.json'
-if (Test-Path $flowSettings) {
-    $flow = Get-Content -Raw $flowSettings | ConvertFrom-Json
-    $flowDesc = @{
-        'sys' = 'Menu do sistema (desligar, reiniciar, bloquear...)'; 'app' = 'Aplicativos'
-        '?' = 'Menu de plugins do Flow'; 's som' = 'Configurações de som'; 's bluetooth' = 'Configurações de bluetooth'
-        's rede' = 'Configurações de rede'; 's energia' = 'Configurações de energia'
-    }
-    if ($flow.Hotkey) { $rows.Add([pscustomobject]@{ Keys = $flow.Hotkey; Section = 'Flow Launcher'; Desc = 'Buscar apps, arquivos e contas'; Run = '' }) }
-    foreach ($h in $flow.CustomPluginHotkeys) {
-        $q = ([string]$h.ActionKeyword).Trim()
-        $desc = if ($flowDesc.ContainsKey($q)) { $flowDesc[$q] } else { "Flow: $q" }
-        $rows.Add([pscustomobject]@{ Keys = $h.Hotkey; Section = 'Flow Launcher'; Desc = $desc; Run = '' })
-    }
-}
-
 # AutoHotkey: "; --- Section ---" headers, "mods+key::" hotkeys (shown, not run)
 $ahkMods = @{ '!' = 'Alt'; '+' = 'Shift'; '^' = 'Ctrl'; '#' = 'Win' }
 $ahkKeys = @{ 'LButton' = 'Left drag'; 'RButton' = 'Right drag'; 'LWin' = 'Win'; 'RWin' = 'Win'; 'vkC1' = '/ (ABNT2)' }
@@ -80,12 +71,14 @@ $section = ''
 if (Test-Path $ahk) {
     foreach ($line in Get-Content $ahk) {
         if ($line -match '^;\s*---\s*(.+?)\s*---') { $section = $Matches[1]; continue }
-        if ($line -match '^\s*([~*$!+^#]*)(\w+)::') {
-            $mods = ($Matches[1].ToCharArray() | ForEach-Object { $ahkMods[[string]$_] } | Where-Object { $_ }) + @()
-            $key = if ($ahkKeys.ContainsKey($Matches[2])) { $ahkKeys[$Matches[2]] } else { $Matches[2] }
+        if ($line -match '^\s*([~*$!+^#]*)(\w+)::(.*)$') {
+            $ahkPrefix = $Matches[1]; $ahkName = $Matches[2]; $ahkRest = $Matches[3]
+            $ahkDesc = if ($ahkRest -match ';\s*(.+)$') { $Matches[1].Trim() } else { $section }   # "; description" after the hotkey
+            $mods = ($ahkPrefix.ToCharArray() | ForEach-Object { $ahkMods[[string]$_] } | Where-Object { $_ }) + @()
+            $key = if ($ahkKeys.ContainsKey($ahkName)) { $ahkKeys[$ahkName] } else { $ahkName }
             $keys = (@($mods) + $key) -join ' + '
             if ($rows | Where-Object { $_.Keys -eq $keys }) { continue }   # Win listed twice (LWin/RWin)
-            $rows.Add([pscustomobject]@{ Keys = $keys; Section = 'AutoHotkey'; Desc = $section; Run = '' })
+            $rows.Add([pscustomobject]@{ Keys = $keys; Section = 'AutoHotkey'; Desc = $ahkDesc; Run = '' })
         }
     }
 }

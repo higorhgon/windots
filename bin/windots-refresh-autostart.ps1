@@ -16,7 +16,6 @@ if (-not $pwsh) { $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe" }
 $entries = @(
     @{ Name = 'komorebi';          Target = "$env:ProgramFiles\komorebi\bin\komorebic-no-console.exe"; Args = 'start --whkd --masir' }  # masir: focus follows mouse
     @{ Name = 'komorebi-switcher'; Target = "$env:LOCALAPPDATA\Programs\komorebi-switcher\komorebi-switcher.exe" }
-    @{ Name = 'Flow Launcher';     Target = "$env:LOCALAPPDATA\FlowLauncher\Flow.Launcher.exe" }
     # conhost --headless: with Windows Terminal as the default terminal, -WindowStyle Hidden
     # can't hide the console and a tab stays open.
     @{ Name = 'windots-float-ontop'; Target = "$env:SystemRoot\System32\conhost.exe"
@@ -31,10 +30,13 @@ $entries = @(
     @{ Name = 'windots-launch-workspaces'; Target = "$env:SystemRoot\System32\conhost.exe"
        Args = "--headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$PSScriptRoot\windots-launch-workspaces.ps1`" --wait" }
     @{ Name = 'windots-hotkeys'; Target = "$PSScriptRoot\windots-hotkeys.ahk" }  # opened by AutoHotkey v2
+    # The menu / launcher (windots install launcher), started hidden so Win+Space opens it at once.
+    # Skipped on a machine where it is not installed.
+    @{ Name = 'windots-launcher'; Target = "$HOME\.local\share\windots-launcher\windots-launcher.exe"; Args = '--background'; Optional = $true }
 )
 
 # Shortcuts from older windots versions.
-$retired = 'sem-menu-iniciar.ahk', 'komorebi-float-ontop', 'workspaces', 'windots-block-start-menu'
+$retired = 'sem-menu-iniciar.ahk', 'komorebi-float-ontop', 'workspaces', 'windots-block-start-menu', 'Flow Launcher'
 foreach ($name in $retired) {
     $old = Join-Path $startup "$name.lnk"
     if (Test-Path $old) { Remove-Item $old; Write-Host "  - removed $name" }
@@ -42,6 +44,7 @@ foreach ($name in $retired) {
 
 foreach ($e in $entries) {
     $missing = @($e.Target, $e.Requires | Where-Object { $_ -and -not (Test-Path $_) })
+    if ($missing -and $e.Optional) { continue }   # not installed on this machine: nothing to start
     if ($missing) {
         Write-Warning "skipping $($e.Name): $($missing -join ', ') not found"
         continue

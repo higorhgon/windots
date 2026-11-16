@@ -8,7 +8,7 @@ recipes (add a hotkey, an app, a group, a command...) use the `windots` skill.
 ## What this is
 
 A Windows 11 desktop that behaves like omarchy: komorebi (tiling) + whkd
-(hotkeys) + masir (focus follows mouse), Flow Launcher, herdr-app, Windows
+(hotkeys) + masir (focus follows mouse), windots-launcher, herdr-app, Windows
 Terminal, all in Catppuccin Mocha. **omarchy is the reference**: when adding or
 changing something, look at how omarchy does it (`omacom/omarchy`, branch
 `quattro`: `default/hypr/bindings/*.lua`, `bin/omarchy-*`) and mirror it, with
@@ -51,13 +51,13 @@ instead; edit the `default/` data and the script, then run it:
 | App file | Script | Data |
 |---|---|---|
 | Windows Terminal `settings.json` | `windots-install-windows-terminal` | `default/windows-terminal/` + the fragment in `Configs/windows-terminal` |
-| Flow Launcher `Settings.json` | `windots-install-flow-launcher` | `default/flow-launcher/settings.json` |
 | Windhawk mod settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\<id>\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` (`{color}` is replaced) |
 | herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
 | Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
 | `~\.config\komorebi-switcher.toml` (per machine: monitor sections + the theme's `[colors]`) | `windots-theme-set`, `windots-center-switcher` | seed `default/komorebi/komorebi-switcher.toml` (never linked: a theme switch must not dirty the repo) |
 | Windows Terminal `settings.json`: the `windots` scheme / UI theme | `windots-theme-set` (and `windots-install-windows-terminal`) | `default/themes/` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
+| `~\.local\share\windots-launcher` (the published windots-launcher) | `windots-install-launcher` | the project in `~\Projetos\windots-launcher` (own repo; its menu is `menus/default.jsonc`, extended per machine by `~\.config\windots\menu.jsonc`) |
 
 ## Commands (`bin/`)
 
@@ -140,7 +140,13 @@ in the `windots` skill). A new script without them is missing from the help.
   commands aren't found), then verify that `Alt+number` still switches workspaces. The
   first key right after a restart is sometimes dropped: retry before concluding.
 - Check conflicts with herdr-app (`default/herdr-app/keys.json`, `default/retropet/keys.json`)
-  and Flow Launcher hotkeys. Alt+number belongs to komorebi workspaces.
+  and the launcher hotkeys in `windots-hotkeys.ahk`. Alt+number belongs to komorebi workspaces.
+- Hotkeys that open the windots-launcher (`Win+Space` the root menu, `Win+Alt+Space` the launcher: apps first, `Alt+K`
+  the keybindings, `Alt+Ctrl+Shift+Space` the themes) live in `windots-hotkeys.ahk`, not in whkd: whkd starts a `pwsh`
+  for every hotkey (~300 ms) and AutoHotkey is resident. They write `verb<TAB>route` to the launcher's named pipe
+  `windots-launcher` (a few ms); starting `windots-launcher.exe` costs a whole .NET process (~300 ms) and is only the
+  fallback. Never bind the same key in both, or the menu toggles open and shut. A `; description` after a hotkey in the
+  .ahk file is what the Alt+K menu shows for it. `Alt+Space` is free (Flow Launcher, which used it, is gone).
 
 **komorebi**
 - Float override only has a *toggle*; `windots-launch-float` serializes it with a
@@ -180,7 +186,7 @@ often not allowed to create them: change the script, then ask the person to run
 `pwsh -NoProfile -ExecutionPolicy Bypass -File ~/windots/bin/windots-refresh-autostart.ps1`.
 
 **Never version secrets or personal data**: `~\.atuin\data` (key, history),
-`~\.config\omapass` (`.history_key`), Flow's `History.json`, herdr-app's
+`~\.config\omapass` (`.history_key`), herdr-app's
 `view.json` / `window.json` / generated `*.d.ts` / `jsconfig.json`.
 
 ## Themes
@@ -205,7 +211,7 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
 - Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain
   assignment): `Add-Member -Force` moves the property to the end, the file changes every run and a
   backup piles up each time. Compare the JSON before and after and write only on a change.
-- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app, Flow Launcher,
+- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app,
   komorebi borders, wallpaper. Official catppuccin ports are used there until they are.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
   `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.

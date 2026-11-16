@@ -4,12 +4,19 @@
 # windots:examples=windots menu theme
 #
 # Like omarchy's theme menu: a floating terminal with fzf, every theme with its colours drawn on the
-# right; Enter applies it (windots-theme-set), Esc closes.
+# right; Enter applies it (windots-theme-set), Esc closes. When windots-launcher is installed
+# (windots-install-launcher) its menu opens instead (windots-menu summon style.theme).
 #   --pick  run the list in the current terminal (what the floating window runs)
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
 $ErrorActionPreference = 'Stop'
+
+# windots-launcher (windots install launcher) draws this menu when it is installed; fzf is the fallback
+if ($args[0] -ne '--pick' -and (Test-Path (Join-Path $HOME '.local\share\windots-launcher\windots-launcher.exe'))) {
+    & (Join-Path $PSScriptRoot 'windots-menu.ps1') summon style.theme
+    return
+}
 
 if ($args[0] -ne '--pick') {
     $self = $MyInvocation.MyCommand.Path
