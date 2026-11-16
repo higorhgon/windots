@@ -6,7 +6,7 @@
 # Works on Windows PowerShell 5.1 (fresh machine) and PowerShell 7.
 #
 #   .\bin\windots-install.ps1                 # everything (first run, from the repo root)
-#   windots-install --skip-packages           # skip winget/herdr/komorebi-switcher installs
+#   windots-install --skip-packages           # skip winget/herdr/komorebi-switcher/Windhawk installs
 #   windots-install --skip-system             # skip Windows settings (sudo, Developer Mode, taskbar)
 #
 # Developer Mode and sudo are machine-wide: each asks for elevation (a UAC prompt) when it has
@@ -300,8 +300,22 @@ if (Test-Path (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts\JetBrainsMon
 } else { & (Join-Path $PSScriptRoot 'windots-install-font.ps1') JetBrainsMono }
 
 # ---------------------------------------------------------------- windows terminal
-Step 'Applying Catppuccin Mocha to Windows Terminal'
+Step 'Applying the current theme and the font to Windows Terminal'
 & (Join-Path $PSScriptRoot 'windots-install-windows-terminal.ps1')
+
+# ---------------------------------------------------------------- windhawk (taskbar colour)
+Step 'Installing Windhawk and its Taskbar Styler mod (the theme paints the taskbar through it)'
+if ($SkipPackages) { Write-Host '  - skipped (--skip-packages)' }
+else {
+    . (Join-Path $PSScriptRoot 'lib' | Join-Path -ChildPath 'themes.ps1')
+    $global:LASTEXITCODE = 0
+    & (Join-Path $PSScriptRoot 'windots-install-windhawk.ps1') "--color=$((Read-ThemeColors (Get-CurrentThemeName)).background)"
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Windhawk or its mod did not install (above); the taskbar keeps its colour. Retry: windots install windhawk' }
+}
+
+# ---------------------------------------------------------------- theme
+Step 'Applying the theme (taskbar, komorebi-switcher, Windows Terminal, light / dark mode)'
+& (Join-Path $PSScriptRoot 'windots-theme-set.ps1')
 
 # ---------------------------------------------------------------- herdr-app
 Step 'Applying herdr-app keys and settings, linking the retropet layout'

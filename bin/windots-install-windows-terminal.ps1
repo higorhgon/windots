@@ -1,13 +1,13 @@
 # windots-install-windows-terminal
-# windots:summary=Apply Catppuccin Mocha and the windots font to Windows Terminal
+# windots:summary=Apply the current theme and the windots font to Windows Terminal
 #
-# Applies Catppuccin Mocha (catppuccin/windows-terminal) to Windows Terminal:
-#   - the color scheme and the windots-tui profile come from the windots fragment
-#     (Configs\windows-terminal, linked by tuckr; copied here if it isn't yet);
-#   - settings.json gets what fragments can't carry: the "Catppuccin Mocha" UI theme
-#     (tab row and window, default\windows-terminal) selected as "theme", and the
-#     scheme and the JetBrainsMonoNL Nerd Font as defaults for every profile.
-#     A backup is kept as settings.json.bak.<time>.
+# Applies the current windots theme (windots-theme-set; catppuccin until another is chosen) to
+# Windows Terminal:
+#   - the windots-tui profile comes from the windots fragment (Configs\windows-terminal, linked by
+#     tuckr; copied here if it isn't yet) and uses the "windots" colour scheme;
+#   - settings.json gets what fragments can't carry: the "windots" colour scheme and UI theme (tab
+#     row and window), made from the theme's palette and selected as the defaults, and the
+#     JetBrainsMonoNL Nerd Font for every profile. A backup is kept as settings.json.bak.<time>.
 # Called by windots-install; safe to run again on its own.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
@@ -15,7 +15,7 @@ if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1
 
 $ErrorActionPreference = 'Stop'
 $Repo = Split-Path $PSScriptRoot
-$scheme = 'Catppuccin Mocha'
+. (Join-Path $PSScriptRoot 'lib/themes.ps1')
 $fontFace = 'JetBrainsMonoNL Nerd Font'
 
 # Fragment (scheme + windots-tui profile)
@@ -38,22 +38,21 @@ if (-not $settingsPath) {
     return
 }
 
+# The theme: scheme + UI theme from the palette (written by Set-TerminalTheme, with its own backup).
+$theme = Get-CurrentThemeName
+[void](Set-TerminalTheme (Read-ThemeColors $theme))
+
+# The font for every profile (from windots-install-font).
 $settings = Get-Content -Raw $settingsPath | ConvertFrom-Json
-$uiTheme = Get-Content -Raw (Join-Path $Repo 'default\windows-terminal\catppuccin-mocha-theme.json') | ConvertFrom-Json
-
-# UI theme: replace any theme with the same name, then select it.
-$themes = @($settings.themes | Where-Object { $_ -and $_.name -ne $uiTheme.name }) + $uiTheme
-$settings | Add-Member -NotePropertyName themes -NotePropertyValue $themes -Force
-$settings | Add-Member -NotePropertyName theme -NotePropertyValue $uiTheme.name -Force
-
-# Scheme and font for every profile (font from windots-install-font).
-if (-not $settings.profiles.defaults) { $settings.profiles | Add-Member -NotePropertyName defaults -NotePropertyValue ([pscustomobject]@{}) -Force }
-$settings.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $scheme -Force
+$before = $settings | ConvertTo-Json -Depth 32
+if (-not $settings.profiles.defaults) { Set-JsonProperty $settings.profiles defaults ([pscustomobject]@{}) }
 $font = if ($settings.profiles.defaults.font) { $settings.profiles.defaults.font } else { [pscustomobject]@{} }
-$font | Add-Member -NotePropertyName face -NotePropertyValue $fontFace -Force
-$settings.profiles.defaults | Add-Member -NotePropertyName font -NotePropertyValue $font -Force
+Set-JsonProperty $font face $fontFace
+Set-JsonProperty $settings.profiles.defaults font $font
 
-Copy-Item $settingsPath "$settingsPath.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())"
 $json = $settings | ConvertTo-Json -Depth 32
-[IO.File]::WriteAllText($settingsPath, $json, (New-Object Text.UTF8Encoding $false))
-Write-Host "  - Windows Terminal: theme '$($uiTheme.name)', color scheme '$scheme' and font '$fontFace' for all profiles"
+if ($json -ne $before) {   # back up and write only when the font was not there yet
+    Copy-Item $settingsPath "$settingsPath.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())"
+    [IO.File]::WriteAllText($settingsPath, $json, (New-Object Text.UTF8Encoding $false))
+}
+Write-Host "  - Windows Terminal: theme '$theme' (scheme 'windots') and font '$fontFace' for all profiles"

@@ -24,13 +24,14 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `default/wsl/setup.sh` | the part of `windots-setup-wsl` that runs inside Arch on WSL, as root (`.gitattributes` keeps `*.sh` at LF: with `core.autocrlf` bash would choke on CRLF) |
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
+| `default/themes/<name>/colors.toml` | the 23 omarchy themes (copied from `omacom/omarchy`, `themes/<name>/colors.toml`); `windots-theme-set` reads them through `bin/lib/themes.ps1`. The current theme is `~\.local\state\windots\theme.name` (state, never versioned) |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
 
 tuckr looks for `%APPDATA%\dotfiles`; `windots-install` makes it a junction to this
-repo. Groups: `pwsh`, `mise`, `starship`, `komorebi` (komorebi, whkd,
-komorebi-switcher), `backgrounds`, `atuin`, `btop`,
+repo. Groups: `pwsh`, `mise`, `starship`, `komorebi` (komorebi.json,
+applications.json, whkdrc; the switcher's toml is not linked, see Themes), `backgrounds`, `atuin`, `btop`,
 `windows-terminal`, `claude`.
 
 ## Live files vs repo copies (check before editing)
@@ -51,8 +52,11 @@ instead; edit the `default/` data and the script, then run it:
 |---|---|---|
 | Windows Terminal `settings.json` | `windots-install-windows-terminal` | `default/windows-terminal/` + the fragment in `Configs/windows-terminal` |
 | Flow Launcher `Settings.json` | `windots-install-flow-launcher` | `default/flow-launcher/settings.json` |
-| Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
+| Windhawk mod settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\<id>\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` (`{color}` is replaced) |
 | herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
+| Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
+| `~\.config\komorebi-switcher.toml` (per machine: monitor sections + the theme's `[colors]`) | `windots-theme-set`, `windots-center-switcher` | seed `default/komorebi/komorebi-switcher.toml` (never linked: a theme switch must not dirty the repo) |
+| Windows Terminal `settings.json`: the `windots` scheme / UI theme | `windots-theme-set` (and `windots-install-windows-terminal`) | `default/themes/` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
 
 ## Commands (`bin/`)
@@ -181,9 +185,31 @@ often not allowed to create them: change the script, then ask the person to run
 
 ## Themes
 
-Catppuccin Mocha, official ports only (catppuccin/powershell, windows-terminal,
-btop, fzf, atuin): don't hand-write palettes when a port exists. Font:
-JetBrainsMonoNL Nerd Font (`windots-install-font`).
+Themes are omarchy's: `default/themes/<name>/colors.toml`, applied by `windots-theme-set` (no name =
+the current one again, which `windots-install` does). Add or update a theme by copying its
+`colors.toml` from `omacom/omarchy` (`themes/<name>/`); keys a theme lacks (`orange`, `brown`,
+`muted`...) get the fallbacks in `Read-ThemeColors` (`bin/lib/themes.ps1`). A new thing to theme is a new
+`Set-*` function there plus a call in `windots-theme-set`: derive its colours from the palette with
+the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omarchy), never by hand.
+- Taskbar: omarchy's bar uses `background`, `foreground`, `red`. Windows only takes a solid
+  background (Windhawk Taskbar Styler, `Fill=<background>`; the accent palette comes out ~18%
+  darker and TranslucentTB fails to hook the taskbar on Windows build 26340), so the text is made
+  readable by turning `SystemUsesLightTheme` and `AppsUseLightTheme` on for `mode = light` (Explorer
+  must restart to show it). A new colour shows within seconds; a mod that was not installed before
+  needs an Explorer restart.
+- The Windhawk settings are in HKLM: a theme switch asks for admin (sudo, one UAC) unless
+  `windots install windhawk --allow-user-settings` was done once. That is a deliberate security
+  trade-off (any process of this user could then restyle the taskbar): never do it by default.
+- komorebi-switcher colours: only `[colors] active_indicator` / `busy_indicator` exist (text and
+  background follow Windows); the file is per machine, so only its `[colors]` table is rewritten.
+- Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain
+  assignment): `Add-Member -Force` moves the property to the end, the file changes every run and a
+  backup piles up each time. Compare the JSON before and after and write only on a change.
+- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app, Flow Launcher,
+  komorebi borders, wallpaper. Official catppuccin ports are used there until they are.
+- Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
+  `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.
+Font: JetBrainsMonoNL Nerd Font (`windots-install-font`).
 
 ## Testing
 

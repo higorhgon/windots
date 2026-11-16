@@ -1,11 +1,11 @@
 {
-  "$help": "Windows Terminal fragment from windots: Catppuccin Mocha scheme (catppuccin/windows-terminal) and the windots-tui profile.",
+  "$help": "Windows Terminal fragment from windots: the windots-tui profile and the Catppuccin Mocha scheme (catppuccin/windows-terminal); the profile uses the \"windots\" scheme that windots-theme-set writes into settings.json.",
   "profiles": [
     {
       "guid": "{6f3a1c2e-8b4d-4e7a-9c15-2d0b7e5a4f31}",
       "name": "windots-tui",
       "commandline": "pwsh.exe -NoProfile",
-      "colorScheme": "Catppuccin Mocha",
+      "colorScheme": "windots",
       "padding": "0",
       "scrollbarState": "hidden",
       "hidden": true,

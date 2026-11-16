@@ -16,6 +16,7 @@ alt + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCAL
 
 # --- Tema, fontes e menus (omarchy: Super+Ctrl+T, Super+Ctrl+W, Super+K) ---
 alt + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
+alt + ctrl + shift + space : windots-menu-theme  # Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
 alt + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
 alt + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
 
