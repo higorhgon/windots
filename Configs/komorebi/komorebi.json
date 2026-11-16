@@ -5,7 +5,7 @@
   "float_override_placement": "Center",
   "animation": {
     "enabled": true,
-    "duration": 300,
+    "duration": 180,
     "style": "EaseOutQuint",
     "fps": 60
   },
