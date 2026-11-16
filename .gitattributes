@@ -1,3 +1,6 @@
 # Scripts that run on Linux (inside WSL) must keep LF line endings: with core.autocrlf on Windows, git
 # would check them out with CRLF and bash would fail on every line ($'\r').
 *.sh text eol=lf
+
+# the switcher patch must keep LF: git apply chokes on CRLF header lines
+*.patch text eol=lf
