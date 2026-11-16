@@ -17,11 +17,11 @@
 #   komorebi-switcher   active workspace = the accent, workspaces with windows = the muted colour
 #   Neovim (LazyVim)    lua\plugins\theme.lua = the theme's colorscheme (omarchy's neovim.lua, or its aether template
 #                       with the palette); open Neovims reload it live. Only when windots-install-lazyvim was run.
-#   Files               its colours (windots-install-files): a running Files is restarted, or with --no-restart a
-#                       notification asks and clicking it restarts Files (it reads its colours only at start)
+#   Files               its colours (windots-install-files): Files reads them only at start, so an open Files gets a
+#                       notification and clicking it restarts Files (never restarted on its own; windots restart files)
 #   wallpaper           the theme's first image (an image of this theme chosen in the launcher is kept)
-# Explorer restarts (its windows close, the taskbar blinks) only when the light/dark mode changed;
-# the switcher restarts only when its colours changed. --no-restart changes the files and leaves both.
+# Explorer never restarts: a light/dark change is broadcast and the taskbar follows within seconds. The switcher
+# restarts only when its colours changed and its build has no live reload; --no-restart leaves it running.
 #   --skip-taskbar   leave the taskbar and the Windows mode alone
 #   --skip-wallpaper leave the desktop background alone
 #   --skip-files     leave Files alone
@@ -54,6 +54,25 @@ function Step($msg) { Write-Host "  - $msg" }
 Write-Host "==> Theme $(Get-ThemeTitle $name) ($($c.mode))" -ForegroundColor Cyan
 Set-CurrentThemeName $name
 
+# The taskbar first: it is what the eye is on. The light / dark flags need no restart: Set-WindowsColorMode broadcasts
+# the change on another thread (Explorer follows) while the rest of the script runs.
+$modeChanged = $false
+if (-not $skipTaskbar) {
+    # the colour before the mode: the mode's broadcast needs a C# compile (Add-Type, ~0.5 s) the first time
+    if (Test-Path 'HKLM:\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler') {
+        $global:LASTEXITCODE = 0
+        & (Join-Path $PSScriptRoot 'windots-install-windhawk.ps1') "--color=$($c.background)"
+        if ($LASTEXITCODE -ne 0) { Write-Warning 'the taskbar colour was not applied (above)' }
+    } else {
+        Step 'taskbar colour skipped: Windhawk and its mod are not installed (windots install windhawk)'
+    }
+    $modeChanged = Set-WindowsColorMode $c.mode
+    Step "Windows $($c.mode) mode$(if ($modeChanged) { ': changed' } else { ': already set' })"
+}
+
+$switcherChanged = Set-SwitcherColors $c
+Step $(if ($switcherChanged) { 'komorebi-switcher: indicator colours changed' } else { 'komorebi-switcher: colours already right' })
+
 switch (Set-TerminalTheme $c) {
     'changed' { Step 'Windows Terminal: scheme and tab theme changed' }
     'same'    { Step 'Windows Terminal: already right' }
@@ -74,37 +93,21 @@ if (-not $skipWallpaper) {
     }
 }
 
-if (-not $skipFiles) { Step (Update-FilesTheme $name $c $noRestart) }
-
 Step (Set-KomorebiBorders $c)
 Step (Set-BtopTheme $c)
 Step (Set-AtuinTheme $c)
 Step (Set-FzfTheme $c)
 
-$switcherChanged = Set-SwitcherColors $c
-Step $(if ($switcherChanged) { 'komorebi-switcher: indicator colours changed' } else { 'komorebi-switcher: colours already right' })
-
-$modeChanged = $false
-if (-not $skipTaskbar) {
-    $modeChanged = Set-WindowsColorMode $c.mode
-    Step "Windows $($c.mode) mode$(if ($modeChanged) { ': changed' } else { ': already set' })"
-    if (Test-Path 'HKLM:\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler') {
-        $global:LASTEXITCODE = 0
-        & (Join-Path $PSScriptRoot 'windots-install-windhawk.ps1') "--color=$($c.background)"
-        if ($LASTEXITCODE -ne 0) { Write-Warning 'the taskbar colour was not applied (above)' }
-    } else {
-        Step 'taskbar colour skipped: Windhawk and its mod are not installed (windots install windhawk)'
-    }
-}
-
-if ($noRestart) {
-    if ($modeChanged -or $switcherChanged) { Step 'not restarting (--no-restart): run windots restart explorer to see the changes' }
-} elseif ($modeChanged) {
-    Step 'restarting Explorer for the light / dark change'
-    & (Join-Path $PSScriptRoot 'windots-restart-explorer.ps1')   # restarts the switcher too
-} elseif ($switcherChanged -and (Test-SwitcherLiveReload)) {
+if ($switcherChanged -and (Test-SwitcherLiveReload)) {
     Step 'komorebi-switcher takes the new colours by itself (no restart)'
+} elseif ($switcherChanged -and $noRestart) {
+    Step 'not restarting (--no-restart): run windots restart komorebi switcher to see its colours'
 } elseif ($switcherChanged) {
     & (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1')
 }
+
+# Last: Files. A theme switch never restarts it (its window would close and come back on its own): an open Files gets a
+# notification, and clicking it restarts Files. Then the broadcast is given time to end.
+if (-not $skipFiles) { Step (Update-FilesTheme $name $c $true) }
+Wait-ColorModeChanged
 exit 0

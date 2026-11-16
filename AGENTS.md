@@ -99,6 +99,10 @@ in the `windots` skill). A new script without them is missing from the help.
   `$args`, **no `param()` block**: with one, PowerShell binds `-w` as `-WarningAction`.
 - Flags are Linux style (`--skip-packages`, `--prune`, short `-y` / `-h`), read from
   `$args`; never PowerShell-style `-SkipPackages` switches.
+- A Windows PowerShell 5.1 started by a pwsh 7 process through `Start-Process` (or by any program pwsh started) inherits
+  pwsh's `PSModulePath` and cannot load `Microsoft.PowerShell.Security`: `Get-Acl` fails there. `windots-install-windhawk`
+  once took that for "no access" and a theme switch asked for UAC (~10 s). In checks that run on every theme switch use
+  .NET (`OpenSubKey(...).GetAccessControl()`), and test 5.1 both directly and via `Start-Process powershell.exe` from pwsh.
 - Keep one-item results arrays: `$x = @(if (...) { ... })`, or `@x` splats the
   characters of a single string.
 - Never name a helper `Where` (alias of `Where-Object`).
@@ -218,8 +222,12 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
 - Taskbar: omarchy's bar uses `background`, `foreground`, `red`. Windows only takes a solid
   background (Windhawk Taskbar Styler, `Fill=<background>`; the accent palette comes out ~18%
   darker and TranslucentTB fails to hook the taskbar on Windows build 26340), so the text is made
-  readable by turning `SystemUsesLightTheme` and `AppsUseLightTheme` on for `mode = light` (Explorer
-  must restart to show it). A new colour shows within seconds; a mod that was not installed before
+  readable by turning `SystemUsesLightTheme` and `AppsUseLightTheme` on for `mode = light`. Explorer
+  does not restart for it: `Set-WindowsColorMode` broadcasts `WM_SETTINGCHANGE` with `ImmersiveColorSet`
+  (what Settings sends) and the taskbar, tray and switcher follow (measured: under 3 s, same PID). The broadcast
+  blocks 1.4 - 1.8 s (every window answers), so it runs on a thread (`Send-ColorModeChanged`, awaited by
+  `Wait-ColorModeChanged` at the end). `windots-theme-set` does the taskbar first (colour ~2 s, text ~3 s after the
+  command starts) and Files last. A new colour shows within seconds; a mod that was not installed before
   needs an Explorer restart.
 - The Windhawk settings are in HKLM. By the person's choice `windots install windhawk` grants this user `SetValue` on
   the mod's keys (`--allow-user-settings` is the default), so a theme switch needs no UAC; any process of this user
@@ -262,7 +270,8 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   `.reg` Files' own Settings > Advanced switch imports: no UAC; Win+E and folders open Files; `explorer.exe` keeps running as
   the shell). The colours are `AppTheme*BackgroundColor` / `AppThemeMode` in `LocalState\settings\user_settings.json`,
   edited as text (`Set-FilesTheme`, `bin\lib\themes.ps1`) with catppuccin's own mapping. A running Files ignores a file edit
-  (measured, 40 s) and reads it only at start: `Update-FilesTheme` restarts it, or with `--no-restart` sends a toast
+  (measured, 40 s) and reads it only at start: `Update-FilesTheme` restarts it in a detached process (`windots-install-files`), or with `--no-restart`, and always from
+  `windots-theme-set` (the person's choice: a theme switch must not close and reopen Files on its own), sends a toast
   (`windots-notify`) whose click opens `windots:restart-files` (`windots-uri.ps1`, a whitelist: never run anything else from
   a link). Live theming would mean a fork of Files; not done.
 - komorebi borders follow the theme like omarchy's Hyprland ones (`Set-KomorebiBorders`, `windots-theme-borders`): active, stack

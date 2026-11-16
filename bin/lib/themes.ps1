@@ -234,7 +234,9 @@ function Set-SwitcherColors($c) {
 
 # --- Windows light / dark mode ------------------------------------------------------------
 # The taskbar text, tray icons and the switcher's numbers are white or dark by this setting, so a
-# light theme turns both flags on. Returns $true when a flag changed (Explorer must restart to show it).
+# light theme turns both flags on. Returns $true when a flag changed. Explorer does not restart: the
+# WM_SETTINGCHANGE("ImmersiveColorSet") broadcast (what Settings itself sends) makes the taskbar, the tray and the
+# switcher re-read the flags (measured: under 3 s, same explorer.exe).
 function Set-WindowsColorMode($Mode) {
     $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
     $want = if ($Mode -eq 'light') { 1 } else { 0 }
@@ -245,7 +247,32 @@ function Set-WindowsColorMode($Mode) {
             $changed = $true
         }
     }
+    if ($changed) { Send-ColorModeChanged }
     $changed
+}
+
+# Tells every top-level window that the light / dark flags changed (HWND_BROADCAST, WM_SETTINGCHANGE, SMTO_ABORTIFHUNG).
+# The call waits for every window to answer (measured 1.4 - 1.8 s), so it runs on another thread while the script goes
+# on; Wait-ColorModeChanged, before the script ends, makes sure it was delivered.
+function Send-ColorModeChanged {
+    if (-not ('Windots.ColorMode' -as [type])) {
+        Add-Type -Namespace Windots -Name ColorMode -UsingNamespace System.Threading.Tasks -MemberDefinition @'
+[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam,
+    uint flags, uint timeout, out UIntPtr result);
+public static Task Broadcast() {
+    return Task.Run(() => {
+        UIntPtr r;
+        SendMessageTimeout((IntPtr)0xffff, 0x001A, UIntPtr.Zero, "ImmersiveColorSet", 0x0002, 1000, out r);
+    });
+}
+'@
+    }
+    $script:ColorModeBroadcast = [Windots.ColorMode]::Broadcast()
+}
+
+function Wait-ColorModeChanged {
+    if ($script:ColorModeBroadcast) { [void]$script:ColorModeBroadcast.Wait(10000); $script:ColorModeBroadcast = $null }
 }
 
 # --- Neovim (LazyVim, windots-install-lazyvim) --------------------------------------------
@@ -451,8 +478,11 @@ function Update-FilesTheme($Name, $c, $NoRestart) {
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $script:ThemeRepo 'bin\windots-notify.ps1') $title $text '--launch=windots:restart-files' | Out-Null
         return 'Files: colours changed; notification sent (clicking it restarts Files)'
     }
-    & (Join-Path $script:ThemeRepo 'bin\windots-restart-files.ps1') --if-running | Out-Null
-    'Files: restarted to apply the colours'
+    # in a process of its own: closing Files and waiting for its window takes seconds, and nothing here depends on it
+    $shell = (Get-Process -Id $PID).Path
+    Start-Process $shell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+        ('"' + (Join-Path $script:ThemeRepo 'bin\windots-restart-files.ps1') + '"'), '--if-running')
+    'Files: restarting to apply the colours (in the background)'
 }
 
 # ---- btop, atuin, fzf ----------------------------------------------------------------------
