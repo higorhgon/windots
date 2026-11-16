@@ -271,8 +271,13 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   switch restarts nothing; komorebi starts with the colours of komorebi.json, so `windots-float-ontop` (it runs while komorebi
   does) applies the current theme's whenever it connects. Animation: 180 ms (`animation.duration` in komorebi.json; live with
   `komorebic animation-duration 180`).
-- Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app. Official catppuccin ports are used there
-  until they are.
+- btop, atuin and fzf are files the tool reads, written by `Set-BtopTheme` / `Set-AtuinTheme` / `Set-FzfTheme` (only when the
+  text changed): btop4win's `themes\windots.theme` from omarchy's `btop.theme.tpl` (`default/btop/`; btop.conf has
+  `color_theme = "windots"`, and a running btop4win keeps its colours: it has no reload signal), `~\.atuin	hemes\windots.toml`
+  (the roles of the catppuccin theme the repo had; config.toml `[theme] name = "windots"`), and `~\.local\state\windotszf-colors.opts`
+  (catppuccin/fzf's mapping from the palette) which the profile hands to fzf as `FZF_DEFAULT_OPTS_FILE` (`fzf-theme.ps1`): fzf reads
+  it at every start, so open terminals get new colours at the next fzf. starship needs nothing: its config names ANSI colours,
+  which are the terminal scheme's. Not themed yet (still Catppuccin Mocha): herdr-app (its retropet theme).
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
   `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.
 Font: JetBrainsMonoNL Nerd Font (`windots-install-font`).

@@ -30,7 +30,7 @@ if (-not $fzf) { $fzf = (mise which fzf 2>$null) }
 if (-not $fzf) { Write-Host 'fzf not found (mise use -g fzf)'; Read-Host 'Enter to close' | Out-Null; exit 0 }
 
 # Colors: catppuccin/fzf, the same file the PowerShell profile loads (this runs with -NoProfile).
-$fzfTheme = Join-Path $HOME '.config\powershell\catppuccin-fzf-mocha.ps1'
+$fzfTheme = Join-Path $HOME '.config\powershell\fzf-theme.ps1'
 if (Test-Path $fzfTheme) { . $fzfTheme }
 
 . (Join-Path $PSScriptRoot 'lib' | Join-Path -ChildPath 'themes.ps1')

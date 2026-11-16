@@ -455,6 +455,79 @@ function Update-FilesTheme($Name, $c, $NoRestart) {
     'Files: restarted to apply the colours'
 }
 
+# ---- btop, atuin, fzf ----------------------------------------------------------------------
+# Each one is a file the tool reads: written only when its text changed, so a re-run touches nothing. starship is not
+# here: its config names ANSI colours (cyan, ...), which come from the Windows Terminal scheme this script already themes.
+function Write-ThemeFile($Path, $Text) {
+    if ((Test-Path $Path) -and ([IO.File]::ReadAllText($Path) -eq $Text)) { return $false }
+    New-Item -ItemType Directory -Force (Split-Path $Path -Parent) | Out-Null
+    [IO.File]::WriteAllText($Path, $Text, (New-Object Text.UTF8Encoding($false)))
+    $true
+}
+
+# omarchy's default\themed\*.tpl: {{ key }} is a colour of the palette
+function Expand-ThemeTemplate($Template, $c) {
+    [regex]::Replace($Template, '\{\{\s*(\w+)\s*\}\}', { param($m) [string]$c[$m.Groups[1].Value] })
+}
+
+function Merge-Hex($A, $B, $Part) {
+    $x = ([string]$A).TrimStart('#'); $y = ([string]$B).TrimStart('#')
+    $out = foreach ($i in 0, 2, 4) {
+        $p = [Convert]::ToInt32($x.Substring($i, 2), 16); $q = [Convert]::ToInt32($y.Substring($i, 2), 16)
+        '{0:x2}' -f [int][Math]::Round($p + ($q - $p) * $Part)
+    }
+    '#' + ($out -join '')
+}
+
+# btop4win: omarchy's btop.theme.tpl as themes\windots.theme (btop.conf has color_theme = "windots"). A running btop
+# keeps its colours until it is opened again (the Linux one reloads on a signal; btop4win has none).
+function Set-BtopTheme($c) {
+    $dirs = @(Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Packages') -Filter 'aristocratos.btop4win*' -Directory -ErrorAction SilentlyContinue |
+        ForEach-Object { Join-Path $_.FullName 'btop4win\themes' } | Where-Object { Test-Path (Split-Path $_ -Parent) })
+    if (-not $dirs.Count) { return 'btop: not installed, skipped' }
+    $tpl = [IO.File]::ReadAllText((Join-Path $script:ThemeRepo 'default\btop\btop.theme.tpl'))
+    $text = Expand-ThemeTemplate $tpl $c
+    $changed = $false
+    foreach ($d in $dirs) { if (Write-ThemeFile (Join-Path $d 'windots.theme') $text) { $changed = $true } }
+    if ($changed) { 'btop: theme changed (it shows the next time btop starts)' } else { 'btop: already right' }
+}
+
+# atuin: ~\.atuin\themes\windots.toml, with the roles of the catppuccin theme the repo used before (atuin config.toml:
+# [theme] name = "windots"). The search UI reads it each time it opens.
+function Set-AtuinTheme($c) {
+    $home1 = Join-Path $HOME '.atuin'
+    if (-not (Test-Path $home1)) { return 'atuin: not set up (no ~\.atuin), skipped' }
+    $text = @"
+[theme]
+name = "windots"
+
+[colors]
+AlertInfo = "$($c.green)"
+AlertWarn = "$($c.orange)"
+AlertError = "$($c.red)"
+Annotation = "$($c.accent)"
+Base = "$($c.foreground)"
+Guidance = "$($c.muted)"
+Important = "$($c.red)"
+Title = "$($c.accent)"
+"@ + "`n"
+    if (Write-ThemeFile (Join-Path $home1 'themes\windots.toml') $text) { 'atuin: theme changed' } else { 'atuin: already right' }
+}
+
+# fzf: its option file (FZF_DEFAULT_OPTS_FILE, set by the PowerShell profile): fzf reads it at every start, so the next fzf of
+# any open terminal has the new colours. The mapping is catppuccin/fzf's, from the palette.
+function Get-FzfOptsPath { Join-Path $HOME '.local\state\windots\fzf-colors.opts' }
+function Set-FzfTheme($c) {
+    $bgPlus = Merge-Hex $c.background $c.selection 0.5
+    $text = @"
+--color=bg+:$bgPlus,bg:$($c.background),spinner:$($c.accent),hl:$($c.red)
+--color=fg:$($c.foreground),header:$($c.red),info:$($c.magenta),pointer:$($c.accent)
+--color=marker:$($c.blue),fg+:$($c.bright_foreground),prompt:$($c.magenta),hl+:$($c.red)
+--color=selected-bg:$($c.selection),border:$($c.muted),label:$($c.foreground)
+"@ + "`n"
+    if (Write-ThemeFile (Get-FzfOptsPath) $text) { 'fzf: colours changed' } else { 'fzf: already right' }
+}
+
 # ---- Files as the default file manager ------------------------------------------------------
 # What Files' own Settings > Advanced switch does: copies Assets\FilesOpenDialog (the launcher and two .reg files) to
 # %LOCALAPPDATA%\Files and imports SetFilesAsDefault.reg, which only writes under HKCU (so no UAC): folders, Win+E and

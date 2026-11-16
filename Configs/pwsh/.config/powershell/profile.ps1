@@ -5,7 +5,7 @@ Set-Alias tuckr tuckr-x86_64-windows   # winget installs it under this name
 Invoke-Expression (&starship init powershell)
 
 # fzf colors (https://github.com/catppuccin/fzf), also used by windots-menu-keybindings
-. (Join-Path $PSScriptRoot 'catppuccin-fzf-mocha.ps1')
+. (Join-Path $PSScriptRoot 'fzf-theme.ps1')
 
 # Catppuccin (https://github.com/catppuccin/powershell), cloned by windots-reinstall-pkgs into
 # ~\.local\share\powershell\Modules (not Documents\PowerShell\Modules: OneDrive backs it up).

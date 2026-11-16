@@ -52,7 +52,7 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
   (`LauncherMenu("toggle", "<route>")`).
 - A menu with an empty search box: an fzf TUI script in `bin` (see
   `windots-menu-keybindings`: no args -> launches itself floating; `--pick` ->
-  runs fzf; colors from `catppuccin-fzf-mocha.ps1`).
+  runs fzf; colors from `fzf-theme.ps1`).
 
 ### Add a config file / app to the dotfiles
 1. Find where the app keeps its config. If the app saves by *replacing* the file

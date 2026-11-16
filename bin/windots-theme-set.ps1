@@ -1,5 +1,5 @@
 # windots-theme-set [<name>] [--skip-taskbar] [--skip-wallpaper] [--skip-files] [--no-restart]
-# windots:summary=Apply an omarchy theme: taskbar, komorebi borders and switcher, Windows Terminal, Neovim, Files, wallpaper, light/dark mode
+# windots:summary=Apply an omarchy theme: taskbar, komorebi borders and switcher, btop, atuin, fzf, Windows Terminal, Neovim, Files, wallpaper, light/dark mode
 # windots:args=[<name>] [--skip-taskbar] [--skip-wallpaper] [--skip-files] [--no-restart]
 # windots:examples=windots theme set | windots theme set "Tokyo Night" | windots theme set catppuccin-latte --no-restart
 #
@@ -25,7 +25,9 @@
 #   --skip-taskbar   leave the taskbar and the Windows mode alone
 #   --skip-wallpaper leave the desktop background alone
 #   --skip-files     leave Files alone
-# Not themed yet: btop, atuin, fzf, starship, herdr-app.
+#   btop, atuin, fzf   btop4win's themes\windots.theme (omarchy's template), ~\.atuin	hemes\windots.toml and the fzf option file
+#                       (FZF_DEFAULT_OPTS_FILE): the next start of each reads the new colours. starship uses the terminal's colours.
+# Not themed yet: herdr-app.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
@@ -75,6 +77,9 @@ if (-not $skipWallpaper) {
 if (-not $skipFiles) { Step (Update-FilesTheme $name $c $noRestart) }
 
 Step (Set-KomorebiBorders $c)
+Step (Set-BtopTheme $c)
+Step (Set-AtuinTheme $c)
+Step (Set-FzfTheme $c)
 
 $switcherChanged = Set-SwitcherColors $c
 Step $(if ($switcherChanged) { 'komorebi-switcher: indicator colours changed' } else { 'komorebi-switcher: colours already right' })
