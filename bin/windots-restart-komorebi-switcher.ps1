@@ -3,8 +3,8 @@
 # windots:examples=windots restart komorebi switcher
 #
 # Like omarchy's omarchy-restart-* commands: stops komorebi-switcher and starts it again, so a
-# change in ~\.config\komorebi-switcher.toml (position, colors) shows up. Called by
-# windots-center-switcher after it writes the position.
+# change in ~\.config\komorebi-switcher.toml (colors, alignment...) shows up. Called by
+# windots-theme-set and windots-install-komorebi-switcher.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
