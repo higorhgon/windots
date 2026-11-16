@@ -112,13 +112,21 @@ function Write-ModSettings {
 }
 
 # Does an ACL rule already let this user write the mod's settings (not just: can this process, which admin always can)?
+# Read through .NET, not Get-Acl: a Windows PowerShell 5.1 started by a pwsh 7 process inherits its PSModulePath and
+# cannot load Microsoft.PowerShell.Security; Get-Acl failed, this said "no access" and a theme switch asked for UAC.
 function Test-UserAccess {
     $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
-    foreach ($key in "$regMod\Settings", $regMod) {
-        try { $acl = Get-Acl $key -ErrorAction Stop } catch { return $false }
-        $hit = @($acl.Access | Where-Object {
+    foreach ($sub in "SOFTWARE\Windhawk\Engine\Mods\$modId\Settings", "SOFTWARE\Windhawk\Engine\Mods\$modId") {
+        try {
+            $k = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($sub, [Microsoft.Win32.RegistryKeyPermissionCheck]::Default,
+                [Security.AccessControl.RegistryRights]::ReadPermissions)
+            if (-not $k) { return $false }
+            try { $rules = $k.GetAccessControl([Security.AccessControl.AccessControlSections]::Access).GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]) }
+            finally { $k.Close() }
+        } catch { return $false }
+        $hit = @($rules | Where-Object {
             $_.AccessControlType -eq 'Allow' -and ($_.RegistryRights -band [Security.AccessControl.RegistryRights]::SetValue) -and
-            $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]) -eq $sid })
+            $_.IdentityReference -eq $sid })
         if (-not $hit.Count) { return $false }
     }
     $true
