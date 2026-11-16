@@ -8,7 +8,8 @@
 # windots-install does. The names are omarchy's: `windots theme list`. "Tokyo Night", tokyo_night and
 # tokyo-night are the same theme.
 #   Windows Terminal    the "windots" colour scheme and UI theme, made from the palette
-#   taskbar             background = the theme's background (Windhawk Taskbar Styler; needs
+#   taskbar             background = the theme's background; Start logo, tray icons and clock = its foreground, as in
+#                       omarchy's bar; the battery's fill = its green (Windhawk Taskbar Styler; needs
 #                       windots-install-windhawk; no UAC once it granted the user write access to the mod's settings)
 #   light / dark mode   Windows' flags follow the theme's mode, so the taskbar text, the tray and the
 #                       switcher numbers stay readable on a light taskbar
@@ -55,13 +56,13 @@ Write-Host "==> Theme $(Get-ThemeTitle $name) ($($c.mode))" -ForegroundColor Cya
 Set-CurrentThemeName $name
 
 # The taskbar first: it is what the eye is on. The light / dark flags need no restart: Set-WindowsColorMode broadcasts
-# the change on another thread (Explorer follows) while the rest of the script runs.
+# the change from a process of its own (Explorer follows) while the rest of the script runs.
 $modeChanged = $false
 if (-not $skipTaskbar) {
-    # the colour before the mode: the mode's broadcast needs a C# compile (Add-Type, ~0.5 s) the first time
+    # the colours before the mode: Windhawk paints the bar, its icons and the clock; the mode only reaches the rest
     if (Test-Path 'HKLM:\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler') {
         $global:LASTEXITCODE = 0
-        & (Join-Path $PSScriptRoot 'windots-install-windhawk.ps1') "--color=$($c.background)"
+        & (Join-Path $PSScriptRoot 'windots-install-windhawk.ps1') "--color=$($c.background)" "--foreground=$($c.foreground)" "--charging=$($c.green)"
         if ($LASTEXITCODE -ne 0) { Write-Warning 'the taskbar colour was not applied (above)' }
     } else {
         Step 'taskbar colour skipped: Windhawk and its mod are not installed (windots install windhawk)'
@@ -107,7 +108,6 @@ if ($switcherChanged -and (Test-SwitcherLiveReload)) {
 }
 
 # Last: Files. A theme switch never restarts it (its window would close and come back on its own): an open Files gets a
-# notification, and clicking it restarts Files. Then the broadcast is given time to end.
+# notification, and clicking it restarts Files.
 if (-not $skipFiles) { Step (Update-FilesTheme $name $c $true) }
-Wait-ColorModeChanged
 exit 0

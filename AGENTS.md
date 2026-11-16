@@ -225,9 +225,22 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   readable by turning `SystemUsesLightTheme` and `AppsUseLightTheme` on for `mode = light`. Explorer
   does not restart for it: `Set-WindowsColorMode` broadcasts `WM_SETTINGCHANGE` with `ImmersiveColorSet`
   (what Settings sends) and the taskbar, tray and switcher follow (measured: under 3 s, same PID). The broadcast
-  blocks 1.4 - 1.8 s (every window answers), so it runs on a thread (`Send-ColorModeChanged`, awaited by
-  `Wait-ColorModeChanged` at the end). `windots-theme-set` does the taskbar first (colour ~2 s, text ~3 s after the
-  command starts) and Files last. A new colour shows within seconds; a mod that was not installed before
+  blocks until every window answered (1.4 s on a quiet desktop, 6 s and more with Settings and Files open), so
+  `Send-ColorModeChanged` runs it in a detached process and nothing waits for it. `windots-theme-set` does the taskbar
+  first and Files last.
+- Taskbar icons follow the theme like omarchy's bar (`foreground`): rules in `default/windhawk/taskbar-styler.json`
+  with `{foreground}` (clock, chevron, network, volume, battery outline), `{charging}` (the battery's fill, the theme's
+  `green`) and `{start_icon}`. The Start logo is an `AnimatedVisualPlayer` with its colours inside and cannot be tinted:
+  it is collapsed and the button's `Border#BackgroundElement` gets an `ImageBrush` with a PNG of the logo in the
+  foreground colour, drawn by `Initialize-StartIcon` (`windots-install-windhawk`) from the geometry of Windows' own
+  `WindowsLogo.svg` into `~\.local\state\windots\taskbar\start<n>-<hex>.png` (the colour is in the name so Explorer
+  loads the new one; bump `<n>` when the drawing changes). An ImageBrush does not load an SVG (tested: empty button).
+  The drawing sits on the screen's pixel grid, measured at 100 % scale: the Border is 26 px, the picture starts at
+  x 11.5 / y 3, and the logo is 15 x 15 (squares of 7, a 1 px gap) where the original's solid pixels are. Anything
+  off the grid blurs or loses a gap line, and a solid light logo one pixel larger looks bigger than the original
+  (the person noticed). Check a change by printing the pixels of a screenshot, not by eye. Icons that apps put in the tray are
+  their own pictures and are not tinted; the switcher's numbers still follow light / dark. Target names come from the
+  mod's source (`C:\ProgramData\Windhawk\ModsSource\windows-11-taskbar-styler.wh.cpp`, its built-in themes). A new colour shows within seconds; a mod that was not installed before
   needs an Explorer restart.
 - The Windhawk settings are in HKLM. By the person's choice `windots install windhawk` grants this user `SetValue` on
   the mod's keys (`--allow-user-settings` is the default), so a theme switch needs no UAC; any process of this user
@@ -278,7 +291,9 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   and floating = the theme's `hyprland_active_border` (first colour of the gradient) or its accent, monocle = its orange,
   unfocused = `hyprland_inactive_border` or #595959. `komorebic border-colour` changes them in the running komorebi, so a theme
   switch restarts nothing; komorebi starts with the colours of komorebi.json, so `windots-float-ontop` (it runs while komorebi
-  does) applies the current theme's whenever it connects. Animation: 180 ms (`animation.duration` in komorebi.json; live with
+  does) applies the current theme's whenever it connects. Width: omarchy's `border_size = 2` is `border_width: 3` here
+  (komorebi draws one pixel less than the number: measured 1 px at 2, 2 px at 3, 3 px at 4; live with
+  `komorebic border-width 3`). Animation: 180 ms (`animation.duration` in komorebi.json; live with
   `komorebic animation-duration 180`).
 - btop, atuin and fzf are files the tool reads, written by `Set-BtopTheme` / `Set-AtuinTheme` / `Set-FzfTheme` (only when the
   text changed): btop4win's `themes\windots.theme` from omarchy's `btop.theme.tpl` (`default/btop/`; btop.conf has

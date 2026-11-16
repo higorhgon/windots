@@ -1,14 +1,52 @@
 {
   "mod": "windows-11-taskbar-styler",
   "color": "#1e1e2e",
+  "foreground": "#cdd6f4",
+  "charging": "#a6e3a1",
   "controlStyles": [
     {
       "target": "Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid > Rectangle#BackgroundFill",
       "styles": ["Fill={color}"]
     },
     {
+      "target": "Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid > Rectangle#BackgroundStroke",
+      "styles": ["Fill={color}"]
+    },
+    {
       "target": "Taskbar.TaskListButton",
       "styles": ["Visibility=Collapsed"]
+    },
+    {
+      "target": "TextBlock#TimeInnerTextBlock",
+      "styles": ["Foreground={foreground}"]
+    },
+    {
+      "target": "TextBlock#DateInnerTextBlock",
+      "styles": ["Foreground={foreground}"]
+    },
+    {
+      "target": "SystemTray.TextIconContent > Grid > SystemTray.AdaptiveTextBlock#Base > TextBlock",
+      "styles": ["Foreground={foreground}"]
+    },
+    {
+      "target": "SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > TextBlock",
+      "styles": ["Foreground={foreground}"]
+    },
+    {
+      "target": "SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > Grid > TextBlock[1]",
+      "styles": ["Foreground={foreground}"]
+    },
+    {
+      "target": "SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > Grid > TextBlock[2]",
+      "styles": ["Foreground={charging}"]
+    },
+    {
+      "target": "Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton] > Taskbar.TaskListButtonPanel > Grid > Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer#Icon, Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton] > Taskbar.TaskListButtonPanel > Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer#Icon",
+      "styles": ["Visibility=Collapsed"]
+    },
+    {
+      "target": "Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton] > Taskbar.TaskListButtonPanel > Grid > Border#BackgroundElement, Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton] > Taskbar.TaskListButtonPanel > Border#BackgroundElement",
+      "styles": ["Background:=<ImageBrush Stretch=\"Uniform\" ImageSource=\"{start_icon}\" />"]
     }
   ]
 }

@@ -252,27 +252,18 @@ function Set-WindowsColorMode($Mode) {
 }
 
 # Tells every top-level window that the light / dark flags changed (HWND_BROADCAST, WM_SETTINGCHANGE, SMTO_ABORTIFHUNG).
-# The call waits for every window to answer (measured 1.4 - 1.8 s), so it runs on another thread while the script goes
-# on; Wait-ColorModeChanged, before the script ends, makes sure it was delivered.
+# The call waits for every window to answer, one after the other: 1.4 s on a quiet desktop, 6 s and more with Settings,
+# Files and other apps open (each repaints itself before answering). So it runs in a process of its own and the script
+# does not wait: the taskbar's colours do not depend on it (Windhawk paints them), only the switcher's numbers and the
+# other apps' own light / dark look.
 function Send-ColorModeChanged {
-    if (-not ('Windots.ColorMode' -as [type])) {
-        Add-Type -Namespace Windots -Name ColorMode -UsingNamespace System.Threading.Tasks -MemberDefinition @'
-[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam,
-    uint flags, uint timeout, out UIntPtr result);
-public static Task Broadcast() {
-    return Task.Run(() => {
-        UIntPtr r;
-        SendMessageTimeout((IntPtr)0xffff, 0x001A, UIntPtr.Zero, "ImmersiveColorSet", 0x0002, 1000, out r);
-    });
-}
+    $code = @'
+Add-Type -Namespace Windots -Name ColorMode -MemberDefinition '[DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam, uint flags, uint timeout, out UIntPtr result);'
+$r = [UIntPtr]::Zero
+[void][Windots.ColorMode]::SendMessageTimeout([IntPtr]0xffff, 0x001A, [UIntPtr]::Zero, 'ImmersiveColorSet', 0x0002, 1000, [ref]$r)
 '@
-    }
-    $script:ColorModeBroadcast = [Windots.ColorMode]::Broadcast()
-}
-
-function Wait-ColorModeChanged {
-    if ($script:ColorModeBroadcast) { [void]$script:ColorModeBroadcast.Wait(10000); $script:ColorModeBroadcast = $null }
+    Start-Process (Get-Process -Id $PID).Path -WindowStyle Hidden -ArgumentList @('-NoProfile', '-EncodedCommand',
+        [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($code)))
 }
 
 # --- Neovim (LazyVim, windots-install-lazyvim) --------------------------------------------

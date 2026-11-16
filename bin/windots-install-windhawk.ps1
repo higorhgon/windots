@@ -14,6 +14,11 @@
 #   4. restarts Windhawk (windhawk.exe -restart -tray-only) so the engine loads the mod, and Explorer, only
 #      when the mod was just installed: a new colour in an installed mod shows ~0.3 s after the settings write
 #   --color=#rrggbb   the taskbar colour (default: the one in default/windhawk/taskbar-styler.json)
+#   --foreground=#rrggbb   the colour of the Start logo, the tray icons (chevron, network, volume, battery) and the
+#                     clock, like the foreground of omarchy's bar. The Start logo cannot be tinted (an animation), so it
+#                     is replaced by a picture of it in this colour (~\.local\state\windots\taskbar\start-<hex>.png).
+#                     Icons that apps put in the tray are pictures of their own and keep their colours.
+#   --charging=#rrggbb     the fill of the battery icon (Windows' own green otherwise)
 #   --check           say what is installed and which colour is set; change nothing
 #   --allow-user-settings   let this user change the mod's settings without admin: the default (one UAC the
 #                     first time, none when a theme changes the colour later). A deliberate trade-off, chosen
@@ -32,7 +37,7 @@ $data = Get-Content (Join-Path $Repo 'default\windhawk\taskbar-styler.json') -Ra
 $modId = $data.mod
 $exe = Join-Path $env:ProgramFiles 'Windhawk\windhawk.exe'
 $regMod = "HKLM:\SOFTWARE\Windhawk\Engine\Mods\$modId"
-$check = $false; $apply = $false; $color = $data.color; $allow = $false; $block = $false
+$check = $false; $apply = $false; $color = $data.color; $foreground = $data.foreground; $charging = $data.charging; $allow = $false; $block = $false
 for ($i = 0; $i -lt $args.Count; $i++) {
     $a = [string]$args[$i]
     if ($a -eq '--check') { $check = $true }
@@ -40,6 +45,8 @@ for ($i = 0; $i -lt $args.Count; $i++) {
     elseif ($a -eq '--allow-user-settings') { $allow = $true }
     elseif ($a -eq '--block-user-settings') { $block = $true }
     elseif ($a -like '--color=*') { $color = $a.Substring(8) }
+    elseif ($a -like '--foreground=*') { $foreground = $a.Substring(13) }
+    elseif ($a -like '--charging=*') { $charging = $a.Substring(11) }
     else { Write-Host "unknown option: $a (see windots install windhawk --help)" -ForegroundColor Red; exit 2 }
 }
 # the person's choice, kept between runs: user settings are allowed unless --block-user-settings was given
@@ -51,7 +58,45 @@ if (-not $apply) {
 }
 $wantAccess = $allow -or (-not $block -and -not (Test-Path $optOut))
 if ($color -notmatch '^#[0-9A-Fa-f]{6}$') { Write-Host "--color must look like #1e1e2e, not '$color'" -ForegroundColor Red; exit 2 }
-$color = $color.ToLower()
+if ($foreground -notmatch '^#[0-9A-Fa-f]{6}$') { Write-Host "--foreground must look like #cdd6f4, not '$foreground'" -ForegroundColor Red; exit 2 }
+if ($charging -notmatch '^#[0-9A-Fa-f]{6}$') { Write-Host "--charging must look like #a6e3a1, not '$charging'" -ForegroundColor Red; exit 2 }
+$color = $color.ToLower(); $foreground = $foreground.ToLower(); $charging = $charging.ToLower()
+
+# The Start button's logo is an animation with its colours inside: it cannot be tinted. So it is hidden and the button
+# gets a picture of the logo in the foreground colour, one file per colour (a new name makes Explorer load it).
+$startIcon = Join-Path $HOME ".local\state\windots\taskbar\start6-$($foreground.TrimStart('#')).png"   # start<n>: the version of the drawing
+function Initialize-StartIcon {
+    if (Test-Path $startIcon) { return }
+    Add-Type -AssemblyName System.Drawing
+    New-Item -ItemType Directory -Force (Split-Path $startIcon) | Out-Null
+    $bmp = New-Object System.Drawing.Bitmap 256, 256
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $brush = New-Object System.Drawing.SolidBrush ([System.Drawing.ColorTranslator]::FromHtml($foreground))
+    $clear = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::Transparent)
+    try {
+        $g.Clear([System.Drawing.Color]::Transparent)
+        $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+        $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+        # The shape of Windows' own logo (SystemApps\MicrosoftWindows.Client.Core_*\Icons\WindowsLogo.svg, which an
+        # ImageBrush does not load): four squares, a thin gap, only the four outer corners round. Its place is the one
+        # the taskbar gives the original, measured at 100 % scale: the button's Border is 26 px (this canvas / 26 = one
+        # screen pixel, $e; the picture starts at x 11.5, y 3) and the logo covers 15 x 15 of them, squares of 7 with a
+        # 1 px gap, 5.5 px from the left and 6 from the top. Drawn on whole screen pixels so the edges and the gap stay
+        # sharp; a solid light colour that is any larger looks bigger than the original (its edge pixels are faint).
+        $e = 256 / 26
+        $x0 = [single](5.5 * $e); $y0 = [single](6 * $e); $side = [single](15 * $e); $r = [single](1.4 * $e)   # $r: a corner's diameter
+        $p = New-Object System.Drawing.Drawing2D.GraphicsPath
+        $p.AddArc($x0, $y0, $r, $r, 180, 90); $p.AddArc($x0 + $side - $r, $y0, $r, $r, 270, 90)
+        $p.AddArc($x0 + $side - $r, $y0 + $side - $r, $r, $r, 0, 90); $p.AddArc($x0, $y0 + $side - $r, $r, $r, 90, 90)
+        $p.CloseFigure(); $g.FillPath($brush, $p); $p.Dispose()
+        $g.CompositingMode = [System.Drawing.Drawing2D.CompositingMode]::SourceCopy   # the cross between the squares
+        $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::None
+        $g.FillRectangle($clear, [single]($x0 + 7 * $e), $y0, [single]$e, $side); $g.FillRectangle($clear, $x0, [single]($y0 + 7 * $e), $side, [single]$e)
+        $bmp.Save($startIcon, [System.Drawing.Imaging.ImageFormat]::Png)
+    } finally { $brush.Dispose(); $clear.Dispose(); $g.Dispose(); $bmp.Dispose() }
+    # the pictures of the colours used before
+    Get-ChildItem (Split-Path $startIcon) -Filter 'start*.png' | Where-Object { $_.FullName -ne $startIcon } | Remove-Item -Force -ErrorAction SilentlyContinue
+}
 
 # the settings the mod gets, as the flat name = value pairs Windhawk keeps in the registry
 function Get-ModSettings {
@@ -59,7 +104,9 @@ function Get-ModSettings {
     for ($i = 0; $i -lt @($data.controlStyles).Count; $i++) {
         $c = @($data.controlStyles)[$i]
         $s["controlStyles[$i].target"] = [string]$c.target
-        for ($j = 0; $j -lt @($c.styles).Count; $j++) { $s["controlStyles[$i].styles[$j]"] = ([string]@($c.styles)[$j]).Replace('{color}', $color) }
+        for ($j = 0; $j -lt @($c.styles).Count; $j++) {
+            $s["controlStyles[$i].styles[$j]"] = ([string]@($c.styles)[$j]).Replace('{color}', $color).Replace('{foreground}', $foreground).Replace('{charging}', $charging).Replace('{start_icon}', $startIcon)
+        }
     }
     $s['themeResourceVariables[0]'] = ''
     $s['clickThroughTaskbar'] = 0
@@ -224,7 +271,8 @@ $fresh = -not (Get-ModVersion)
 $changed = $fresh -or -not (Test-SettingsMatch)
 $haveAccess = (-not $fresh) -and (Test-UserAccess)
 $accessChange = if ($wantAccess) { -not $haveAccess } else { $haveAccess }   # the permission has to be granted or taken back
-$flags = @("--color=$color")
+$flags = @("--color=$color", "--foreground=$foreground", "--charging=$charging")
+Initialize-StartIcon
 if ($wantAccess -and -not $haveAccess) { $flags += '--allow-user-settings' }
 if (-not $wantAccess -and $haveAccess) { $flags += '--block-user-settings' }
 if (-not $fresh -and -not $accessChange -and (Test-SettingsMatch)) {
