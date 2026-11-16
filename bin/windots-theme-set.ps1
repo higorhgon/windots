@@ -13,6 +13,8 @@
 #   light / dark mode   Windows' flags follow the theme's mode, so the taskbar text, the tray and the
 #                       switcher numbers stay readable on a light taskbar
 #   komorebi-switcher   active workspace = the accent, workspaces with windows = the muted colour
+#   Neovim (LazyVim)    lua\plugins\theme.lua = the theme's colorscheme (omarchy's neovim.lua, or its aether template
+#                       with the palette); open Neovims reload it live. Only when windots-install-lazyvim was run.
 # Explorer restarts (its windows close, the taskbar blinks) only when the light/dark mode changed;
 # the switcher restarts only when its colours changed. --no-restart changes the files and leaves both.
 #   --skip-taskbar   leave the taskbar and the Windows mode alone
@@ -45,6 +47,12 @@ switch (Set-TerminalTheme $c) {
     'changed' { Step 'Windows Terminal: scheme and tab theme changed' }
     'same'    { Step 'Windows Terminal: already right' }
     default   { Step 'Windows Terminal settings.json not found: skipped (open it once, then windots theme set)' }
+}
+
+# Neovim (LazyVim from windots-install-lazyvim): theme.lua is the new colorscheme; a Neovim that is open reloads it by itself
+switch (Set-NeovimTheme $name $c) {
+    'changed' { Step 'Neovim (LazyVim): theme changed; open Neovims switch by themselves' }
+    'same'    { Step 'Neovim (LazyVim): already right' }
 }
 
 $switcherChanged = Set-SwitcherColors $c

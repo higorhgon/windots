@@ -25,6 +25,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
 | `default/themes/<name>/colors.toml`, `.../backgrounds/` | the 23 omarchy themes (copied from `omacom/omarchy`, `themes/<name>/colors.toml`, and the 98 images of `themes/<name>/backgrounds`, 69 MB; videos left out; the person's own images are in `catppuccin/backgrounds`); `windots-theme-set` reads them through `bin/lib/themes.ps1`. The current theme is `~\.local\state\windots\theme.name` (state, never versioned) |
+| `default/lazyvim/` | omarchy's Neovim (omacom/omarchy-pkgs, `pkgbuilds/omarchy-nvim`): lazyvim.json, `lua/config`, `lua/plugins`, `plugin/after`, and the aether template `neovim.lua.tpl` (omarchy's `default/themed/neovim.lua.tpl`); `windots-install-lazyvim` merges them into the Neovim config |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
@@ -54,6 +55,7 @@ instead; edit the `default/` data and the script, then run it:
 | Windhawk mod settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\<id>\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` (`{color}` is replaced) |
 | herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
 | Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
+| `%LOCALAPPDATA%\nvim` (LazyVim) | `windots-install-lazyvim`, `windots-theme-set` (only `lua/plugins/theme.lua`) | `default/lazyvim/`, `default/themes/<name>/neovim.lua` (never linked: lazy.nvim writes `lazy-lock.json` and `lazyvim.json` into it; the person's own extras and plugins live there) |
 | `~\.config\komorebi-switcher.toml` (per machine: monitor sections + the theme's `[colors]`) | `windots-theme-set`, `windots-center-switcher` | seed `default/komorebi/komorebi-switcher.toml` (never linked: a theme switch must not dirty the repo) |
 | Windows Terminal `settings.json`: the `windots` scheme / UI theme | `windots-theme-set` (and `windots-install-windows-terminal`) | `default/themes/` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
@@ -211,6 +213,13 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
 - Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain
   assignment): `Add-Member -Force` moves the property to the end, the file changes every run and a
   backup piles up each time. Compare the JSON before and after and write only on a change.
+- Neovim: the theme is `lua/plugins/theme.lua` in the LazyVim config, as in omarchy (a symlink to the current theme's
+  neovim.lua there; here a copy, written by `Set-NeovimTheme` in `bin/lib/themes.ps1`: the theme's own `neovim.lua`, or
+  the aether template with the palette). Write it with ONE file replace (`Move-Item -Force` of a temp file): lazy.nvim's
+  change detection sees it, fires `LazyReload`, and omarchy's `omarchy-theme-hotreload.lua` applies the colorscheme in
+  every open Neovim. The installer never replaces the person's config: it merges (`lazyvim.json` extras, three lines in
+  `options.lua`) and backs up what it overwrites as `<file>.bak.<unix time>`. Try it beside the real one with
+  `windots install lazyvim --appname nvim-test` (`NVIM_APPNAME`), then delete `nvim-test` and `nvim-test-data`.
 - Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app,
   komorebi borders, wallpaper. Official catppuccin ports are used there until they are.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:

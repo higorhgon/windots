@@ -55,6 +55,8 @@ function Read-ThemeColors($Name) {
         orange = 'yellow'; brown = 'orange'
         bright_red = 'red'; bright_green = 'green'; bright_yellow = 'yellow'
         bright_blue = 'blue'; bright_magenta = 'magenta'; bright_cyan = 'cyan'
+        dark_foreground = 'muted'; light_foreground = 'foreground'
+        selection_background = 'selection'; selection_foreground = 'bright_foreground'
     }
     foreach ($k in $fallback.Keys) { if (-not $c[$k]) { $c[$k] = $c[$fallback[$k]] } }
     $c
@@ -201,4 +203,53 @@ function Set-WindowsColorMode($Mode) {
         }
     }
     $changed
+}
+
+# --- Neovim (LazyVim, windots-install-lazyvim) --------------------------------------------
+# Like omarchy: lua\plugins\theme.lua in the Neovim config is the colorscheme spec of the current theme. The theme's own
+# neovim.lua when omarchy ships one (14 of the 23 themes), else the aether template (default\lazyvim\neovim.lua.tpl)
+# filled with the palette. lazy.nvim notices the file change and omarchy's omarchy-theme-hotreload plugin applies it in
+# every Neovim that is open.
+$script:NeovimAppsFile = Join-Path $HOME '.local\state\windots\nvim-apps'
+
+# NVIM_APPNAMEs that windots-install-lazyvim set up (the folders windots-theme-set writes theme.lua into).
+function Get-NeovimApps {
+    $apps = @()
+    if (Test-Path $script:NeovimAppsFile) { $apps = @(Get-Content $script:NeovimAppsFile | Where-Object { $_ -and $_.Trim() }) }
+    @($apps | Select-Object -Unique)
+}
+
+function Register-NeovimApp($App) {
+    if ((Get-NeovimApps) -contains $App) { return }
+    New-Item -ItemType Directory -Force (Split-Path $script:NeovimAppsFile) | Out-Null
+    Add-Content -Path $script:NeovimAppsFile -Value $App
+}
+
+function Get-NeovimThemeSpec($Name, $c) {
+    $own = Join-Path $script:ThemesDir "$Name\neovim.lua"
+    if (Test-Path $own) { return [IO.File]::ReadAllText($own) }
+    $tpl = [IO.File]::ReadAllText((Join-Path $script:ThemeRepo 'default\lazyvim\neovim.lua.tpl'))
+    [regex]::Replace($tpl, '\{\{\s*(\w+)\s*\}\}', { param($m) $v = $c[$m.Groups[1].Value]; if ($v) { $v } else { $m.Value } })
+}
+
+# Writes theme.lua into one Neovim config folder. Returns 'changed', 'same' or 'none' (no windots LazyVim there).
+function Set-NeovimThemeFile($Dir, $Name, $c) {
+    if (-not (Test-Path (Join-Path $Dir 'lua\plugins\omarchy-theme-hotreload.lua'))) { return 'none' }
+    $spec = Get-NeovimThemeSpec $Name $c
+    $target = Join-Path $Dir 'lua\plugins\theme.lua'
+    if ((Test-Path $target) -and ([IO.File]::ReadAllText($target) -ceq $spec)) { return 'same' }
+    $tmp = "$target.tmp"
+    [IO.File]::WriteAllText($tmp, $spec, (New-Object Text.UTF8Encoding $false))
+    Move-Item $tmp $target -Force   # one replace, which is what lazy.nvim's change detection sees
+    'changed'
+}
+
+# Every registered Neovim config (and the default one). 'changed' if any changed, 'same', or 'none'.
+function Set-NeovimTheme($Name, $c) {
+    $result = 'none'
+    foreach ($app in (@('nvim') + (Get-NeovimApps) | Select-Object -Unique)) {
+        $r = Set-NeovimThemeFile (Join-Path $env:LOCALAPPDATA $app) $Name $c
+        if ($r -eq 'changed') { $result = 'changed' } elseif ($r -eq 'same' -and $result -eq 'none') { $result = 'same' }
+    }
+    $result
 }

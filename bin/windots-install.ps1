@@ -322,6 +322,15 @@ Step 'Installing mise tools (atuin, starship, neovim, ...)'
 if (Get-Command mise -ErrorAction SilentlyContinue) { mise install --yes }
 else { Write-Warning 'mise not found on PATH; open a new terminal and run: mise install' }
 
+# ---------------------------------------------------------------- lazyvim
+Step 'Installing LazyVim (omarchy''s Neovim setup, with its live theme)'
+if ($SkipPackages) { Write-Host '  - skipped (--skip-packages)' }
+else {
+    $global:LASTEXITCODE = 0
+    & (Join-Path $PSScriptRoot 'windots-install-lazyvim.ps1')
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'LazyVim was not installed (above). Retry: windots install lazyvim' }
+}
+
 # ---------------------------------------------------------------- autostart
 Step 'Creating autostart shortcuts'
 & (Join-Path $Repo 'bin\windots-refresh-autostart.ps1')
