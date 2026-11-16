@@ -11,7 +11,8 @@
 #      files the window downloads), copies them into C:\ProgramData\Windhawk and registers the mod in
 #      HKLM\SOFTWARE\Windhawk\Engine\Mods: this needs admin, so it runs through sudo (one UAC prompt)
 #   3. writes the mod settings from default/windhawk/taskbar-styler.json, with {color} replaced
-#   4. restarts Windhawk (windhawk.exe -restart -tray-only) so the engine loads the mod
+#   4. restarts Windhawk (windhawk.exe -restart -tray-only) so the engine loads the mod, and Explorer, only
+#      when the mod was just installed: a new colour in an installed mod shows ~0.3 s after the settings write
 #   --color=#rrggbb   the taskbar colour (default: the one in default/windhawk/taskbar-styler.json)
 #   --check           say what is installed and which colour is set; change nothing
 #   --allow-user-settings   let this user change the mod's settings without admin (one UAC now, none
@@ -184,16 +185,14 @@ if (-not $fresh -and -not $allow -and -not $block -and (Test-SettingsMatch)) {
 } elseif (Test-Admin) { & $PSCommandPath --apply @flags; $code = $LASTEXITCODE }
 else { $code = Invoke-Elevated $PSCommandPath (@('--apply') + $flags) }
 if ($code -ne 0) { Write-Host 'installing the mod failed (above)' -ForegroundColor Red; exit 1 }
-if ($changed) {
+if ($fresh) {
+    # only a mod that was not there before needs the engine restarted (measured: a new colour in an installed mod
+    # shows ~0.3 s after the registry write, with no restart and no wait) and Explorer to build the taskbar again
     Write-Host '==> Starting Windhawk to load the mod'
     # -restart only restarts a running Windhawk; when it is stopped, start it (in the tray, no window)
     if (Get-Process windhawk -ErrorAction SilentlyContinue) { & $exe -restart -tray-only } else { Start-Process $exe -ArgumentList '-tray-only' }
     Start-Sleep -Seconds 3
-    # a new colour shows within seconds, but a mod that was not there before only styles the taskbar
-    # once Explorer builds it again
-    if ($fresh) {
-        Write-Host '==> Restarting Explorer so the taskbar picks the mod up'
-        & (Join-Path $PSScriptRoot 'windots-restart-explorer.ps1')
-    }
+    Write-Host '==> Restarting Explorer so the taskbar picks the mod up'
+    & (Join-Path $PSScriptRoot 'windots-restart-explorer.ps1')
 }
 exit 0
