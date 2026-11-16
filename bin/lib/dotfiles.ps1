@@ -96,7 +96,8 @@ function Remove-Dotfile($Path) {
 # with links): their links into the repo point at nothing now.
 $WindotsOldPlaces = @(
     (Join-Path $HOME 'Documents\PowerShell'),           # profile, now ~\.config\powershell
-    (Join-Path $HOME 'Pictures\Wallpapers\catppuccin')  # backgrounds, now ~\.config\windots\backgrounds
+    (Join-Path $HOME 'Pictures\Wallpapers\catppuccin'),  # backgrounds, once
+    (Join-Path $HOME '.config\windots\backgrounds\catppuccin')  # linked to Configs/backgrounds; the images are in default\themes\catppuccin\backgrounds now
 )
 
 # File links into the repo, in those folders, whose repo file is gone. Folders are left alone.

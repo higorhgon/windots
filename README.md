@@ -16,7 +16,6 @@ Para agentes de código: [`AGENTS.md`](AGENTS.md) (estrutura, convenções e arm
 | `mise` | `.config/mise/config.toml` (atuin, starship, fzf, fd, ripgrep, zoxide, neovim, lazygit, lazydocker, claude, go, node, npm, rust) |
 | `starship` | `.config/starship.toml` (config do omarchy) |
 | `komorebi` | `komorebi.json`, `applications.json`, `.config/whkdrc`. O `~\.config\komorebi-switcher.toml` não é linkado: é um arquivo por máquina (as cores vêm do tema e as posições do `windots-center-switcher`), criado a partir de `default/komorebi/komorebi-switcher.toml` |
-| `backgrounds` | `.config/windots/backgrounds/catppuccin/` (12 imagens do dot-omarchy), como o `~/.config/omarchy/backgrounds` |
 
 Nada fica em Documentos, Imagens ou Área de Trabalho: o OneDrive faz backup (e às vezes redireciona) essas pastas, o que dá conflito com links. Tudo vai em `~\.config`, como no omarchy.
 
@@ -34,7 +33,6 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots-launch-float <comando>` | abre o comando flutuante, centralizado, sempre em 875×600 (o tamanho do omarchy) |
 | `windots-float-ontop` | roda em segundo plano: janelas flutuantes ficam sempre acima das em tile |
 | `windots-hotkeys.ahk` | atalhos que o whkd não faz (AutoHotkey v2): Win não abre o Iniciar, Alt+arrastar move/redimensiona janelas, Alt+Shift+/ no teclado ABNT2 |
-| `windots-install-backgrounds` | lista os backgrounds em Configurações → Personalização: um tema `windots <pasta>` (slideshow com todas as imagens, mantendo modo escuro e cor de destaque) e 5 imagens em "Imagens recentes" |
 | `windots-install-font [--pick | nome]` | como o `omarchy-install-font`: sem nome, abre a lista de fontes no fzf como TUI flutuante (Alt+Ctrl+Shift+F); instala uma Nerd Font do release mais recente do [nerd-fonts](https://github.com/ryanoasis/nerd-fonts) só para o usuário, sem admin (padrão: JetBrainsMono; o Windows Terminal e o herdr-app usam a variação `JetBrainsMonoNL Nerd Font`) |
 | `windots-install-herdr-app` | o herdr-app regrava `keys.json` e `settings.json` enquanto roda, então eles não são links: o script mescla `default/herdr-app` (binds do omarchy, fonte) com os binds do retropet e grava os dois (com backup). O [retropet](https://github.com/higorhgon/retropet) é o submódulo `default/retropet`: layout, mods e tema são **copiados** arquivo por arquivo para `~\.config\herdr-app` (o herdr-app recusa um mod cujos arquivos resolvem para fora da pasta dele, o que um link para o submódulo faz), sem mexer nos mods e temas que o próprio herdr-app instala. Reinicie o herdr-app para carregar |
 | `windots-install-windows-terminal` | aplica o tema atual (`windots-theme-set`) e a fonte no Windows Terminal: grava o esquema de cores e o tema da interface `windots`, feitos da paleta do tema, e a fonte em todos os perfis, editando o `settings.json` (com backup, só quando algo muda) no que um fragment não alcança |
@@ -140,7 +138,7 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 3. Põe `~\windots\bin` no PATH.
 4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
 5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos. Depois aponta cada link direto para o arquivo do repo, sem passar pela junction: sessões SSH não atravessam links nem junctions criados por usuário comum (erro "untrusted mount point").
-6. `windots-install-backgrounds`, `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal`, `windots-install-windhawk` (o mod da barra de tarefas; UAC), `windots-theme-set` (o tema atual em tudo que ele cobre) e `windots-install-herdr-app` (keys/settings mesclados e retropet copiado).
+6. `windots-install-font JetBrainsMono` (só se ainda não estiver instalada), `windots-install-windows-terminal`, `windots-install-windhawk` (o mod da barra de tarefas; UAC), `windots-theme-set` (o tema atual em tudo que ele cobre) e `windots-install-herdr-app` (keys/settings mesclados e retropet copiado).
 7. `mise install` e `windots-refresh-autostart`.
 
 ## Uso diário
@@ -195,6 +193,14 @@ O komorebi decide em que workspace uma janela fica, mas não abre aplicativos. O
 Como funciona: o app abre, o komorebi pega a janela no workspace em que você está e ela é enviada ao workspace certo com `komorebic send-to-monitor-workspace` (por um instante ela pode aparecer onde você está). O script **não** registra regras de workspace no komorebi: uma regra ficaria valendo e moveria todas as janelas seguintes daquele app, e o komorebi não tem como remover uma regra só. Um app que já está aberto é deixado em paz, então rodar de novo (ou depois de reiniciar o komorebi) só abre o que falta; `windots restart komorebi` não reabre os apps. Só funciona com janelas que o komorebi gerencia: se ele ignora o app, o script avisa. `windots launch workspaces --dry-run` mostra o que faria, e o atalho de inicialização (criado pelo `windots-refresh-autostart`) roda o comando com `--wait`, esperando o komorebi subir.
 
 ## Temas
+
+Cada tema pode ter imagens de fundo em `default/themes/<tema>/backgrounds/`, o mesmo layout do omarchy
+(`themes/<tema>/backgrounds`). Estão aqui as 98 imagens dos 23 temas do omarchy (69 MB; os 19 vídeos dele ficaram de
+fora, um plano de fundo aqui é uma imagem) e, dentro do `catppuccin`, as 12 imagens que antes eram o grupo
+`backgrounds`. O windots-launcher mostra as do tema atual, com prévia, em `Style › Background`. Imagens só desta
+máquina vão em `~\.config\windots\backgrounds\<tema>`. Os atalhos de Configurações → Personalização do Windows
+(um tema `windots <nome>` com slideshow e as "imagens recentes") não existem mais: não funcionavam direito e o
+launcher resolve.
 
 Os temas são os do omarchy (`omacom/omarchy`, `themes/<nome>/colors.toml`), copiados em `default/themes/`: `catppuccin` (o padrão), `catppuccin-latte`, `ethereal`, `everforest`, `flexoki-light`, `gruvbox`, `hackerman`, `jade-horse`, `kanagawa`, `last-horizon`, `lumon`, `lupine`, `matte-black`, `miasma`, `nord`, `retro-82`, `ristretto`, `rose-pine`, `solitude`, `starship`, `tokyo-night`, `vantablack` e `white`. `windots theme list` mostra todos, `windots theme set <nome>` aplica e `Alt+Ctrl+Shift+Space` abre o menu.
 

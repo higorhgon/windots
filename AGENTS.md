@@ -24,14 +24,14 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `default/wsl/setup.sh` | the part of `windots-setup-wsl` that runs inside Arch on WSL, as root (`.gitattributes` keeps `*.sh` at LF: with `core.autocrlf` bash would choke on CRLF) |
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
-| `default/themes/<name>/colors.toml` | the 23 omarchy themes (copied from `omacom/omarchy`, `themes/<name>/colors.toml`); `windots-theme-set` reads them through `bin/lib/themes.ps1`. The current theme is `~\.local\state\windots\theme.name` (state, never versioned) |
+| `default/themes/<name>/colors.toml`, `.../backgrounds/` | the 23 omarchy themes (copied from `omacom/omarchy`, `themes/<name>/colors.toml`, and the 98 images of `themes/<name>/backgrounds`, 69 MB; videos left out; the person's own images are in `catppuccin/backgrounds`); `windots-theme-set` reads them through `bin/lib/themes.ps1`. The current theme is `~\.local\state\windots\theme.name` (state, never versioned) |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
 | `README.md` | the person's docs (Portuguese): groups, commands, install steps |
 
 tuckr looks for `%APPDATA%\dotfiles`; `windots-install` makes it a junction to this
 repo. Groups: `pwsh`, `mise`, `starship`, `komorebi` (komorebi.json,
-applications.json, whkdrc; the switcher's toml is not linked, see Themes), `backgrounds`, `atuin`, `btop`,
+applications.json, whkdrc; the switcher's toml is not linked, see Themes), `atuin`, `btop`,
 `windows-terminal`, `claude`.
 
 ## Live files vs repo copies (check before editing)
