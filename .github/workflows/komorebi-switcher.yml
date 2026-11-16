@@ -1,0 +1,68 @@
+# Builds komorebi-switcher (upstream's tag + default/komorebi-switcher/windots.patch) and publishes it as a release of
+# this repo. `windots install komorebi switcher` downloads the newest one.
+#
+#   git tag komorebi-switcher-v0.10.4-windots.1 && git push origin komorebi-switcher-v0.10.4-windots.1
+#
+# The tag is komorebi-switcher-<upstream tag>-windots.<n>: it says which upstream release the patch is applied to.
+# Upstream's own release profile is used here (lto, one codegen unit: a 2.6 MB exe); the local --build uses a lighter one.
+name: komorebi-switcher
+
+on:
+  push:
+    tags: ['komorebi-switcher-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, komorebi-switcher-v<upstream>-windots.<n>'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the upstream tag
+        shell: pwsh
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^komorebi-switcher-(v\d+\.\d+\.\d+)-windots\.\d+$') {
+            throw "tag '$env:RELEASE_TAG' is not komorebi-switcher-v<x.y.z>-windots.<n>"
+          }
+          "UPSTREAM_TAG=$($Matches[1])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Download upstream and apply the patch
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch $env:UPSTREAM_TAG https://github.com/amrbashir/komorebi-switcher.git upstream
+          if ($LASTEXITCODE -ne 0) { throw 'git clone failed' }
+          git -C upstream apply --ignore-whitespace "$env:GITHUB_WORKSPACE/default/komorebi-switcher/windots.patch"
+          if ($LASTEXITCODE -ne 0) { throw 'the patch does not apply to this upstream tag' }
+
+      - name: Build
+        shell: pwsh
+        working-directory: upstream
+        run: |
+          cargo build --release
+          if ($LASTEXITCODE -ne 0) { throw 'cargo build failed' }
+
+      - name: Checksum
+        shell: pwsh
+        run: |
+          Copy-Item upstream/target/release/komorebi-switcher.exe komorebi-switcher.exe
+          $hash = (Get-FileHash komorebi-switcher.exe -Algorithm SHA256).Hash
+          "$hash  komorebi-switcher.exe" | Out-File -FilePath komorebi-switcher.exe.sha256 -Encoding ascii -NoNewline
+          Get-Item komorebi-switcher.exe* | Select-Object Name, Length
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = "komorebi-switcher $env:UPSTREAM_TAG (upstream) with windots' patch: ``alignment`` and ``persistent_workspaces`` in komorebi-switcher.toml. Install: ``windots install komorebi switcher``."
+          gh release create $env:RELEASE_TAG komorebi-switcher.exe komorebi-switcher.exe.sha256 --title $env:RELEASE_TAG --notes $notes --target $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'gh release create failed' }

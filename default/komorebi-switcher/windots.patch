@@ -1,0 +1,262 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index f52acfa..85c0df2 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -71,6 +71,8 @@ features = [
+   "Win32_Graphics_DirectComposition",
+   "Win32_Graphics_Dxgi_Common",
+   "Win32_UI_HiDpi",
++  "Win32_UI_Accessibility",
++  "Win32_System_Com",
+ ]
+ 
+ [target.'cfg(target_os = "macos")'.dependencies]
+diff --git a/src/config.rs b/src/config.rs
+index e30213d..90e96ad 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -81,6 +81,15 @@ pub struct Config {
+ 	pub show_layout_button: bool,
+ 	#[serde(default)]
+ 	pub hide_empty_workspaces: bool,
++	/// windots patch (omarchy's waybar): the first N workspaces are always shown; past them an empty one is hidden unless it
++	/// is focused, and empty ones are drawn dimmed. Unset: nothing changes.
++	#[serde(default, skip_serializing_if = "Option::is_none")]
++	pub persistent_workspaces: Option<usize>,
++	/// windots patch: "left" (after the Start button, or at the left edge when Start is centered), "center" or "right"
++	/// (before the tray). The switcher places itself again whenever its width or the taskbar changes; with auto width the
++	/// `x` of the monitor is ignored. Unset: the monitor's x/y are used as before.
++	#[serde(default, skip_serializing_if = "Option::is_none")]
++	pub alignment: Option<String>,
+ 
+ 	#[serde(default, skip_serializing_if = "Option::is_none")]
+ 	pub font_family: Option<String>,
+diff --git a/src/windows/anchors.rs b/src/windows/anchors.rs
+new file mode 100644
+index 0000000..6170be2
+--- /dev/null
++++ b/src/windows/anchors.rs
+@@ -0,0 +1,93 @@
++//! windots patch: where the Start button and the tray are inside a taskbar.
++//!
++//! Windows 11 draws both in XAML, so they have no window handle: UI Automation is the way to find them
++//! (`StartButton` and the `SystemTrayIcon` items). The answer is cached and refreshed by a thread every
++//! couple of seconds, because the tray grows and shrinks and the Start button moves with the taskbar alignment.
++
++use std::collections::HashMap;
++use std::sync::{Mutex, OnceLock};
++use std::time::Duration;
++
++use windows::Win32::Foundation::{HWND, RECT};
++use windows::Win32::System::Com::{
++	CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
++};
++use windows::Win32::UI::Accessibility::{
++	CUIAutomation, IUIAutomation, IUIAutomationElement, TreeScope_Descendants,
++};
++use windows::Win32::UI::WindowsAndMessaging::GetWindowRect;
++
++/// Positions inside the taskbar, in pixels from its left edge.
++#[derive(Debug, Clone, Copy, Default, PartialEq)]
++pub struct Anchors {
++	/// Left and right edge of the Start button.
++	pub start: Option<(i32, i32)>,
++	/// Left edge of the first icon of the tray (the hidden icons chevron).
++	pub tray_left: Option<i32>,
++}
++
++static CACHE: OnceLock<Mutex<HashMap<isize, Anchors>>> = OnceLock::new();
++
++/// The last anchors found for this taskbar; the first call starts the thread that keeps them fresh.
++pub fn get(taskbar: HWND) -> Anchors {
++	let key = taskbar.0 as isize;
++	let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
++	let mut map = cache.lock().unwrap();
++	if let Some(found) = map.get(&key) {
++		return *found;
++	}
++	map.insert(key, Anchors::default());
++	drop(map);
++
++	std::thread::spawn(move || {
++		let hwnd = HWND(key as *mut _);
++		unsafe {
++			let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
++		}
++		loop {
++			match unsafe { query(hwnd) } {
++				Ok(found) => {
++					if let Some(map) = CACHE.get() {
++						map.lock().unwrap().insert(key, found);
++					}
++				}
++				Err(e) => tracing::debug!("Taskbar anchors not found: {e}"),
++			}
++			std::thread::sleep(Duration::from_secs(2));
++		}
++	});
++	Anchors::default()
++}
++
++unsafe fn query(taskbar: HWND) -> windows::core::Result<Anchors> {
++	let ui: IUIAutomation = CoCreateInstance(&CUIAutomation, None, CLSCTX_INPROC_SERVER)?;
++	let root = ui.ElementFromHandle(taskbar)?;
++
++	let mut origin = RECT::default();
++	GetWindowRect(taskbar, &mut origin)?;
++
++	// The taskbar has a few dozen elements: take them all and look at the AutomationId of each one.
++	let all = root.FindAll(TreeScope_Descendants, &ui.CreateTrueCondition()?)?;
++	let mut found = Anchors::default();
++	let mut tray_left: Option<i32> = None;
++	for i in 0..all.Length()? {
++		let item: IUIAutomationElement = all.GetElement(i)?;
++		let id = item.CurrentAutomationId().map(|s| s.to_string()).unwrap_or_default();
++		if id != "StartButton" && id != "SystemTrayIcon" {
++			continue;
++		}
++		let r = item.CurrentBoundingRectangle()?;
++		if r.right <= r.left {
++			continue;
++		}
++		let (left, right) = (r.left - origin.left, r.right - origin.left);
++		if id == "StartButton" {
++			found.start = Some((left, right));
++		} else {
++			tray_left = Some(tray_left.map_or(left, |c| c.min(left)));
++		}
++	}
++	found.tray_left = tray_left;
++
++	Ok(found)
++}
+diff --git a/src/windows/mod.rs b/src/windows/mod.rs
+index a1fd963..665511e 100644
+--- a/src/windows/mod.rs
++++ b/src/windows/mod.rs
+@@ -2,6 +2,7 @@ use winit::event_loop::EventLoop;
+ 
+ use crate::windows::app::{App, AppMessage};
+ 
++mod anchors;
+ mod app;
+ mod context_menu;
+ mod egui_glue;
+diff --git a/src/windows/widgets/workspace_button.rs b/src/windows/widgets/workspace_button.rs
+index b432723..496949f 100644
+--- a/src/windows/widgets/workspace_button.rs
++++ b/src/windows/widgets/workspace_button.rs
+@@ -6,6 +6,7 @@ pub struct WorkspaceButton<'a> {
+ 	line_active_color: Option<egui::Color32>,
+ 	line_busy_color: Option<egui::Color32>,
+ 	dark_mode: Option<bool>,
++	dim_empty: bool,
+ }
+ 
+ impl<'a> WorkspaceButton<'a> {
+@@ -16,9 +17,16 @@ impl<'a> WorkspaceButton<'a> {
+ 			line_active_color: None,
+ 			line_busy_color: None,
+ 			dark_mode: None,
++			dim_empty: false,
+ 		}
+ 	}
+ 
++	/// windots patch: a workspace with no window gets a much fainter number (waybar's `button.empty`)
++	pub fn dim_empty(mut self, dim: bool) -> Self {
++		self.dim_empty = dim;
++		self
++	}
++
+ 	pub fn dark_mode(mut self, dark_mode: Option<bool>) -> Self {
+ 		self.dark_mode = dark_mode;
+ 		self
+@@ -154,6 +162,8 @@ impl egui::Widget for WorkspaceButton<'_> {
+ 		// draw text
+ 		let text_color = if response.hovered() || self.workspace.focused {
+ 			text_color
++		} else if self.dim_empty && self.workspace.is_empty {
++			text_color.gamma_multiply(0.35)
+ 		} else {
+ 			text_color.gamma_multiply(0.75)
+ 		};
+diff --git a/src/windows/windows/switcher/mod.rs b/src/windows/windows/switcher/mod.rs
+index 1944249..e91cdd1 100644
+--- a/src/windows/windows/switcher/mod.rs
++++ b/src/windows/windows/switcher/mod.rs
+@@ -206,11 +206,12 @@ impl SwitcherWindowView {
+ 		rect: egui::Rect,
+ 		ppp: f32,
+ 		monitor_config: &crate::config::MonitorConfig,
++		alignment: Option<&str>,
+ 	) -> anyhow::Result<()> {
+ 		// Scale by pixels per point
+ 		let rect = rect * ppp;
+ 
+-		let x = monitor_config.x;
++		let mut x = monitor_config.x;
+ 		let y = monitor_config.y;
+ 
+ 		let height = if monitor_config.auto_height {
+@@ -225,6 +226,24 @@ impl SwitcherWindowView {
+ 			monitor_config.width
+ 		};
+ 
++		// windots patch: place the switcher by the alignment, next to the Start button, in the center or before the tray
++		if let (Some(alignment), true) = (alignment, monitor_config.auto_width) {
++			const GAP: i32 = 6;
++			let mut taskbar = RECT::default();
++			unsafe { GetClientRect(self.taskbar.hwnd, &mut taskbar) }?;
++			let total = taskbar.right - taskbar.left;
++			let anchors = crate::windows::anchors::get(self.taskbar.hwnd);
++			x = match alignment {
++				"left" => match anchors.start {
++					// Start at the left edge: right after it; centered (or unknown): take the left edge
++					Some((l, r)) if (l + r) / 2 < total / 4 => r + GAP,
++					_ => GAP,
++				},
++				"right" => anchors.tray_left.map_or(total - width - GAP, |t| t - width - GAP),
++				_ => (total - width) / 2,
++			};
++		}
++
+ 		let current_bounds = egui::Rect::from_min_size(
+ 			egui::pos2(x as f32, y as f32),
+ 			egui::vec2(width as f32, height as f32),
+@@ -364,6 +383,7 @@ impl SwitcherWindowView {
+ 			.dark_mode(Some(self.is_system_dark_mode()))
+ 			.line_active_color_opt(active_indicator_color)
+ 			.line_busy_color_opt(busy_indicator_color)
++			.dim_empty(config.persistent_workspaces.is_some())
+ 			.text_color_opt(self.forgreound_color);
+ 
+ 		if ui.add(btn).clicked() {
+@@ -393,6 +413,12 @@ impl SwitcherWindowView {
+ 			if hide_empty_workspaces && workspace.is_empty && !workspace.focused {
+ 				continue;
+ 			}
++			// windots patch: past the first N workspaces, one with no window is shown only while it is focused
++			if let Some(n) = config.persistent_workspaces {
++				if workspace.index >= n && workspace.is_empty && !workspace.focused {
++					continue;
++				}
++			}
+ 
+ 			self.workspace_button(ui, workspace, monitor_config, config);
+ 		}
+@@ -498,9 +524,14 @@ impl EguiView for SwitcherWindowView {
+ 		// Draw ui
+ 		let response = self.switcher_panel(ctx, &config, &monitor_config);
+ 
++		// windots patch: look at the Start button and the tray again every now and then
++		if config.alignment.is_some() {
++			ctx.request_repaint_after(std::time::Duration::from_secs(2));
++		}
++
+ 		// Resize host to match the content rect.
+ 		let ppp = ctx.pixels_per_point();
+-		if let Err(e) = self.resize_host_to_rect(response.inner, ppp, &monitor_config) {
++		if let Err(e) = self.resize_host_to_rect(response.inner, ppp, &monitor_config, config.alignment.as_deref()) {
+ 			tracing::error!("Failed to resize host to rect: {e}");
+ 		}
+ 	}

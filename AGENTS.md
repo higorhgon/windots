@@ -56,7 +56,7 @@ instead; edit the `default/` data and the script, then run it:
 | herdr-app `keys.json`, `settings.json` | `windots-install-herdr-app` | `default/herdr-app/` + `default/retropet/keys.json` |
 | Windhawk Taskbar Styler settings (`HKLM\SOFTWARE\Windhawk\Engine\Mods\windows-11-taskbar-styler\Settings`) | `windots-install-windhawk` | `default/windhawk/taskbar-styler.json` |
 | `%LOCALAPPDATA%\nvim` (LazyVim) | `windots-install-lazyvim`, `windots-theme-set` (only `lua/plugins/theme.lua`) | `default/lazyvim/`, `default/themes/<name>/neovim.lua` (never linked: lazy.nvim writes `lazy-lock.json` and `lazyvim.json` into it; the person's own extras and plugins live there) |
-| `~\.config\komorebi-switcher.toml` (per machine: monitor sections + the theme's `[colors]`) | `windots-theme-set`, `windots-center-switcher` | seed `default/komorebi/komorebi-switcher.toml` (never linked: a theme switch must not dirty the repo) |
+| `~\.config\komorebi-switcher.toml` (per machine: the theme's `[colors]`, `alignment`, `persistent_workspaces`) | `windots-theme-set`, `windots-install-komorebi-switcher` | seed `default/komorebi/komorebi-switcher.toml` (never linked: a theme switch must not dirty the repo) |
 | Windows Terminal `settings.json`: the `windots` scheme / UI theme | `windots-theme-set` (and `windots-install-windows-terminal`) | `default/themes/` |
 | Startup shortcuts (`shell:startup`) | `windots-refresh-autostart` | the list inside the script |
 | `~\.local\share\windots-launcher` (the published windots-launcher) | `windots-install-launcher` | the project in `~\Projetos\windots-launcher` (own repo; its menu is `menus/default.jsonc`, extended per machine by `~\.config\windots\menu.jsonc`) |
@@ -230,6 +230,18 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
 - The taskbar shows no app buttons: a second Taskbar Styler rule (`Taskbar.TaskListButton`, `Visibility=Collapsed`, in
   `default/windhawk/taskbar-styler.json`) hides pinned and running apps alike, leaving search, tray and the komorebi-switcher
   workspaces; Windows has no setting for it. Remove that entry to bring the buttons back (`windots install windhawk`).
+- komorebi-switcher: upstream cannot place itself in the taskbar and shows every workspace, so windots ships its own build:
+  the `v0.10.4` tag + `default/komorebi-switcher/windots.patch` (new keys in the toml: `alignment = left|center|right`, which
+  finds the Start button and the tray through UI Automation (Windows 11 draws both in XAML, no handles; `src/windows/anchors.rs`)
+  and re-places the switcher whenever its width or the taskbar changes, ignoring the monitor's `x`; and `persistent_workspaces = N`:
+  1..N always shown, the others only while busy or focused, empty ones dimmed). There is no centering script any more
+  (`windots-center-switcher` is gone: windots is opinionated, one layout). The build comes from a release of this repo made by
+  `.github/workflows/komorebi-switcher.yml` when a tag `komorebi-switcher-v<upstream>-windots.<n>` is pushed (a change to the patch
+  means a new tag); `windots install komorebi switcher` downloads the newest one (SHA-256 checked), `--build` compiles locally with a
+  lighter profile (env `CARGO_PROFILE_RELEASE_LTO=thin`, codegen units 16: same program, an 8 MB exe instead of 2.6). To change the
+  patch: edit a clean checkout of the tag (`git clone --branch v0.10.4 https://github.com/amrbashir/komorebi-switcher`), `git add -N`
+  new files, `git diff -- src Cargo.toml > default/komorebi-switcher/windots.patch`, and check `git apply --check` on a clean tag. If
+  the switcher logs "Found 0 taskbars" (an empty bar), Explorer was the cause: `windots restart explorer`.
 - komorebi-switcher colours: only `[colors] active_indicator` / `busy_indicator` exist (text and
   background follow Windows); the file is per machine, so only its `[colors]` table is rewritten.
 - Windows Terminal: scheme and UI theme named `windots`, set with `Set-JsonProperty` (plain

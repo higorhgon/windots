@@ -1,18 +1,5 @@
 show_layout_button    = false
 hide_empty_workspaces = false
-
-[monitors."Default_Monitor-1&1f0c3c2f&0&UID256"]
-auto_width  = true
-auto_height = false
-x           = 792
-y           = -6
-width       = 335
-height      = 44
-
-[monitors."0"]
-auto_width  = true
-auto_height = false
-x           = 516
-y           = -6
-width       = 335
-height      = 44
+# windots' build of komorebi-switcher (windots install komorebi switcher); upstream ignores both keys
+persistent_workspaces = 5          # workspaces 1..N always shown, the others while busy or focused
+alignment             = "center"   # left (after the Start button), center or right (before the tray)
