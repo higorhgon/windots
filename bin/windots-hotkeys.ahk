@@ -13,6 +13,27 @@
 ~LWin::Send "{Blind}{vkE8}"
 ~RWin::Send "{Blind}{vkE8}"
 
+; --- Square corners on every window ---
+; Windows 11 rounds the corners of every window, which clashes with komorebi's square borders (border_style "Square").
+; There is no setting for it (no registry value, no policy), but DWM takes a corner preference per window, and
+; DWMWCP_DONOTROUND (1) makes one square, from any process. A shell hook announces each new top-level window; the ones
+; already open (the hidden ones too) are done when this script starts. Not a Windhawk mod: nothing is injected into dwm.exe.
+SquareCorners(hwnd) {
+    static pref := Buffer(4)
+    NumPut("Int", 1, pref)   ; DWMWCP_DONOTROUND
+    DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", hwnd, "Int", 33, "Ptr", pref, "Int", 4)   ; DWMWA_WINDOW_CORNER_PREFERENCE
+}
+OnShellEvent(wParam, lParam, *) {
+    if (wParam = 1)   ; HSHELL_WINDOWCREATED
+        SquareCorners(lParam)
+}
+DllCall("RegisterShellHookWindow", "Ptr", A_ScriptHwnd)
+OnMessage(DllCall("RegisterWindowMessage", "Str", "SHELLHOOK"), OnShellEvent)
+; EnumWindows, not WinGetList: komorebi cloaks the windows of the other workspaces, and WinGetList does not list those.
+EnumProc := CallbackCreate((hwnd, lParam) => (SquareCorners(hwnd), true), "Fast", 2)
+DllCall("EnumWindows", "Ptr", EnumProc, "Ptr", 0)
+CallbackFree(EnumProc)
+
 ; --- Win+Space: the windots menu, like omarchy's Super+Space ---
 ; windots-launcher keeps one resident process that listens on a named pipe. Writing to the pipe from here
 ; opens the menu in a few milliseconds; starting windots-launcher.exe with the verb costs a whole .NET

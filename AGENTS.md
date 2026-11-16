@@ -150,6 +150,15 @@ in the `windots` skill). A new script without them is missing from the help.
   fallback. Never bind the same key in both, or the menu toggles open and shut. A `; description` after a hotkey in the
   .ahk file is what the Alt+K menu shows for it. `Alt+Space` is free (Flow Launcher, which used it, is gone).
 
+**Window corners**
+- Windows 11 rounds every window, which clashes with komorebi's square borders. There is no setting for it: no registry
+  value (none in the DWM keys or in udwm.dll / dwmcore.dll), no policy. What exists is DWM's corner preference per window,
+  `DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE = 33, DWMWCP_DONOTROUND = 1)`, which works on a window of
+  another process. `windots-hotkeys.ahk` sets it on every top-level window: a shell hook (`HSHELL_WINDOWCREATED`) for new
+  ones and `EnumWindows` at start for the ones open. Not `WinGetList`: komorebi cloaks the windows of the other
+  workspaces and it does not list them. Windhawk's "disable rounded corners" mod needs injection into dwm.exe, which is
+  why this is not used. Windows already open stay square after the script stops; a new one is round until it runs again.
+
 **komorebi**
 - Float override only has a *toggle*; `windots-launch-float` serializes it with a
   mutex and only turns it off if it turned it on. Don't toggle it elsewhere.
