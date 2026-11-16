@@ -253,3 +253,57 @@ function Set-NeovimTheme($Name, $c) {
     }
     $result
 }
+
+# ---- wallpaper ----------------------------------------------------------------------------------
+# The theme's background: its first image (default\themes\<name>\backgrounds, then
+# ~\.config\windots\backgrounds\<name>), like omarchy. An image of this theme chosen earlier (the
+# launcher's Style > Background) is kept, so re-applying the theme does not undo the person's choice.
+# The state file ~\.local\state\windots\background holds the chosen source, as the launcher writes it.
+# Windows takes jpg/png/bmp; a WebP or GIF is written once as a JPEG as wide as the screen (WPF decodes it).
+function Get-ThemeBackgrounds($Name) {
+    $seen = @{}; $out = @()
+    foreach ($dir in @((Join-Path $script:ThemesDir "$Name\backgrounds"), (Join-Path $HOME ".config\windots\backgrounds\$Name"))) {
+        if (-not (Test-Path $dir)) { continue }
+        foreach ($f in (Get-ChildItem $dir -File | Where-Object { '.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp' -contains $_.Extension.ToLower() } | Sort-Object Name)) {
+            if (-not $seen.ContainsKey($f.Name.ToLower())) { $seen[$f.Name.ToLower()] = 1; $out += $f.FullName }
+        }
+    }
+    $out
+}
+
+function Set-ThemeWallpaper($Name) {
+    $images = @(Get-ThemeBackgrounds $Name)
+    if (-not $images.Count) { return 'none' }
+    $state = Join-Path $HOME '.local\state\windots\background'
+    $current = if (Test-Path $state) { (Get-Content $state -Raw).Trim() } else { '' }
+    $source = if ($current -and ($images -contains $current)) { $current } else { $images[0] }
+
+    $file = $source
+    if ('.webp', '.gif' -contains [IO.Path]::GetExtension($source).ToLower()) {
+        Add-Type -AssemblyName System.Windows.Forms, PresentationCore
+        $width = [Math]::Min(3840, [Math]::Max(1920, [Windows.Forms.Screen]::PrimaryScreen.Bounds.Width))
+        $info = Get-Item $source
+        $md5 = [Security.Cryptography.MD5]::Create()
+        $key = [BitConverter]::ToString($md5.ComputeHash([Text.Encoding]::UTF8.GetBytes("$source|$($info.Length)|$($info.LastWriteTimeUtc.Ticks)|$width"))).Replace('-', '').ToLower()
+        $dir = Join-Path $HOME '.local\state\windots\wallpaper'
+        $file = Join-Path $dir "$key.jpg"
+        if (-not (Test-Path $file)) {
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            $bmp = New-Object Windows.Media.Imaging.BitmapImage
+            $bmp.BeginInit(); $bmp.UriSource = New-Object Uri $source; $bmp.DecodePixelWidth = $width; $bmp.CacheOption = 'OnLoad'; $bmp.EndInit(); $bmp.Freeze()
+            $enc = New-Object Windows.Media.Imaging.JpegBitmapEncoder; $enc.QualityLevel = 92
+            $enc.Frames.Add([Windows.Media.Imaging.BitmapFrame]::Create($bmp))
+            $fs = [IO.File]::Create($file); try { $enc.Save($fs) } finally { $fs.Dispose() }
+            Get-ChildItem $dir -Filter '*.jpg' | Where-Object { $_.FullName -ne $file } | Remove-Item -Force -ErrorAction SilentlyContinue
+        }
+    }
+    if (-not ('WindotsWallpaper' -as [type])) {
+        Add-Type -Namespace '' -Name WindotsWallpaper -MemberDefinition '[System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)] public static extern bool SystemParametersInfo(uint a, uint p, string v, uint w);'
+    }
+    $key = 'HKCU:\Control Panel\Desktop'
+    Set-ItemProperty $key WallpaperStyle '10'; Set-ItemProperty $key TileWallpaper '0'   # fill
+    [void][WindotsWallpaper]::SystemParametersInfo(0x14, 0, $file, 3)   # SPI_SETDESKWALLPAPER, update the profile and tell everyone
+    New-Item -ItemType Directory -Force (Split-Path $state) | Out-Null
+    Set-Content $state $source -NoNewline
+    if ($source -eq $current) { 'same' } else { 'changed' }
+}

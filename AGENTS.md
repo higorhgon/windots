@@ -230,7 +230,7 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   `options.lua`) and backs up what it overwrites as `<file>.bak.<unix time>`. Try it beside the real one with
   `windots install lazyvim --appname nvim-test` (`NVIM_APPNAME`), then delete `nvim-test` and `nvim-test-data`.
 - Not themed yet (still Catppuccin Mocha): btop, atuin, fzf, starship, herdr-app,
-  komorebi borders, wallpaper. Official catppuccin ports are used there until they are.
+  komorebi borders. Official catppuccin ports are used there until they are.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
   `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.
 Font: JetBrainsMonoNL Nerd Font (`windots-install-font`).
