@@ -21,7 +21,13 @@ $alias = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\files-stable.exe'
 if (-not (Test-Path $alias)) { Write-Host 'Files is not installed: run windots install files' -ForegroundColor Yellow; exit 1 }
 
 $running = @(Get-Process -Name Files -ErrorAction SilentlyContinue)
-if (-not $running.Count -and $ifRunning) { Write-Host '  - Files is not running: nothing to restart'; exit 0 }
+# Files stays in the background with no window after the last one is closed: that is "closed" for the person
+$hadWindow = [bool]($running | Where-Object { $_.MainWindowHandle -ne 0 })
+if ($ifRunning -and -not $hadWindow) {
+    if ($running.Count) { $running | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host '  - Files had no window: stopped the background process, no window opened' }
+    else { Write-Host '  - Files is not running: nothing to restart' }
+    exit 0
+}
 if ($running.Count) {
     foreach ($p in $running) { [void]$p.CloseMainWindow() }
     $running | Wait-Process -Timeout 2 -ErrorAction SilentlyContinue

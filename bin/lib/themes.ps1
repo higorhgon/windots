@@ -396,6 +396,11 @@ function Update-FilesTheme($Name, $c, $NoRestart) {
         'same' { return 'Files: already right' }
     }
     if (-not (Test-FilesRunning)) { return 'Files: colours changed; they show the next time it starts' }
+    # no window = only its background process: stop it (so the next start reads the colours), open nothing
+    if (-not (Get-Process -Name Files -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 })) {
+        & (Join-Path $script:ThemeRepo 'bin\windots-restart-files.ps1') --if-running | Out-Null
+        return 'Files: colours changed; no window open, they show the next time it starts'
+    }
     if ($NoRestart) {
         Register-WindotsProtocol
         $title = 'Files: new theme ' + (Get-ThemeTitle $Name)
