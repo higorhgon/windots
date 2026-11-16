@@ -1,14 +1,14 @@
 # windots-update-restart [--snapshot | <app> <app>...]
-# windots:summary=Start again the apps an update closed (komorebi stack, switcher, Flow Launcher)
+# windots:summary=Start again the apps an update closed (komorebi stack, switcher)
 # windots:args=[--snapshot | <app> <app>...]
-# windots:examples=windots update restart --snapshot | windots update restart whkd Flow.Launcher
+# windots:examples=windots update restart --snapshot | windots update restart whkd masir
 #
 # Like omarchy-update-restart --services-only, for Windows: an installer closes the app it is
 # replacing, and nothing opens it again. So windots-update notes which of these apps are running before
 # it upgrades anything, and afterwards starts the ones that are gone.
 #   --snapshot   print the apps running now, one per line
 #   <app>...     start each of these that is not running now (running ones are left alone)
-# Apps: komorebi, whkd, masir, komorebi-switcher, Flow.Launcher. komorebi comes first, since it brings
+# Apps: komorebi, whkd, masir, komorebi-switcher. komorebi comes first, since it brings
 # whkd and masir with it. Left out on purpose: herdr-app (it is the person's session, and its installer
 # does not close it) and anything else that is not a startup app.
 # A start that fails is reported and does not stop the others.
@@ -22,7 +22,6 @@ $apps = [ordered]@{
     'whkd'              = 'windots-restart-whkd.ps1'
     'masir'             = 'windots-restart-masir.ps1'
     'komorebi-switcher' = 'windots-restart-komorebi-switcher.ps1'
-    'Flow.Launcher'     = 'windots-restart-flow-launcher.ps1'
 }
 function Test-Running($name) { [bool](Get-Process -Name $name -ErrorAction SilentlyContinue) }
 

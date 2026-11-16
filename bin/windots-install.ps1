@@ -321,10 +321,6 @@ Step 'Applying the theme (taskbar, komorebi-switcher, Windows Terminal, light / 
 Step 'Applying herdr-app keys and settings, linking the retropet layout'
 & (Join-Path $PSScriptRoot 'windots-install-herdr-app.ps1')
 
-# ---------------------------------------------------------------- flow launcher
-Step 'Applying Flow Launcher hotkeys (system menu, apps, plugins)'
-& (Join-Path $PSScriptRoot 'windots-install-flow-launcher.ps1')
-
 # ---------------------------------------------------------------- mise tools
 Step 'Installing mise tools (atuin, starship, neovim, ...)'
 if (Get-Command mise -ErrorAction SilentlyContinue) { mise install --yes }

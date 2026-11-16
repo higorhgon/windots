@@ -16,7 +16,7 @@
 # Explorer restarts (its windows close, the taskbar blinks) only when the light/dark mode changed;
 # the switcher restarts only when its colours changed. --no-restart changes the files and leaves both.
 #   --skip-taskbar   leave the taskbar and the Windows mode alone
-# Not themed yet: btop, atuin, fzf, starship, herdr-app, Flow Launcher, komorebi borders, wallpaper.
+# Not themed yet: btop, atuin, fzf, starship, herdr-app, komorebi borders, wallpaper.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }

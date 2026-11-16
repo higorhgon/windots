@@ -15,7 +15,7 @@
 #   2. links in those folders that point into the repo at files that no longer
 #      exist (renamed or removed from Configs) are removed;
 #   3. windots-install --skip-packages --skip-system links everything again and
-#      re-applies the merged settings (Windows Terminal, Flow Launcher, autostart).
+#      re-applies the merged settings (Windows Terminal, autostart).
 #
 #   windots-reinstall-configs       asks before starting
 #   windots-reinstall-configs -y    no questions

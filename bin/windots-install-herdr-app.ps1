@@ -2,7 +2,7 @@
 # windots:summary=Apply the herdr-app keys and settings and copy the retropet layout
 #
 # herdr-app rewrites keys.json and settings.json while it runs, so they are merged, not
-# linked (the same reason as Windows Terminal and Flow Launcher):
+# linked (the same reason as Windows Terminal):
 #   - keys.json     = default\herdr-app\keys.json (omarchy binds) + the retropet binds
 #                     (default\retropet\keys.json), written whole;
 #   - settings.json = the live file with default\herdr-app\settings.json laid over it.

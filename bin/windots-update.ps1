@@ -8,7 +8,7 @@
 #   2. winget packages (windots-update-winget, one UAC)     like omarchy-update-system-pkgs
 #   3. herdr-app (windots-update-herdr-app --app; retropet only moves with --retropet)
 #   4. re-applies windots (windots-install --skip-packages --skip-system):
-#      links new dotfiles, merges Windows Terminal / Flow settings, autostart.
+#      links new dotfiles, merges the Windows Terminal settings, autostart.
 #      If this fails the update stops: migrations and the rest need it done.
 #   5. migrations this machine has not run yet (windots-migrate)   like omarchy-migrate
 #   6. starts again the apps the update closed (windots-update-restart), then runs the
