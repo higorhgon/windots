@@ -31,7 +31,7 @@ $Build = Join-Path $HOME '.local\share\windots-build\komorebi-switcher'
 $State = Join-Path $HOME '.local\state\windots\komorebi-switcher.release'
 $Exe = Join-Path $env:LOCALAPPDATA 'Programs\komorebi-switcher\komorebi-switcher.exe'
 $Orig = "$Exe.orig"
-. (Join-Path $PSScriptRoot 'lib	hemes.ps1')   # Test-SwitcherLiveReload
+. (Join-Path $PSScriptRoot 'lib/themes.ps1')   # Test-SwitcherLiveReload
 $Toml = Join-Path $HOME '.config\komorebi-switcher.toml'
 
 $n = 5; $alignment = 'center'; $revert = $false; $check = $false; $build = $false
