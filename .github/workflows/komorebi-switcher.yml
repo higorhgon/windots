@@ -4,7 +4,7 @@
 #   git tag komorebi-switcher-v0.10.4-windots.1 && git push origin komorebi-switcher-v0.10.4-windots.1
 #
 # The tag is komorebi-switcher-<upstream tag>-windots.<n>: it says which upstream release the patch is applied to.
-# Upstream's own release profile is used here (lto, one codegen unit: a 2.6 MB exe); the local --build uses a lighter one.
+# Upstream's own release profile is used here (lto, one codegen unit); the local --build uses a lighter one.
 name: komorebi-switcher
 
 on:

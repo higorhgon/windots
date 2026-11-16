@@ -151,7 +151,7 @@ if (-not $build) {
         Step "downloading upstream $Tag"
         Invoke-Native 'git clone' { git clone --quiet --depth 1 --branch $Tag $Upstream $Build }
     }
-    # a lighter profile than upstream's (lto, one codegen unit, for a 2.6 MB exe): same program, a bigger file, much less to wait for
+    # a lighter profile than upstream's (lto, one codegen unit): same program, a bigger file, much less to wait for
     $env:CARGO_PROFILE_RELEASE_LTO = 'thin'; $env:CARGO_PROFILE_RELEASE_CODEGEN_UNITS = '16'
     Push-Location $Build
     try {
@@ -177,6 +177,5 @@ if ($newExe) {
 
 if ((Get-Key 'persistent_workspaces') -ne "$n") { Set-Key 'persistent_workspaces' $n; Step "persistent_workspaces = $n" }
 if ((Get-Key 'alignment') -ne $alignment) { Set-Key 'alignment' "`"$alignment`""; Step "alignment = $alignment" }
-& (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1') | Out-Null
-Step 'komorebi-switcher restarted'
+& (Join-Path $PSScriptRoot 'windots-restart-komorebi-switcher.ps1')
 exit 0

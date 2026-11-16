@@ -238,7 +238,7 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   (`windots-center-switcher` is gone: windots is opinionated, one layout). The build comes from a release of this repo made by
   `.github/workflows/komorebi-switcher.yml` when a tag `komorebi-switcher-v<upstream>-windots.<n>` is pushed (a change to the patch
   means a new tag); `windots install komorebi switcher` downloads the newest one (SHA-256 checked), `--build` compiles locally with a
-  lighter profile (env `CARGO_PROFILE_RELEASE_LTO=thin`, codegen units 16: same program, an 8 MB exe instead of 2.6). To change the
+  lighter profile (env `CARGO_PROFILE_RELEASE_LTO=thin`, codegen units 16: same program, a bigger exe). To change the
   patch: edit a clean checkout of the tag (`git clone --branch v0.10.4 https://github.com/amrbashir/komorebi-switcher`), `git add -N`
   new files, `git diff -- src Cargo.toml > default/komorebi-switcher/windots.patch`, and check `git apply --check` on a clean tag. If
   the switcher logs "Found 0 taskbars" (an empty bar), Explorer was the cause: `windots restart explorer`.
