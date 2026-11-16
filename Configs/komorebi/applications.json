@@ -220,6 +220,11 @@
         "kind": "Exe",
         "id": "AutoHotkeyUX.exe",
         "matching_strategy": "Equals"
+      },
+      {
+        "kind": "Exe",
+        "id": "AutoHotkey64.exe",
+        "matching_strategy": "Equals"
       }
     ],
     "tray_and_multi_window": [
