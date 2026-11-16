@@ -153,7 +153,8 @@ in the `windots` skill). A new script without them is missing from the help.
 - Check conflicts with herdr-app (`default/herdr-app/keys.json`, `default/retropet/keys.json`)
   and the launcher hotkeys in `windots-hotkeys.ahk`. Win+number belongs to komorebi workspaces.
 - Hotkeys that open the windots-launcher (`Win+Space` the root menu, `Win+Alt+Space` the launcher: apps first, `Win+K`
-  the keybindings, `Win+Ctrl+Shift+Space` the themes) live in `windots-hotkeys.ahk`, not in whkd: whkd starts a `pwsh`
+  the keybindings, `Win+Ctrl+Shift+Space` and `Win+Ctrl+T` the themes, `Win+Ctrl+Space` and `Win+Ctrl+W` the backgrounds
+  of the theme, all as in omarchy's `bindings/utilities.lua`) live in `windots-hotkeys.ahk`, not in whkd: whkd starts a `pwsh`
   for every hotkey (~300 ms) and AutoHotkey is resident. They write `verb<TAB>route` to the launcher's named pipe
   `windots-launcher` (a few ms); starting `windots-launcher.exe` costs a whole .NET process (~300 ms) and is only the
   fallback. Never bind the same key in both, or the menu toggles open and shut. A `; description` after a hotkey in the

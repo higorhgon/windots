@@ -14,11 +14,11 @@ win + ctrl + q       : start calc  # Calculadora
 win + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
 win + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk
 
-# --- Tema, fontes e menus (omarchy: Super+Ctrl+T, Super+Ctrl+W, Super+K) ---
-win + ctrl + t       : windots-toggle-dark-mode  # Alternar modo escuro/claro
-# Win+K (atalhos) e Alt+Ctrl+Shift+Space (temas) estão em windots-hotkeys.ahk: o whkd abre um pwsh a cada atalho, o AutoHotkey já está rodando.
-win + ctrl + w       : start ms-settings:personalization-background  # Escolher tela de fundo
-win + ctrl + d       : start ms-settings:display  # Configurações de tela (monitor)
+# --- Tema, fontes e menus ---
+# Win+K (atalhos), Win+Ctrl+T e Win+Ctrl+Shift+Space (temas), Win+Ctrl+W e Win+Ctrl+Space (tela de fundo) abrem o
+# windots-launcher e estão em windots-hotkeys.ahk: o whkd abre um pwsh a cada atalho, o AutoHotkey já está rodando.
+# Nunca repita essas teclas aqui: o menu abriria e fecharia.
+win + ctrl + d      : start ms-settings:display  # Configurações de tela (monitor)
 
 # --- Configurações (omarchy: Super+Ctrl+A/B/N/P) ---
 win + ctrl + a       : start ms-settings:sound  # Configurações de som

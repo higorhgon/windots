@@ -72,6 +72,13 @@ LauncherMenu(verb, route := "root", fallback := "") {
 #k::LauncherMenu("toggle", "keys", "pwsh -NoProfile -Command windots-menu-keybindings")   ; Atalhos de teclado (este menu)
 #^+Space::LauncherMenu("toggle", "style.theme", "pwsh -NoProfile -Command windots-menu-theme")   ; Escolher o tema (omarchy: Super+Ctrl+Shift+Space)
 
+; omarchy's other keys for the same two menus (bindings/utilities.lua): Super+Ctrl+T is the theme menu too, and
+; Super+Ctrl+Space / Super+Ctrl+W are the background switcher (the images of the current theme). Without the launcher
+; the background keys open Windows' own background settings.
+#^t::LauncherMenu("toggle", "style.theme", "pwsh -NoProfile -Command windots-menu-theme")   ; Escolher o tema
+#^Space::LauncherMenu("toggle", "style.background", "ms-settings:personalization-background")   ; Escolher a tela de fundo (imagens do tema)
+#^w::LauncherMenu("toggle", "style.background", "ms-settings:personalization-background")   ; Escolher a tela de fundo (imagens do tema)
+
 ; --- Win+Shift+/ on ABNT2 (VK_ABNT_C1): passwords, like omarchy ---
 #+vkC1:: {
     exe := EnvGet("LOCALAPPDATA") "\Programs\omapass\omapass.exe"
