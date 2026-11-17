@@ -1,11 +1,12 @@
 # windots-launch-tui [--float] [--title=<title>] <command> [args...]
-# windots:summary=Run a TUI in its own borderless terminal window
+# windots:summary=Run a TUI in its own window of the default terminal
 # windots:args=[--float] [--title=<title>] <command> [args...]
 # windots:examples=windots launch tui nvim | windots launch tui --float btop
 #
-# Like omarchy-launch-tui: run a TUI in its own terminal window, with no title or
-# tab bar (Windows Terminal focus mode), using the windots-tui profile (Catppuccin
-# Mocha, no padding; from the windows-terminal group). The window title is fixed to <title>
+# Like omarchy-launch-tui: run a TUI in its own window of the default terminal
+# (windots-default-terminal). Windows Terminal: no title or tab bar (focus mode), the
+# windots-tui profile (no padding; from the windows-terminal group). Ghostty: a window
+# of its own, closed when the TUI quits. The window title is fixed to <title>
 # (default: the command's name), so it can be found again: see
 # windots-launch-or-focus-tui. --float opens it floating and centered.
 #
@@ -39,7 +40,11 @@ if ($app) {
     }
 }
 
-# windots-tui: hidden profile from the windots Windows Terminal fragment (Catppuccin Mocha, no padding).
-$wt = @('--focus', '-w', 'new', '-p', 'windots-tui', '--title', $title, '--suppressApplicationTitle') + @($rest)
-if ($float) { & (Join-Path $PSScriptRoot 'windots-launch-float.ps1') wt @wt }
-else { Start-Process -FilePath wt -ArgumentList $wt }
+# In the default terminal (lib\terminal.ps1). Windows Terminal: the hidden windots-tui profile from the
+# windots fragment (no padding) in focus mode. Ghostty: a window of its own with the fixed title.
+. (Join-Path $PSScriptRoot 'lib\terminal.ps1')
+$command = @($rest | ForEach-Object { [string]$_ })
+if ($float) {
+    # windots-launch-float runs the script block in-process and watches for the new floating window
+    &(Join-Path $PSScriptRoot 'windots-launch-float.ps1') { param($c, $t) [void](Start-Terminal -Command $c -Title $t -Tui) } $command $title
+} else { [void](Start-Terminal -Command $command -Title $title -Tui) }

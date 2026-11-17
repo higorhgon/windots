@@ -4,12 +4,12 @@
 # The "# ..." at the end of a line is its description in windots-menu-keybindings (Win+K).
 
 # --- Apps ---
-win + return         : start wt  # Terminal
+win + return         : windots-launch-terminal  # Terminal (windots default terminal)
 win + shift + return : start msedge  # Navegador
 win + shift + b      : start msedge  # Navegador
 win + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
 win + shift + f      : windots-launch-files  # Gerenciador de arquivos (Files)
-win + shift + n      : start wt nvim  # Editor (nvim)
+win + shift + n      : windots-launch-terminal nvim  # Editor (nvim)
 win + ctrl + q       : start calc  # Calculadora
 win + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
 win + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk

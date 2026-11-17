@@ -42,7 +42,9 @@ Talk to the person in Portuguese; code, comments and commit messages in English.
 - Single instance, focus if open: `windots-launch-or-focus '^(name)$' <cmd>`.
 - Floating (centered, 875x600): add `--float`.
 - Terminal app: `windots-launch-or-focus-tui [--float] [--title=t] <cmd>`
-  (borderless Windows Terminal, `windots-tui` profile, Catppuccin, focus by title).
+  (a window of the default terminal, Ghostty or Windows Terminal; focus by title).
+- A plain terminal / a command in one: `windots-launch-terminal [--dir=d] [cmd]`. Never hard-code
+  `wt`: the default terminal is `windots-default-terminal` (`bin/lib/terminal.ps1`, `Start-Terminal`).
 - A Settings page: `start ms-settings:<page>`.
 
 ### A menu like omarchy's

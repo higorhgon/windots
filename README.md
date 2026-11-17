@@ -28,7 +28,10 @@ Como o `bin` do omarchy: o `windots-install` põe `~\windots\bin` no PATH e os s
 | `windots [comando] [args]` | como o `omarchy`: chama o `windots-*` pelas palavras (`windots install font` → `windots-install-font`); sem argumentos, mostra a ajuda com os grupos |
 | `windots-commands [--json]` | como o `omarchy commands`: lista todos os comandos com uso e descrição, lidos das linhas `# windots:` no topo de cada script |
 | `windots-launch-or-focus [--float] <regex> [comando]` | como o `focus = "^(app)$"` do omarchy: foca a janela cujo exe ou título casa com a regex, indo até o workspace dela; se não estiver aberta, abre (`--float`: flutuante) |
-| `windots-launch-tui [--float] [--title=<t>] <comando>` | como o `omarchy-launch-tui`: abre um TUI numa janela de terminal própria (perfil `windots-tui`, Catppuccin Mocha sem margem), sem barra de título nem abas, com título fixo (padrão: o nome do comando) |
+| `windots-default-terminal [ghostty \| windows-terminal]` | como o `omarchy-default-terminal`: sem argumento, mostra o terminal padrão; com um nome, passa a usá-lo no Win+Enter, nos TUIs, no `> comando` e nos agentes do lançador (instala antes, se faltar). A escolha fica nesta máquina, em `~\.config\windots\terminal`; sem escolha, o [Ghostty](https://github.com/higorhgon/ghostty) quando instalado, senão o Windows Terminal. Não muda o "aplicativo de terminal padrão" do Windows (Configurações > Para desenvolvedores): ali só entram terminais que fazem o handoff de console do Windows, e o Ghostty não faz. No lançador: Install › Terminal |
+| `windots-install-terminal <ghostty \| windows-terminal> [--close] [--keep-default]` | como o `omarchy-install-terminal`: instala o terminal e o torna o padrão. `ghostty`: o `setup.exe` do release mais novo de [higorhgon/ghostty](https://github.com/higorhgon/ghostty/releases) (SHA-256 conferido), só para o usuário, sem UAC, em `%LOCALAPPDATA%\Programs\Ghostty`; rodar de novo atualiza. Com o Ghostty aberto não atualiza (o comando pode estar rodando dentro dele), a menos que `--close` deixe o instalador fechá-lo e reabri-lo. `--keep-default` só instala/atualiza. O `windots-reinstall-pkgs` instala o Ghostty e o `windots-update` o atualiza |
+| `windots-launch-terminal [--dir=<pasta>] [--title=<t>] [comando]` | como o `omarchy-launch-terminal`: uma janela nova do terminal padrão, na pasta pessoal (ou `--dir`); com um comando, roda ele e fecha quando ele termina (Win+Enter, Win+Shift+N) |
+| `windots-launch-tui [--float] [--title=<t>] <comando>` | como o `omarchy-launch-tui`: abre um TUI numa janela própria do terminal padrão, com título fixo (padrão: o nome do comando). No Windows Terminal, o perfil `windots-tui` (sem margem), sem barra de título nem abas; no Ghostty a janela ainda mostra a barra de abas (o Ghostty para Windows não tem modo sem borda) |
 | `windots-launch-or-focus-tui [--float] [--title=<t>] <comando>` | como o `omarchy-launch-or-focus-tui`: foca a janela do TUI pelo título; se não estiver aberta, chama o `windots-launch-tui` |
 | `windots-launch-float <comando>` | abre o comando flutuante, centralizado, sempre em 875×600 (o tamanho do omarchy) |
 | `windots-launch-files` | o atalho `Win+Shift+F` (o `Super+Shift+F` do omarchy abre o nautilus): foca o Files se estiver aberto ou o abre; sem o Files instalado abre o Explorer |
@@ -141,7 +144,7 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 ### O que o `windots-install` faz, em ordem
 
 1. Ativa o Modo de Desenvolvedor e o sudo embutido (um UAC) e deixa a barra de tarefas no topo, pequena, alinhada à esquerda e sem Visão de Tarefas/Widgets/Copilot (`--skip-system` pula).
-2. `windots-reinstall-pkgs`: instala os apps do winget listados em `default/packages.txt`, o komorebi-switcher (release do GitHub) e o herdr-app (instalador oficial, que também instala o herdr-core) (`--skip-packages` pula).
+2. `windots-reinstall-pkgs`: instala os apps do winget listados em `default/packages.txt`, o komorebi-switcher (release do GitHub), o herdr-app (instalador oficial, que também instala o herdr-core) e o Ghostty, o terminal padrão (`windots-install-terminal`) (`--skip-packages` pula).
 3. Põe `~\windots\bin` no PATH.
 4. Cria a junction `%APPDATA%\dotfiles` → este repositório (onde o tuckr procura).
 5. Faz backup (`*.pre-windots`) dos arquivos que vai substituir e roda `tuckr add` em todos os grupos. Depois aponta cada link direto para o arquivo do repo, sem passar pela junction: sessões SSH não atravessam links nem junctions criados por usuário comum (erro "untrusted mount point").
@@ -152,7 +155,8 @@ Depois da primeira vez, o `bin` já está no PATH e dá para rodar de novo só o
 
 ```powershell
 windots                   # ajuda: grupos e comandos
-windots update            # atualiza tudo (windots, winget, mise); --prune libera espaço
+windots update            # atualiza tudo (windots, winget, herdr-app, Ghostty, mise); --prune libera espaço
+windots default terminal ghostty   # ou windows-terminal: o terminal do Win+Enter e dos TUIs
 tuckr status              # o que está linkado
 tuckr add <grupo>         # linka um grupo
 tuckr rm <grupo>          # remove os links de um grupo

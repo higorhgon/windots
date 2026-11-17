@@ -8,8 +8,8 @@ recipes (add a hotkey, an app, a group, a command...) use the `windots` skill.
 ## What this is
 
 A Windows 11 desktop that behaves like omarchy: komorebi (tiling) + whkd
-(hotkeys) + masir (focus follows mouse), windots-launcher, herdr-app, Windows
-Terminal, all in Catppuccin Mocha. **omarchy is the reference**: when adding or
+(hotkeys) + masir (focus follows mouse), windots-launcher, herdr-app, Ghostty
+(default terminal) or Windows Terminal, all following the theme. **omarchy is the reference**: when adding or
 changing something, look at how omarchy does it (`omacom/omarchy`, branch
 `quattro`: `default/hypr/bindings/*.lua`, `bin/omarchy-*`) and mirror it, with
 **Super = the Windows key** (Win+L lock stays the system's; Win+R is the launcher's `run` route).
@@ -82,8 +82,18 @@ in the `windots` skill). A new script without them is missing from the help.
 
 - `windots-launch-or-focus [--float] <regex> [cmd]`: focus by anchored regex on
   exe or title (like omarchy's `focus = "^(app)$"`), else launch.
+- The default terminal, like omarchy's `xdg-terminals.list`: `windots-default-terminal [ghostty|windows-terminal]`,
+  kept per machine in `~\.config\windots\terminal` (no file: Ghostty when installed, else Windows Terminal).
+  Ghostty is the person's fork (`higorhgon/ghostty`, Inno Setup `setup.exe` in its `windows-v*` releases, per user,
+  installed/updated by `windots-install-terminal ghostty`). Everything that opens a terminal goes through
+  `Start-Terminal` (`bin/lib/terminal.ps1`): `windots-launch-terminal` (Win+Enter), `windots-launch-tui`; never
+  hard-code `wt`. The launcher's `> command` reads the same file in C# (`DefaultGhostty`, keep the two rules equal).
+  Ghostty has no handoff for Windows' own "default terminal application", no borderless mode and no
+  single-instance IPC that carries a command: every launch is its own process and window. wt reads a bare `;` as
+  "next command" even inside quotes: `Start-Terminal` escapes it as `\;`. `windots-update` never updates an open
+  Ghostty (it may be the terminal running the update).
 - `windots-launch-tui` / `windots-launch-or-focus-tui [--float] [--title=t] cmd`:
-  TUIs in a borderless Windows Terminal (`windots-tui` profile), fixed title.
+  TUIs in a window of the default terminal (Windows Terminal: the borderless `windots-tui` profile), fixed title.
 - `windots-launch-float <cmd>`: open floating, centered, 875x600 (omarchy's size).
 - Menus that are fzf TUIs (`windots-menu-keybindings`, `windots-install-font`)
   launch themselves floating when run with no args; `--pick` runs the list in

@@ -45,9 +45,10 @@ $new = $null
 $weTurnedItOn = $false
 if (-not $before.Override) { komorebic toggle-float-override; $weTurnedItOn = $true }
 try {
-    # A windots script (e.g. windots-launch-tui) runs in-process; anything else is started.
-    $cmd = Get-Command $exe -ErrorAction SilentlyContinue
-    if ($cmd.CommandType -eq 'ExternalScript') { & $cmd.Source @rest }
+    # A windots script (e.g. windots-launch-tui) or a script block (from one) runs in-process; anything else is started.
+    $cmd = if ($exe -is [scriptblock]) { $null } else { Get-Command $exe -ErrorAction SilentlyContinue }
+    if ($exe -is [scriptblock]) { & $exe @rest }
+    elseif ($cmd.CommandType -eq 'ExternalScript') { & $cmd.Source @rest }
     elseif ($rest) { Start-Process -FilePath $exe -ArgumentList $rest } else { Start-Process -FilePath $exe }
     $deadline = (Get-Date).AddSeconds(5)
     while (-not $new -and (Get-Date) -lt $deadline) {
