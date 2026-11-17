@@ -9,7 +9,7 @@ win + shift + return : start msedge  # Navegador
 win + shift + b      : start msedge  # Navegador
 win + ctrl + return  : start "$env:LOCALAPPDATA\Programs\herdr-app\herdr-app.exe"  # Herdr
 win + shift + f      : windots-launch-files  # Gerenciador de arquivos (Files)
-win + shift + n      : windots-launch-terminal nvim  # Editor (nvim)
+win + shift + n      : windots-launch-tui nvim  # Editor (nvim)
 win + ctrl + q       : start calc  # Calculadora
 win + shift + t      : windots-launch-or-focus-tui --float btop  # Monitor de sistema (btop)
 win + shift + oem_2  : windots-launch-or-focus --float '^(omapass)$' "$env:LOCALAPPDATA\Programs\omapass\omapass.exe"  # Senhas (omapass); ABNT2 em windots-hotkeys.ahk
