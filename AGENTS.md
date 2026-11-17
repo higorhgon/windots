@@ -95,6 +95,11 @@ in the `windots` skill). A new script without them is missing from the help.
 - `windots-install*` and anything they call must parse and run on **Windows
   PowerShell 5.1** (a fresh machine has no pwsh 7). Check both:
   `[System.Management.Automation.Language.Parser]::ParseFile(...)` in `pwsh` and `powershell.exe`.
+- The profile (`Configs/pwsh/.config/powershell/profile.ps1`) must stay fast: it caches every tool init in
+  `~\.cache\windots\pwsh` (`Get-WindotsInit`, keyed on its sources) instead of `Invoke-Expression (tool init ...)`.
+  No `mise activate` (its `hook-env` costs ~0.5 s at start and before every prompt) and no mise shims on the PATH
+  (~0.8 s more per call, and atuin runs at every command); no RGB colours (PSReadLine uses the 16 ANSI ones, which
+  follow the theme). Measure with `Measure-Command { pwsh -Command exit }` before and after a change (~2 s now).
 - Scripts that pass flags through to another program (`wt -w new ...`) use plain
   `$args`, **no `param()` block**: with one, PowerShell binds `-w` as `-WarningAction`.
 - Flags are Linux style (`--skip-packages`, `--prune`, short `-y` / `-h`), read from
