@@ -7,6 +7,7 @@
 #   - the winget packages in default\packages.txt (one UAC prompt, through sudo);
 #   - komorebi-switcher (GitHub release), when missing;
 #   - herdr-app (official installer, which also installs herdr-core), when missing;
+#   - Ghostty, the default terminal (windots-install-terminal), when missing;
 #   - the mise tools in ~\.config\mise\config.toml (mise install).
 # Apps already installed are left as they are (windots-update upgrades them).
 # Called by windots-install; safe to run again on its own.
@@ -74,6 +75,16 @@ if (Get-Command herdr-app -ErrorAction SilentlyContinue) {
 } else {
     powershell -NoProfile -ExecutionPolicy Bypass -c "irm https://releases.herdr.dev/app/install.ps1 | iex"
     Refresh-Path
+}
+
+Step 'Installing Ghostty (the default terminal; GitHub release of higorhgon/ghostty)'
+. (Join-Path $PSScriptRoot 'lib\terminal.ps1')
+if (Get-GhosttyExe) {
+    Write-Host '  - already installed'
+} else {
+    $global:LASTEXITCODE = 0
+    & (Join-Path $PSScriptRoot 'windots-install-terminal.ps1') ghostty --keep-default
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Ghostty was not installed (above); Windows Terminal stays the terminal. Retry: windots install terminal ghostty' }
 }
 
 Step 'Installing mise tools'

@@ -6,7 +6,8 @@
 # Like omarchy-update: updates windots and everything it installed, in this order:
 #   1. the windots repo (windots-update-dev: git pull --ff-only + submodules)  like omarchy-update-dev
 #   2. winget packages (windots-update-winget, one UAC)     like omarchy-update-system-pkgs
-#   3. herdr-app (windots-update-herdr-app --app; retropet only moves with --retropet)
+#   3. herdr-app (windots-update-herdr-app --app; retropet only moves with --retropet), and Ghostty
+#      when installed (windots-install-terminal ghostty; an open Ghostty is left alone, it says how)
 #   4. re-applies windots (windots-install --skip-packages --skip-system):
 #      links new dotfiles, merges the Windows Terminal settings, autostart.
 #      If this fails the update stops: migrations and the rest need it done.
@@ -125,6 +126,16 @@ try {
             if ($LASTEXITCODE -ne 0) { Write-Warning "herdr-app was not updated (exit $LASTEXITCODE)" }
         }
         catch { Write-Warning "herdr-app was not updated: $($_.Exception.Message)" }
+    }
+
+    if (-not $skipPackages) {
+        . (Join-Path $PSScriptRoot 'lib\terminal.ps1')
+        if (Get-GhosttyExe) {
+            Step 'Update Ghostty'
+            $global:LASTEXITCODE = 0
+            & (Join-Path $PSScriptRoot 'windots-install-terminal.ps1') ghostty --keep-default
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Ghostty was not updated (exit $LASTEXITCODE)" }
+        }
     }
 
     Step 'Re-apply windots'
