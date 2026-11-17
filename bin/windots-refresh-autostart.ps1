@@ -31,11 +31,18 @@ $entries = @(
     @{ Name = 'windots-launcher'; Target = "$HOME\.local\share\windots-launcher\windots-launcher.exe"; Args = '--background'; Optional = $true }
 )
 
+# Task Manager's (and Settings') on/off switch for each shortcut: a REG_BINARY named after the file, whose
+# first byte is odd when it is disabled. It outlives the shortcut, so a komorebi.lnk disabled once stays
+# skipped at sign-in however often it is recreated (komorebi, whkd and masir then never start).
+$approvedKey = 'Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder'
+
 # Shortcuts from older windots versions.
 $retired = 'sem-menu-iniciar.ahk', 'komorebi-float-ontop', 'workspaces', 'windots-block-start-menu', 'Flow Launcher', 'windots-center-switcher'
+$approved = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($approvedKey, $true)
 foreach ($name in $retired) {
     $old = Join-Path $startup "$name.lnk"
     if (Test-Path $old) { Remove-Item $old; Write-Host "  - removed $name" }
+    if ($approved) { $approved.DeleteValue("$name.lnk", $false) }
 }
 
 foreach ($e in $entries) {
@@ -51,4 +58,13 @@ foreach ($e in $entries) {
     $lnk.WorkingDirectory = Split-Path $e.Target
     $lnk.Save()
     Write-Host "  - $($e.Name)"
+
+    # windots needs every one of these at sign-in: turn back on any that was switched off.
+    $state = $null
+    if ($approved) { $state = $approved.GetValue("$($e.Name).lnk") }   # not `$state = if ...`: it unrolls the byte[]
+    if ($state -is [byte[]] -and $state.Length -and ($state[0] -band 1)) {
+        $approved.SetValue("$($e.Name).lnk", [byte[]](@(2) + @(0) * 11), [Microsoft.Win32.RegistryValueKind]::Binary)
+        Write-Host "    (was disabled in the startup apps: enabled again)"
+    }
 }
+if ($approved) { $approved.Close() }
