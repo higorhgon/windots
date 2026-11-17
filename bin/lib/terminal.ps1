@@ -54,6 +54,37 @@ function Set-DefaultTerminal([string]$name) {
     [IO.File]::WriteAllText($WindotsTerminalFile, "$name`n", (New-Object Text.UTF8Encoding $false))
 }
 
+# Windows' own default terminal: the one a console program opens in when it starts with no console (Explorer,
+# Win+R, shortcuts). HKCU\Console\%%Startup names two COM classes: DelegationConsole, the console host the session
+# goes to, and DelegationTerminal, the terminal that host hands it to. Ghostty registers its class from its
+# installer (1.4.1.6 on); the console host stays Windows Terminal's OpenConsole, whose proxy DLL carries the call.
+$WindowsTerminalConsoleClsid = '{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}'   # OpenConsole (Windows Terminal package)
+$WindowsTerminalClsid = '{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}'          # Windows Terminal
+$GhosttyHandoffClsid = '{5BFD48CD-0D7C-4D2C-96BB-2CC643119AB7}'           # src/apprt/win32/handoff.zig in the fork
+
+# Points Windows' default terminal at $name. Returns what it did, for the caller to print.
+function Set-WindowsDefaultTerminal([string]$name) {
+    if (-not (Get-AppxPackage Microsoft.WindowsTerminal -ErrorAction SilentlyContinue)) {
+        return 'Windows default terminal unchanged: it needs Windows Terminal installed (its console host)'
+    }
+    $terminal = $WindowsTerminalClsid
+    if ($name -eq 'ghostty') {
+        if (-not (Test-Path "HKCU:\Software\Classes\CLSID\$GhosttyHandoffClsid\LocalServer32")) {
+            return 'Windows default terminal unchanged: this Ghostty is too old to take it (windots install terminal ghostty)'
+        }
+        $terminal = $GhosttyHandoffClsid
+    }
+    $key = 'HKCU:\Console\%%Startup'
+    if (-not (Test-Path $key)) { New-Item $key -Force | Out-Null }
+    $now = Get-ItemProperty $key -ErrorAction SilentlyContinue
+    if ($now.DelegationConsole -eq $WindowsTerminalConsoleClsid -and $now.DelegationTerminal -eq $terminal) {
+        return "Windows default terminal: already $($WindotsTerminals[$name])"
+    }
+    Set-ItemProperty $key -Name DelegationConsole -Value $WindowsTerminalConsoleClsid
+    Set-ItemProperty $key -Name DelegationTerminal -Value $terminal
+    "Windows default terminal: $($WindotsTerminals[$name])"
+}
+
 # One argument as CreateProcess reads it back (the rules of CommandLineToArgvW).
 function ConvertTo-CommandLineArg([string]$arg) {
     if ($arg -and $arg -notmatch '[\s"]') { return $arg }
@@ -83,6 +114,8 @@ function Start-Terminal {
         $exe = Get-GhosttyExe
         $list += "--working-directory=$Directory"
         if ($Title) { $list += "--title=$Title" }
+        # No title bar and no tab strip, like Windows Terminal's focus mode (Ghostty 1.4.1.6 on; older ones ignore it)
+        if ($Tui) { $list += '--window-decoration=none' }
         if ($Command.Count) {
             # Ghostty starts the command itself (CreateProcess): a full path also finds .cmd shims (npm's)
             $app = Get-Command $Command[0] -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1

@@ -6,7 +6,8 @@
 # Like omarchy-launch-tui: run a TUI in its own window of the default terminal
 # (windots-default-terminal). Windows Terminal: no title or tab bar (focus mode), the
 # windots-tui profile (no padding; from the windows-terminal group). Ghostty: a window
-# of its own, closed when the TUI quits. The window title is fixed to <title>
+# of its own with no title bar or tabs (--window-decoration=none), closed when the TUI
+# quits. The window title is fixed to <title>
 # (default: the command's name), so it can be found again: see
 # windots-launch-or-focus-tui. --float opens it floating and centered.
 #

@@ -8,9 +8,11 @@
 # is not installed yet is installed first (windots-install-terminal). The choice is kept per machine
 # in ~\.config\windots\terminal; with no choice, Ghostty when installed, else Windows Terminal.
 #
-# Windows' own "default terminal application" (Settings > System > For developers) only lists
-# terminals that implement its console handoff; Ghostty does not, so a console app started from
-# Explorer still opens where that setting says.
+# It also sets Windows' own default terminal (HKCU\Console\%%Startup), where a console program started
+# with no console (Explorer, Win+R, a shortcut) opens: Ghostty takes it through the same COM handoff
+# Windows Terminal uses (Ghostty 1.4.1.6 on), with Windows Terminal's OpenConsole as the console host,
+# so Windows Terminal must stay installed. Settings > System > For developers only lists packaged
+# terminals, so it may show the choice as blank.
 # Works on Windows PowerShell 5.1 and PowerShell 7.
 
 if ('-h', '--help' -contains $args[0]) { & (Join-Path $PSScriptRoot 'windots.ps1') --help-for $PSCommandPath; return }
@@ -30,4 +32,5 @@ if (-not (Test-TerminalInstalled $name)) {
 
 Set-DefaultTerminal $name
 Write-Host "  - default terminal: $($WindotsTerminals[$name])"
+Write-Host "  - $(Set-WindowsDefaultTerminal $name)"
 & (Join-Path $PSScriptRoot 'windots-notify.ps1') 'Terminal' "$($WindotsTerminals[$name]) is now the default terminal" | Out-Null
