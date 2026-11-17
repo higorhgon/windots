@@ -84,6 +84,7 @@ switch (Set-TerminalTheme $c) {
 switch (Set-NeovimTheme $name $c) {
     'changed' { Step 'Neovim (LazyVim): theme changed; open Neovims switch by themselves' }
     'same'    { Step 'Neovim (LazyVim): already right' }
+    default   { Step 'Neovim: skipped, the config has no windots LazyVim yet (run: windots install lazyvim)' }
 }
 
 if (-not $skipWallpaper) {
