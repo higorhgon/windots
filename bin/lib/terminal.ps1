@@ -114,8 +114,11 @@ function Start-Terminal {
         $exe = Get-GhosttyExe
         $list += "--working-directory=$Directory"
         if ($Title) { $list += "--title=$Title" }
-        # No title bar and no tab strip, like Windows Terminal's focus mode (Ghostty 1.4.1.6 on; older ones ignore it)
-        if ($Tui) { $list += '--window-decoration=none' }
+        # No title bar and no tab strip, like Windows Terminal's focus mode (Ghostty 1.4.1.6 on; older ones ignore it).
+        # No padding either, as the windots-tui profile: a TUI paints its own background (btop), and the padding would
+        # show the terminal's around it as a darker frame; `extend` paints what the cell grid leaves over with the
+        # colour of the cells at the edge.
+        if ($Tui) { $list += '--window-decoration=none', '--window-padding-x=0', '--window-padding-y=0', '--window-padding-color=extend' }
         if ($Command.Count) {
             # Ghostty starts the command itself (CreateProcess): a full path also finds .cmd shims (npm's)
             $app = Get-Command $Command[0] -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
