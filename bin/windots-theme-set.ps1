@@ -95,6 +95,7 @@ if (-not $skipWallpaper) {
 }
 
 Step (Set-KomorebiBorders $c)
+Step (Set-GhosttyTheme $c)
 Step (Set-BtopTheme $c)
 Step (Set-AtuinTheme $c)
 Step (Set-FzfTheme $c)

@@ -80,4 +80,10 @@ if ($name -eq 'ghostty') {
     }
 }
 
+if ($name -eq 'ghostty') {
+    # the current theme's colours, which windots-theme-set keeps up to date from then on
+    . (Join-Path $PSScriptRoot 'lib\themes.ps1')
+    Step (Set-GhosttyTheme (Read-ThemeColors (Get-CurrentThemeName)))
+}
+
 if (-not $keepDefault) { & (Join-Path $PSScriptRoot 'windots-default-terminal.ps1') $name }

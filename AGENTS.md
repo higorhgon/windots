@@ -25,6 +25,7 @@ changing something, look at how omarchy does it (`omacom/omarchy`, branch
 | `migrations/` | like omarchy's: `<unix time>.ps1`, run once per machine by `windots-migrate` (created by `windots-dev-add-migration`) |
 | `default/<app>/` | data the `windots-install-*` scripts merge into files that can't be linked |
 | `default/themes/<name>/colors.toml`, `.../backgrounds/` | the 23 omarchy themes (copied from `omacom/omarchy`, `themes/<name>/colors.toml`, and the 98 images of `themes/<name>/backgrounds`, 69 MB; videos left out; the person's own images are in `catppuccin/backgrounds`); `windots-theme-set` reads them through `bin/lib/themes.ps1`. The current theme is `~\.local\state\windots\theme.name` (state, never versioned) |
+| `default/ghostty/ghostty.conf.tpl` | omarchy's Ghostty colour template (`default/themed/ghostty.conf.tpl`), filled by `Set-GhosttyTheme` |
 | `default/lazyvim/` | omarchy's Neovim (omacom/omarchy-pkgs, `pkgbuilds/omarchy-nvim`): lazyvim.json, `lua/config`, `lua/plugins`, `plugin/after`, and the aether template `neovim.lua.tpl` (omarchy's `default/themed/neovim.lua.tpl`); `windots-install-lazyvim` merges them into the Neovim config |
 | `default/retropet/` | git submodule ([higorhgon/retropet](https://github.com/higorhgon/retropet)): herdr-app layout, mods, theme; `windots-install-herdr-app` copies (never links: herdr-app refuses mod files that resolve outside its folder) its files into `~\.config\herdr-app` |
 | `default/packages.txt` | default winget apps (like omarchy's base packages), installed by `windots-reinstall-pkgs` |
@@ -323,6 +324,10 @@ the mapping omarchy's template for that app uses (`default/themed/*.tpl` in omar
   (catppuccin/fzf's mapping from the palette) which the profile hands to fzf as `FZF_DEFAULT_OPTS_FILE` (`fzf-theme.ps1`): fzf reads
   it at every start, so open terminals get new colours at the next fzf. starship needs nothing: its config names ANSI colours,
   which are the terminal scheme's. Not themed yet (still Catppuccin Mocha): herdr-app (its retropet theme).
+- Ghostty: `Set-GhosttyTheme` writes omarchy's `ghostty.conf.tpl` (`default/ghostty/`) to
+  `~\.local\state\windots\ghostty\theme.conf` and makes `%LOCALAPPDATA%\ghostty\config.ghostty` (the person's, never
+  linked) include it with `config-file`, commenting out any `theme =` line. The fork reloads only when
+  `config.ghostty`'s write time changes, so a new palette touches that file: open windows re-colour in ~1 s.
 - Never write a `\` + letter inside a string you hand to a tool as an escape-processed argument:
   `lib\themes.ps1` once arrived as `lib<TAB>hemes.ps1`. Use the Write/Edit tools for paths.
 Font: JetBrainsMonoNL Nerd Font (`windots-install-font`).

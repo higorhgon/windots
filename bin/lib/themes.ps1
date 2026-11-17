@@ -513,6 +513,43 @@ function Set-BtopTheme($c) {
     if ($changed) { 'btop: theme changed (it shows the next time btop starts)' } else { 'btop: already right' }
 }
 
+# Ghostty: omarchy's ghostty.conf.tpl as ~\.local\state\windots\ghostty\theme.conf, which config.ghostty includes with
+# config-file, as omarchy's Ghostty config does. The config is the person's (never linked): only the include line is
+# added and a `theme = ...` line commented out (it would fight the palette), with a backup. The fork reloads when
+# config.ghostty's write time changes, and only that file's, so a new palette touches it: every open Ghostty takes the
+# colours within a second, no restart.
+function Get-GhosttyConfigPath { Join-Path $env:LOCALAPPDATA 'ghostty\config.ghostty' }
+function Set-GhosttyTheme($c) {
+    $config = Get-GhosttyConfigPath
+    $installed = Test-Path (Join-Path $env:LOCALAPPDATA 'Programs\Ghostty\bin\ghostty.exe')
+    if (-not $installed -and -not (Test-Path $config)) { return 'Ghostty: not installed, skipped' }
+
+    $theme = Join-Path $HOME '.local\state\windots\ghostty\theme.conf'
+    $tpl = [IO.File]::ReadAllText((Join-Path $script:ThemeRepo 'default\ghostty\ghostty.conf.tpl'))
+    $themeChanged = Write-ThemeFile $theme (Expand-ThemeTemplate $tpl $c)
+
+    # Forward slashes: Ghostty reads the quoted path as it is, and Windows takes either.
+    $include = "config-file = ?`"$($theme.Replace('\', '/'))`""
+    $text = if (Test-Path $config) { [IO.File]::ReadAllText($config) } else { '' }
+    $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
+    $new = $text
+    if (-not $new.Contains($include)) {
+        $new = "# windots: the colours of the current theme (windots theme set)$nl$include$nl$nl" + $new
+    }
+    $new = [regex]::Replace($new, '(?m)^([ \t]*theme[ \t]*=[^\r\n]*)', '# $1   # windots: the theme comes from config-file above')
+    $configChanged = $new -ne $text
+    if ($configChanged) {
+        if ($text) { Copy-Item $config "$config.bak.$([DateTimeOffset]::Now.ToUnixTimeSeconds())" }
+        New-Item -ItemType Directory -Force (Split-Path $config) | Out-Null
+        [IO.File]::WriteAllText($config, $new, (New-Object Text.UTF8Encoding($false)))
+    } elseif ($themeChanged) {
+        (Get-Item $config).LastWriteTime = Get-Date   # what the running Ghosttys watch
+    }
+    if ($configChanged) { 'Ghostty: config includes the theme now; open windows take it within a second' }
+    elseif ($themeChanged) { 'Ghostty: theme changed; open windows take it within a second' }
+    else { 'Ghostty: already right' }
+}
+
 # atuin: ~\.atuin\themes\windots.toml, with the roles of the catppuccin theme the repo used before (atuin config.toml:
 # [theme] name = "windots"). The search UI reads it each time it opens.
 function Set-AtuinTheme($c) {
